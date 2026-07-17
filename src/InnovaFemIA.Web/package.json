@@ -1,0 +1,13 @@
+{
+  "name": "innovafemia-web",
+  "version": "1.0.0",
+  "description": "TailwindCSS build para InnovaFemIA Web (.cshtml)",
+  "scripts": {
+    "tw:build": "npx tailwindcss -i ./wwwroot/css/app.src.css -o ./wwwroot/css/app.css --minify",
+    "tw:watch": "npx tailwindcss -i ./wwwroot/css/app.src.css -o ./wwwroot/css/app.css --watch",
+    "tw:dev": "npx tailwindcss -i ./wwwroot/css/app.src.css -o ./wwwroot/css/app.css"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
