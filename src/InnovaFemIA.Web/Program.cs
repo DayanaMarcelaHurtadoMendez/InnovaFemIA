@@ -119,16 +119,15 @@ app.MapControllerRoute(
 
 app.MapControllers(); // Para [ApiController] attribute routing
 
-// ─── MIGRACIÓN AUTOMÁTICA Y SEED EN DEVELOPMENT ───────────────────────────────
-if (app.Environment.IsDevelopment())
+// ─── MIGRACIÓN AUTOMÁTICA Y SEED ───────────────────────────────────────────────
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
     try
     {
-        // Aplica migraciones pendientes automáticamente en desarrollo
+        // Aplica migraciones pendientes automáticamente
         await db.Database.MigrateAsync();
         logger.LogInformation("Migraciones aplicadas correctamente.");
 

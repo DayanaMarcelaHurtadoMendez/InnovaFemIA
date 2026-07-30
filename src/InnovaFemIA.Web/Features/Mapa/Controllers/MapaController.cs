@@ -1,4 +1,6 @@
+using InnovaFemIA.Web.Features.Mapa.ObtenerCultivos;
 using InnovaFemIA.Web.Features.Mapa.ObtenerFamilias;
+using InnovaFemIA.Web.Features.Mapa.ObtenerPrecios;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,21 +26,30 @@ public class MapaController : Controller
     [HttpGet("directorio")]
     public async Task<IActionResult> Index(string? busqueda, int? cultivoId)
     {
-        var result = await _mediator.Send(new ObtenerFamiliasQuery(busqueda, cultivoId));
-        return View("~/Views/Mapa/Index.cshtml", result.Value);
+        var familiasResult = await _mediator.Send(new ObtenerFamiliasQuery(busqueda, cultivoId));
+        var cultivosResult = await _mediator.Send(new ObtenerCultivosQuery());
+
+        ViewBag.Cultivos = cultivosResult.IsSuccess ? cultivosResult.Value : [];
+        ViewBag.Busqueda = busqueda;
+        ViewBag.CultivoIdSeleccionado = cultivoId;
+
+        return View("~/Views/Mapa/Index.cshtml", familiasResult.Value);
     }
 
-    /// <summary>Pantalla 2 — Mapa geográfico interactivo con Leaflet.js.</summary>
+    /// <summary>Pantalla 2 — Mapa geográfico interactivo con Leaflet.js centrado en Caldono, Cauca.</summary>
     [HttpGet("mapa")]
-    public IActionResult Mapa()
+    public async Task<IActionResult> Mapa()
     {
+        var cultivosResult = await _mediator.Send(new ObtenerCultivosQuery());
+        ViewBag.Cultivos = cultivosResult.IsSuccess ? cultivosResult.Value : [];
         return View("~/Views/Mapa/Mapa.cshtml");
     }
 
     /// <summary>Pantalla 3 — Precios de mercado del DANE (acceso público).</summary>
     [HttpGet("precios")]
-    public IActionResult Precios()
+    public async Task<IActionResult> Precios()
     {
-        return View("~/Views/Mapa/Precios.cshtml");
+        var result = await _mediator.Send(new ObtenerPreciosQuery());
+        return View("~/Views/Mapa/Precios.cshtml", result.Value);
     }
 }

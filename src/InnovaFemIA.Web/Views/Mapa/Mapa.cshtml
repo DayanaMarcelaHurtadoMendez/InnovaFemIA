@@ -1,0 +1,622 @@
+@{
+    ViewData["Title"] = "Mapa Interactivo de Caldono, Cauca";
+    ViewData["Description"] = "Mapa georreferenciado del Municipio de Caldono, Cauca. Explora la ubicación de familias campesinas de ASCAMPESINA, veredas, asociaciones y puntos de compra.";
+    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerCultivos.CultivoDto> ?? [];
+}
+
+@section Head {
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        /* Estilo para resplandor y marcadores personalizados */
+        .caldono-glow {
+            filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.6));
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        @@keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.5)); }
+            50% { filter: drop-shadow(0 0 18px rgba(147, 51, 234, 0.7)); }
+        }
+
+        .custom-pin-familia {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-pin-familia:hover {
+            transform: scale(1.2) translateY(-4px);
+            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.6);
+        }
+
+        .custom-pin-asociacion {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-pin-asociacion:hover {
+            transform: scale(1.2) translateY(-4px);
+        }
+
+        .custom-pin-punto {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-pin-punto:hover {
+            transform: scale(1.2) translateY(-4px);
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 1rem !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #f3f4f6 !important;
+            overflow: hidden !important;
+        }
+        .leaflet-popup-content {
+            margin: 0 !important;
+            width: 280px !important;
+            min-width: 280px !important;
+            line-height: 1.5 !important;
+        }
+    </style>
+}
+
+<div class="relative min-h-[calc(100vh-4rem)] flex flex-col lg:flex-row bg-gray-100">
+
+    <!-- ── Sidebar Flotante de Filtros y Control ───────────────────────── -->
+    <aside class="w-full lg:w-96 bg-white border-r border-gray-200 z-20 flex flex-col shrink-0 shadow-lg">
+        
+        <!-- Header del Sidebar (Fondo oscuro de alto contraste) -->
+        <div class="p-5 bg-gray-900 text-white border-b border-gray-800">
+            <div class="flex items-center justify-between mb-2">
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-700/60 inline-flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    Territorio ASCAMPESINA
+                </span>
+                <a href="/mapa/directorio" class="text-xs text-gray-300 hover:text-white transition-colors underline font-medium">
+                    Ver Listado →
+                </a>
+            </div>
+            <h1 class="text-xl font-black text-white flex items-center gap-2">
+                <span>🗺️</span> Mapa de Caldono, Cauca
+            </h1>
+            <p class="text-xs text-gray-300 mt-1 leading-relaxed">
+                Georreferenciación de familias productoras, veredas y centros de acopio campesino.
+            </p>
+
+            <!-- Estadísticas en vivo con alto contraste -->
+            <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-gray-800 text-center">
+                <div class="bg-gray-800/90 rounded-xl p-2 border border-gray-700">
+                    <span class="block font-black text-lg text-emerald-400" id="stat-familias">0</span>
+                    <span class="text-[10px] font-semibold text-gray-300 uppercase tracking-wider">Familias</span>
+                </div>
+                <div class="bg-gray-800/90 rounded-xl p-2 border border-gray-700">
+                    <span class="block font-black text-lg text-amber-400" id="stat-veredas">0</span>
+                    <span class="text-[10px] font-semibold text-gray-300 uppercase tracking-wider">Veredas</span>
+                </div>
+                <div class="bg-gray-800/90 rounded-xl p-2 border border-gray-700">
+                    <span class="block font-black text-lg text-blue-400" id="stat-actores">0</span>
+                    <span class="text-[10px] font-semibold text-gray-300 uppercase tracking-wider">Actores</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Filtros Dinámicos -->
+        <div class="p-5 flex-1 overflow-y-auto space-y-4">
+            
+            <!-- Búsqueda rápida -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Buscar en Caldono
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                    <input type="text"
+                           id="map-search"
+                           placeholder="Buscar por vereda, familia o producto..."
+                           class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all" />
+                </div>
+            </div>
+
+            <!-- Filtro por Cultivo -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Filtrar por Cultivo
+                </label>
+                <select id="map-filter-cultivo" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all">
+                    <option value="">🌱 Todos los cultivos</option>
+                    @foreach (var c in cultivos)
+                    {
+                        <option value="@c.Id">@c.Icono @c.Nombre</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Filtro por Tipo de Actor -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Capas del Mapa
+                </label>
+                <div class="space-y-2 text-xs">
+                    <label class="flex items-center gap-2.5 p-2 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="check-familias" checked class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500" />
+                        <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
+                        <span class="font-medium text-gray-700">Familias ASCAMPESINA</span>
+                    </label>
+                    <label class="flex items-center gap-2.5 p-2 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="check-asociaciones" checked class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500" />
+                        <span class="w-3 h-3 rounded-full bg-amber-600 inline-block"></span>
+                        <span class="font-medium text-gray-700">Asociaciones Aliadas</span>
+                    </label>
+                    <label class="flex items-center gap-2.5 p-2 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="check-puntos" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                        <span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
+                        <span class="font-medium text-gray-700">Puntos de Compra / Acopio</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Controles del Visor -->
+            <div class="pt-3 border-t border-gray-100 space-y-2">
+                <button id="btn-recenter" class="w-full btn-secondary text-xs py-2 justify-center">
+                    📍 Centrar en Caldono, Cauca
+                </button>
+                <div class="flex items-center justify-between text-[11px] text-gray-500 pt-1">
+                    <span>Estilo de Mapa:</span>
+                    <button id="btn-toggle-tiles" class="text-primary-700 font-semibold hover:underline">
+                        Cambiar a Satelital
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer del Sidebar -->
+        <div class="p-4 border-t border-gray-100 bg-gray-50 text-[11px] text-gray-500 text-center font-medium">
+            Coordenadas Centrales: 2.8139° N, 76.5369° W · Caldono, Cauca
+        </div>
+    </aside>
+
+    <!-- ── Contenedor del Mapa Leaflet ────────────────────────────────── -->
+    <main class="flex-1 relative min-h-[500px] lg:min-h-full">
+        
+        <!-- Banner flotante indicador del municipio -->
+        <div class="absolute top-4 left-4 right-4 sm:right-auto z-10 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-lg border border-gray-200 flex items-center gap-3">
+            <span class="text-2xl animate-bounce">📍</span>
+            <div>
+                <h2 class="text-xs font-bold text-gray-900 leading-tight">Municipio de Caldono, Cauca</h2>
+                <p class="text-[10px] text-emerald-700 font-semibold">Zona de Resguardo y Territorio Agroecológico ASCAMPESINA</p>
+            </div>
+        </div>
+
+        <!-- Div principal donde Leaflet renderiza el mapa -->
+        <div id="mapa-caldono" class="w-full h-full min-h-[550px]"></div>
+    </main>
+
+</div>
+
+<!-- ── Modal Emergente de Ficha Completa (Fuera del contenedor relativo para evitar recortes o z-index bugs) ── -->
+<div id="modal-familia" class="fixed inset-0 z-[99999] hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-gray-200 transform transition-all">
+        
+        <!-- Header del Modal -->
+        <div class="relative bg-gradient-to-r from-emerald-800 to-gray-900 text-white p-6">
+            <button id="btn-cerrar-modal" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg transition-colors">
+                ✕
+            </button>
+            <div class="flex items-center gap-4">
+                <div id="modal-foto-container" class="w-16 h-16 rounded-2xl bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl overflow-hidden shrink-0">
+                    👨‍👩‍👧
+                </div>
+                <div>
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 mb-1">
+                        Familia Productora ASCAMPESINA
+                    </span>
+                    <h3 id="modal-nombre-familia" class="text-xl font-extrabold text-white leading-snug">Cargando...</h3>
+                    <p id="modal-vereda" class="text-xs text-emerald-200 flex items-center gap-1 mt-0.5">
+                        📍 Caldono, Cauca
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuerpo del Modal -->
+        <div class="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+            
+            <!-- Persona de contacto y WhatsApp -->
+            <div class="bg-gray-50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border border-gray-100">
+                <div>
+                    <span class="text-xs text-gray-400 block font-medium">Persona de Contacto</span>
+                    <span id="modal-contacto-nombre" class="font-bold text-gray-800 text-sm">--</span>
+                </div>
+                <a id="modal-whatsapp-link" href="#" target="_blank" class="btn-primary text-xs px-4 py-2 shadow-sm hover:shadow-md">
+                    <span>📱</span> Contactar por WhatsApp
+                </a>
+            </div>
+
+            <!-- Stock de Productos Agroecológicos -->
+            <div>
+                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>📦</span> Productos Disponibles en Caldono
+                </h4>
+                <div id="modal-stock-list" class="space-y-2">
+                    <p class="text-xs text-gray-400 italic">Cargando catálogo de productos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="bg-gray-50 px-6 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
+            <span>InnovaFemIA · Proyecto Orquídeas ICESI</span>
+            <button id="btn-cerrar-modal-footer" class="text-gray-600 hover:text-gray-900 font-semibold">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Leaflet.js JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // ── Coordenadas Centrales de Caldono, Cauca ──────────────────────
+            const LAT_CALDONO = 2.8139;
+            const LNG_CALDONO = -76.5369;
+            const ZOOM_INICIAL = 12.5;
+
+            // Capas de mapas
+            const tileOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap · Proyecto Orquídeas ICESI'
+            });
+
+            const tileSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18,
+                attribution: 'Tiles &copy; Esri &mdash; Caldono, Cauca'
+            });
+
+            // Inicializar Mapa Leaflet
+            const map = L.map('mapa-caldono', {
+                center: [LAT_CALDONO, LNG_CALDONO],
+                zoom: ZOOM_INICIAL,
+                layers: [tileOSM]
+            });
+
+            // Asignar el objeto mapa a nivel global para que sea accesible desde los eventos onclick de los popups
+            window.mapaLeaflet = map;
+
+            let currentTile = tileOSM;
+
+            // ── HIGHLIGHT NOTABLE DE CALDONO, CAUCA ───────────────────────────
+            const caldonoPolygonCoords = [
+                [2.875, -76.585],
+                [2.885, -76.525],
+                [2.860, -76.465],
+                [2.805, -76.455],
+                [2.745, -76.505],
+                [2.740, -76.565],
+                [2.785, -76.595]
+            ];
+
+            const caldonoPolygon = L.polygon(caldonoPolygonCoords, {
+                color: '#16a34a',
+                weight: 3,
+                opacity: 0.85,
+                fillColor: '#22c55e',
+                fillOpacity: 0.12,
+                dashArray: '8, 6',
+                className: 'caldono-glow'
+            }).addTo(map);
+
+            caldonoPolygon.bindTooltip("<b>Jurisdicción Rural de Caldono, Cauca</b><br>Territorio Agroecológico ASCAMPESINA", {
+                permanent: false,
+                direction: "center",
+                className: "bg-white text-xs text-gray-900 font-semibold p-2 rounded-xl shadow-md border border-gray-100"
+            });
+
+            // Grupos de Capas para Filtros
+            const layerFamilias = L.layerGroup().addTo(map);
+            const layerAsociaciones = L.layerGroup().addTo(map);
+            const layerPuntos = L.layerGroup().addTo(map);
+
+            let datosFamilias = [];
+            let datosActores = [];
+
+            // ── Cargar Datos desde los Endpoints API REST ─────────────────────
+            async function cargarDatosMapa() {
+                try {
+                    const [resFamilias, resActores] = await Promise.all([
+                        fetch('/api/mapa/familias'),
+                        fetch('/api/mapa/actores')
+                    ]);
+
+                    if (resFamilias.ok) {
+                        datosFamilias = await resFamilias.json();
+                    }
+                    if (resActores.ok) {
+                        datosActores = await resActores.json();
+                    }
+
+                    renderizarMarcadores();
+                    actualizarEstadisticas();
+                } catch (err) {
+                    console.error('Error cargando datos del mapa:', err);
+                }
+            }
+
+            // ── Renderizar Marcadores Interactivos ───────────────────────────
+            function renderizarMarcadores() {
+                layerFamilias.clearLayers();
+                layerAsociaciones.clearLayers();
+                layerPuntos.clearLayers();
+
+                const filtroBusqueda = document.getElementById('map-search').value.toLowerCase();
+                const filtroCultivoId = document.getElementById('map-filter-cultivo').value;
+
+                // 1. Renderizar Familias
+                if (document.getElementById('check-familias').checked) {
+                    datosFamilias.forEach(f => {
+                        const nombreFam = f.nombre || f.Nombre || '';
+                        const veredaFam = f.vereda || f.Vereda || '';
+                        const cultivosFam = f.cultivos || f.Cultivos || [];
+                        const telFam = f.telefonoContacto || f.TelefonoContacto || '';
+                        const fotoFam = f.fotoBase64 || f.FotoBase64;
+                        const idFam = f.id || f.Id;
+                        const lat = f.latitud || f.Latitud;
+                        const lng = f.longitud || f.Longitud;
+
+                        const coincideBusqueda = !filtroBusqueda || 
+                            nombreFam.toLowerCase().includes(filtroBusqueda) || 
+                            veredaFam.toLowerCase().includes(filtroBusqueda) ||
+                            cultivosFam.some(c => (c.nombreCultivo || c.NombreCultivo || '').toLowerCase().includes(filtroBusqueda));
+
+                        const coincideCultivo = !filtroCultivoId || 
+                            cultivosFam.some(c => (c.cultivoId || c.CultivoId) == filtroCultivoId);
+
+                        if (coincideBusqueda && coincideCultivo && lat && lng) {
+                            const icon = L.divIcon({
+                                className: '',
+                                html: `<div class="custom-pin-familia w-10 h-10">👩‍🌾</div>`,
+                                iconSize: [40, 40],
+                                iconAnchor: [20, 20]
+                            });
+
+                            const popupHtml = `
+                                <div class="w-72 bg-white rounded-2xl overflow-hidden font-sans">
+                                    <div class="bg-gray-900 text-white p-3 flex items-center gap-2.5">
+                                        <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-lg shrink-0 overflow-hidden text-white font-bold">
+                                            ${fotoFam ? `<img src="${fotoFam}" class="w-full h-full object-cover"/>` : '👨‍👩‍👧'}
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <h3 class="font-extrabold text-xs leading-tight text-white truncate">${nombreFam}</h3>
+                                            <p class="text-[11px] text-emerald-300 truncate">📍 Vereda ${veredaFam}, Caldono</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-3.5 space-y-3 bg-white">
+                                        <div class="flex flex-wrap gap-1">
+                                            ${cultivosFam.map(c => `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">${c.icono || c.Icono} ${c.nombreCultivo || c.NombreCultivo}</span>`).join('')}
+                                        </div>
+                                        <div class="pt-2 border-t border-gray-100 flex items-center justify-between gap-2">
+                                            <a href="https://wa.me/57${telFam.replace(/\D/g,'')}" target="_blank" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg border border-emerald-200 flex items-center gap-1 shrink-0">
+                                                📱 Contactar
+                                            </a>
+                                            <button onclick="window.mapaLeaflet?.closePopup(); abrirModalFamilia(${idFam});" class="px-3 py-1 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold rounded-lg shadow-sm transition-colors shrink-0">
+                                                Ficha →
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+
+                            const marker = L.marker([lat, lng], { icon })
+                                .bindPopup(popupHtml);
+                            
+                            layerFamilias.addLayer(marker);
+                        }
+                    });
+                }
+
+                // 2. Renderizar Actores (Asociaciones y Puntos de Compra)
+                datosActores.forEach(a => {
+                    const nombreActor = a.nombre || a.Nombre || '';
+                    const descActor = a.descripcion || a.Descripcion || '';
+                    const tipoActor = a.tipoActor || a.TipoActor || '';
+                    const contactoActor = a.datosContacto || a.DatosContacto || '';
+                    const lat = a.latitud || a.Latitud;
+                    const lng = a.longitud || a.Longitud;
+
+                    const coincideBusqueda = !filtroBusqueda || 
+                        nombreActor.toLowerCase().includes(filtroBusqueda) || 
+                        descActor.toLowerCase().includes(filtroBusqueda);
+
+                    if (!coincideBusqueda || !lat || !lng) return;
+
+                    if (tipoActor === 'Asociacion' && document.getElementById('check-asociaciones').checked) {
+                        const icon = L.divIcon({
+                            className: '',
+                            html: `<div class="custom-pin-asociacion w-10 h-10">🏛️</div>`,
+                            iconSize: [40, 40],
+                            iconAnchor: [20, 20]
+                        });
+
+                        const popupHtml = `
+                            <div class="w-64 bg-white p-3.5 rounded-2xl font-sans">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 inline-block mb-1">Asociación Campesina</span>
+                                <h3 class="font-bold text-xs text-gray-900">${nombreActor}</h3>
+                                <p class="text-[11px] text-gray-600 mt-1">${descActor}</p>
+                                <p class="text-[10px] text-gray-400 mt-2 border-t border-gray-100 pt-1.5 font-medium">📞 ${contactoActor}</p>
+                            </div>
+                        `;
+
+                        const marker = L.marker([lat, lng], { icon }).bindPopup(popupHtml);
+                        layerAsociaciones.addLayer(marker);
+                    }
+
+                    if (tipoActor === 'PuntoCompra' && document.getElementById('check-puntos').checked) {
+                        const icon = L.divIcon({
+                            className: '',
+                            html: `<div class="custom-pin-punto w-10 h-10">🏬</div>`,
+                            iconSize: [40, 40],
+                            iconAnchor: [20, 20]
+                        });
+
+                        const popupHtml = `
+                            <div class="w-64 bg-white p-3.5 rounded-2xl font-sans">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 inline-block mb-1">Punto de Acopio / Compra</span>
+                                <h3 class="font-bold text-xs text-gray-900">${nombreActor}</h3>
+                                <p class="text-[11px] text-gray-600 mt-1">${descActor}</p>
+                                <p class="text-[10px] text-gray-400 mt-2 border-t border-gray-100 pt-1.5 font-medium">📞 ${contactoActor}</p>
+                            </div>
+                        `;
+
+                        const marker = L.marker([lat, lng], { icon }).bindPopup(popupHtml);
+                        layerPuntos.addLayer(marker);
+                    }
+                });
+            }
+
+            // ── Actualizar Estadísticas en Vivo ──────────────────────────────
+            function actualizarEstadisticas() {
+                document.getElementById('stat-familias').innerText = datosFamilias.length;
+                const veredasUnicas = new Set(datosFamilias.map(f => f.vereda || f.Vereda));
+                document.getElementById('stat-veredas').innerText = veredasUnicas.size;
+                document.getElementById('stat-actores').innerText = datosActores.length;
+            }
+
+            // Eventos de Filtros
+            document.getElementById('map-search').addEventListener('input', renderizarMarcadores);
+            document.getElementById('map-filter-cultivo').addEventListener('change', renderizarMarcadores);
+            document.getElementById('check-familias').addEventListener('change', renderizarMarcadores);
+            document.getElementById('check-asociaciones').addEventListener('change', renderizarMarcadores);
+            document.getElementById('check-puntos').addEventListener('change', renderizarMarcadores);
+
+            // Botón Recentrar en Caldono
+            document.getElementById('btn-recenter').addEventListener('click', function () {
+                map.flyTo([LAT_CALDONO, LNG_CALDONO], ZOOM_INICIAL, { duration: 1.5 });
+            });
+
+            // Botón Cambiar Capas (Satelital / Calles)
+            document.getElementById('btn-toggle-tiles').addEventListener('click', function () {
+                if (currentTile === tileOSM) {
+                    map.removeLayer(tileOSM);
+                    map.addLayer(tileSatelite);
+                    currentTile = tileSatelite;
+                    this.innerText = 'Cambiar a Mapa Calles';
+                } else {
+                    map.removeLayer(tileSatelite);
+                    map.addLayer(tileOSM);
+                    currentTile = tileOSM;
+                    this.innerText = 'Cambiar a Satelital';
+                }
+            });
+
+            // ── Lógica del Modal Ficha Completa ───────────────────────────────
+            window.abrirModalFamilia = async function(familiaId) {
+                const modal = document.getElementById('modal-familia');
+                modal.classList.remove('hidden');
+
+                document.getElementById('modal-nombre-familia').innerText = 'Cargando...';
+                document.getElementById('modal-stock-list').innerHTML = '<p class="text-xs text-gray-400 italic">Cargando información...</p>';
+
+                try {
+                    const res = await fetch(`/api/mapa/familias/${familiaId}`);
+                    if (!res.ok) throw new Error('No se pudo obtener el detalle');
+                    
+                    const f = await res.json();
+
+                    const nombre = f.nombre || f.Nombre || 'Familia';
+                    const vereda = f.vereda || f.Vereda || 'Caldono';
+                    const municipio = f.municipio || f.Municipio || 'Caldono';
+                    const contacto = f.nombreContacto || f.NombreContacto || 'Contacto';
+                    const tel = f.telefonoContacto || f.TelefonoContacto || '';
+                    const foto = f.fotoBase64 || f.FotoBase64;
+                    const stock = f.stockProductos || f.StockProductos || [];
+
+                    document.getElementById('modal-nombre-familia').innerText = nombre;
+                    document.getElementById('modal-vereda').innerText = `📍 Vereda ${vereda}, ${municipio}, Cauca`;
+                    document.getElementById('modal-contacto-nombre').innerText = contacto;
+                    document.getElementById('modal-whatsapp-link').href = `https://wa.me/57${tel.replace(/\D/g, '')}`;
+
+                    if (foto) {
+                        document.getElementById('modal-foto-container').innerHTML = `<img src="${foto}" class="w-full h-full object-cover"/>`;
+                    } else {
+                        document.getElementById('modal-foto-container').innerHTML = '👨‍👩‍👧';
+                    }
+
+                    // Renderizar Stock
+                    if (stock && stock.length > 0) {
+                        const stockHtml = stock.map(s => {
+                            const icono = s.icono || s.Icono || '🌱';
+                            const nombreCultivo = s.nombreCultivo || s.NombreCultivo || 'Cultivo';
+                            const notas = s.notas || s.Notas || 'Producto de finca agroecológica';
+                            const disponible = s.disponible !== undefined ? s.disponible : s.Disponible;
+                            return `
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="text-xl">${icono}</span>
+                                        <div>
+                                            <span class="font-semibold text-xs text-gray-900 block">${nombreCultivo}</span>
+                                            <span class="text-[10px] text-gray-400">${notas}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="font-bold text-[11px] ${disponible ? 'text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200' : 'text-gray-400'} inline-block">
+                                            ${disponible ? '✓ Cosecha Disponible' : '✕ Agotado'}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        document.getElementById('modal-stock-list').innerHTML = stockHtml;
+                    } else {
+                        document.getElementById('modal-stock-list').innerHTML = '<p class="text-xs text-gray-400 italic">No hay productos registrados en stock actualmente.</p>';
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    document.getElementById('modal-nombre-familia').innerText = 'Error al cargar';
+                }
+            };
+
+            // Cerrar Modal
+            const cerrarModal = () => document.getElementById('modal-familia').classList.add('hidden');
+            document.getElementById('btn-cerrar-modal').addEventListener('click', cerrarModal);
+            document.getElementById('btn-cerrar-modal-footer').addEventListener('click', cerrarModal);
+            document.getElementById('modal-familia').addEventListener('click', function(e) {
+                if (e.target === this) cerrarModal();
+            });
+
+            // Cargar datos al iniciar la vista
+            cargarDatosMapa();
+        });
+    </script>
+}

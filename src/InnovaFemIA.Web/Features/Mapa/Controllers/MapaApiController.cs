@@ -1,4 +1,8 @@
+using InnovaFemIA.Web.Features.Mapa.ObtenerActores;
+using InnovaFemIA.Web.Features.Mapa.ObtenerCultivos;
+using InnovaFemIA.Web.Features.Mapa.ObtenerDetalleFamilia;
 using InnovaFemIA.Web.Features.Mapa.ObtenerFamilias;
+using InnovaFemIA.Web.Features.Mapa.ObtenerPrecios;
 using InnovaFemIA.Web.Features.Shared.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +13,6 @@ namespace InnovaFemIA.Web.Features.Mapa.Controllers;
 /// Controller de API REST para el Módulo 1 (Mapa).
 /// Los endpoints SIN [PublicApi] son de uso interno (el frontend Razor los consume via fetch/ajax).
 /// Los endpoints CON [PublicApi] son accesibles externamente con API Key válida.
-///
-/// El middleware ApiKeyMiddleware controla el acceso basado en la presencia del atributo.
 /// </summary>
 [ApiController]
 [Route("api/mapa")]
@@ -25,17 +27,28 @@ public class MapaApiController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene el listado de familias con sus cultivos y stock.
-    /// [PublicApi] → accesible externamente con API Key (útil para integraciones de terceros).
+    /// Obtiene el listado de familias con sus cultivos y posición GPS.
+    /// [PublicApi] → accesible externamente con API Key.
     /// </summary>
     [HttpGet("familias")]
-    [PublicApi] // Con este atributo, el middleware permite acceso externo (requiere X-Api-Key)
+    [PublicApi]
     public async Task<IActionResult> ObtenerFamilias(
         [FromQuery] string? busqueda = null,
         [FromQuery] int? cultivoId = null)
     {
         var result = await _mediator.Send(new ObtenerFamiliasQuery(busqueda, cultivoId));
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : StatusCode(result.StatusCode, new { error = result.Error });
+    }
 
+    /// <summary>
+    /// Obtiene el detalle y ficha técnica de una familia específica por ID.
+    /// </summary>
+    [HttpGet("familias/{id:int}")]
+    public async Task<IActionResult> ObtenerDetalleFamilia(int id)
+    {
+        var result = await _mediator.Send(new ObtenerDetalleFamiliaQuery(id));
         return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, new { error = result.Error });
@@ -43,37 +56,40 @@ public class MapaApiController : ControllerBase
 
     /// <summary>
     /// Obtiene los actores del mapa (asociaciones y puntos de compra).
-    /// Sin [PublicApi] → solo acceso interno (consumido por mapa.js en el browser).
-    /// Cualquier petición directa retorna 403 Forbidden.
+    /// Sin [PublicApi] → solo uso interno para el mapa interactivo.
     /// </summary>
     [HttpGet("actores")]
-    // Sin [PublicApi] → el middleware retorna 403 si se accede externamente
     public async Task<IActionResult> ObtenerActores([FromQuery] string? tipo = null)
     {
-        // TODO: Implementar ObtenerActoresQuery en Fase 2
-        return Ok(new { mensaje = "Endpoint actores - pendiente implementación" });
+        var result = await _mediator.Send(new ObtenerActoresQuery(tipo));
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : StatusCode(result.StatusCode, new { error = result.Error });
     }
 
     /// <summary>
-    /// Obtiene la fase lunar actual y las prácticas recomendadas.
-    /// Sin [PublicApi] → solo uso interno (botón lunita en el frontend).
+    /// Obtiene el listado de cultivos activos del sistema.
     /// </summary>
-    [HttpGet("luna")]
-    public async Task<IActionResult> ObtenerFaseLunar()
+    [HttpGet("cultivos")]
+    public async Task<IActionResult> ObtenerCultivos()
     {
-        // TODO: Implementar ObtenerFaseLunarHandler en Fase 2
-        return Ok(new { mensaje = "Endpoint lunar - pendiente implementación" });
+        var result = await _mediator.Send(new ObtenerCultivosQuery());
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : StatusCode(result.StatusCode, new { error = result.Error });
     }
 
     /// <summary>
-    /// Obtiene los precios de mercado actuales del DANE.
-    /// [PublicApi] → accesible externamente (útil para aplicaciones de la comunidad).
+    /// Obtiene los precios de mercado vigentes del DANE.
+    /// [PublicApi] → accesible externamente.
     /// </summary>
     [HttpGet("precios")]
     [PublicApi]
     public async Task<IActionResult> ObtenerPrecios()
     {
-        // TODO: Implementar ObtenerPreciosHandler en Fase 2
-        return Ok(new { mensaje = "Endpoint precios - pendiente implementación" });
+        var result = await _mediator.Send(new ObtenerPreciosQuery());
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : StatusCode(result.StatusCode, new { error = result.Error });
     }
 }

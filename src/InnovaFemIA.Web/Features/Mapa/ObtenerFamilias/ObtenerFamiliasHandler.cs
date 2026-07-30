@@ -68,7 +68,7 @@ public class ObtenerFamiliasHandler : IRequestHandler<ObtenerFamiliasQuery, Resu
                 CultivoId = fc.CultivoId,
                 NombreCultivo = fc.Cultivo.Nombre,
                 Icono = fc.Cultivo.Icono,
-                Disponible = f.Stocks.Any(s => s.CultivoId == fc.CultivoId && s.Disponible)
+                Disponible = !f.Stocks.Any(s => s.CultivoId == fc.CultivoId && !s.Disponible)
             })
         });
 
