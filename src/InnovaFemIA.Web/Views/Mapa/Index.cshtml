@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = "Directorio de Familias";
     ViewData["Description"] = "Directorio de familias campesinas de ASCAMPESINA en Caldono, Cauca. Conoce quiénes producen café, aguacate, plátano y más.";
+    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerCultivos.CultivoDto> ?? [];
+    int? cultivoSeleccionado = ViewBag.CultivoIdSeleccionado;
 }
 
 <!-- Módulo 1 — Pantalla 1: Directorio de Familias -->
@@ -10,10 +12,10 @@
     <!-- Header del módulo -->
     <div class="mb-8 animate-slide-up">
         <div class="flex items-center gap-3 mb-3">
-            <span class="text-4xl">🗺️</span>
+            <span class="text-4xl">👨‍👩‍👧</span>
             <div>
                 <h1 class="section-header">Directorio de Familias ASCAMPESINA</h1>
-                <p class="section-subtitle">Conoce a las familias productoras de Caldono, Cauca y sus productos disponibles</p>
+                <p class="section-subtitle">Conoce a las familias productoras de Caldono, Cauca y sus cultivos agroecológicos</p>
             </div>
         </div>
 
@@ -24,27 +26,38 @@
                 <input type="text"
                        name="busqueda"
                        id="input-busqueda-familia"
-                       value="@Context.Request.Query["busqueda"]"
-                       placeholder="Buscar por nombre o producto..."
+                       value="@ViewBag.Busqueda"
+                       placeholder="Buscar por nombre, vereda o cultivo..."
                        class="input-field pl-10" />
             </div>
-            <select name="cultivoId" id="select-cultivo-filtro" class="input-field sm:w-52">
-                <option value="">Todos los cultivos</option>
-                <!-- Se puebla desde el backend en implementación completa -->
+            <select name="cultivoId" id="select-cultivo-filtro" class="input-field sm:w-60">
+                <option value="">🌱 Todos los cultivos</option>
+                @foreach (var c in cultivos)
+                {
+                    <option value="@c.Id" selected="@(cultivoSeleccionado == c.Id)">
+                        @c.Icono @c.Nombre
+                    </option>
+                }
             </select>
             <button type="submit" class="btn-primary" id="btn-filtrar-familias">
                 Filtrar
             </button>
+            @if (!string.IsNullOrEmpty(ViewBag.Busqueda?.ToString()) || cultivoSeleccionado.HasValue)
+            {
+                <a href="/mapa" class="btn-secondary text-center" id="btn-limpiar-filtros">
+                    Limpiar
+                </a>
+            }
         </form>
     </div>
 
     <!-- Accesos rápidos a sub-pantallas -->
     <div class="flex flex-wrap gap-3 mb-8">
-        <a href="/mapa/mapa" class="btn-secondary" id="link-ver-mapa">
-            📍 Ver en el Mapa
+        <a href="/mapa/mapa" class="btn-primary bg-gradient-to-r from-emerald-600 to-primary-700 hover:from-emerald-700 hover:to-primary-800" id="link-ver-mapa">
+            📍 Ver Mapa Interactivo de Caldono
         </a>
         <a href="/mapa/precios" class="btn-secondary" id="link-ver-precios">
-            📊 Precios de Mercado
+            📊 Precios de Mercado DANE
         </a>
     </div>
 
@@ -55,13 +68,13 @@
             <div class="text-6xl mb-4">🌱</div>
             <h2 class="text-xl font-semibold text-gray-700 mb-2">No se encontraron familias</h2>
             <p class="text-gray-400 text-sm">
-                @if (!string.IsNullOrEmpty(Context.Request.Query["busqueda"]))
+                @if (!string.IsNullOrEmpty(ViewBag.Busqueda?.ToString()))
                 {
-                    <span>No hay resultados para "<strong>@Context.Request.Query["busqueda"]</strong>".</span>
+                    <span>No hay resultados para "<strong>@ViewBag.Busqueda</strong>".</span>
                 }
                 else
                 {
-                    <span>Aún no hay familias registradas en el directorio.</span>
+                    <span>Aún no hay familias registradas en el directorio con este filtro.</span>
                 }
             </p>
         </div>
@@ -72,61 +85,61 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="grid-familias">
             @foreach (var familia in Model)
             {
-                <article class="card group cursor-pointer animate-fade-in" id="card-familia-@familia.Id">
-                    <!-- Foto de la familia -->
-                    <div class="flex items-center gap-3 mb-4">
-                        @if (!string.IsNullOrEmpty(familia.FotoBase64))
-                        {
-                            <img src="@familia.FotoBase64"
-                                 alt="Foto de @familia.Nombre"
-                                 class="w-14 h-14 rounded-full object-cover ring-2 ring-primary-200" />
-                        }
-                        else
-                        {
-                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center text-2xl ring-2 ring-primary-200">
-                                👨‍👩‍👧
-                            </div>
-                        }
-                        <div class="flex-1 min-w-0">
-                            <h2 class="font-semibold text-gray-900 text-sm truncate">@familia.Nombre</h2>
-                            <p class="text-xs text-gray-500 truncate">📍 @familia.Vereda, @familia.Municipio</p>
-                        </div>
-                    </div>
-
-                    <!-- Cultivos disponibles -->
-                    <div class="flex flex-wrap gap-1.5 mb-4" aria-label="Cultivos de @familia.Nombre">
-                        @foreach (var cultivo in familia.Cultivos)
-                        {
-                            @if (cultivo.Disponible)
+                <article class="card group cursor-pointer animate-fade-in flex flex-col justify-between" id="card-familia-@familia.Id">
+                    <div>
+                        <!-- Foto de la familia -->
+                        <div class="flex items-center gap-3 mb-4">
+                            @if (!string.IsNullOrEmpty(familia.FotoBase64))
                             {
-                                <span class="cultivo-disponible" title="@cultivo.NombreCultivo disponible">
-                                    @cultivo.Icono @cultivo.NombreCultivo
-                                </span>
+                                <img src="@familia.FotoBase64"
+                                     alt="Foto de @familia.Nombre"
+                                     class="w-14 h-14 rounded-full object-cover ring-2 ring-primary-200" />
                             }
                             else
                             {
-                                <span class="cultivo-no-disponible" title="@cultivo.NombreCultivo no disponible">
-                                    @cultivo.Icono @cultivo.NombreCultivo
-                                </span>
+                                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center text-2xl ring-2 ring-primary-200 shrink-0">
+                                    👨‍👩‍👧
+                                </div>
                             }
-                        }
+                            <div class="flex-1 min-w-0">
+                                <h2 class="font-bold text-gray-900 text-sm truncate group-hover:text-primary-700 transition-colors">@familia.Nombre</h2>
+                                <p class="text-xs text-gray-500 truncate">📍 Vereda @familia.Vereda, Caldono</p>
+                            </div>
+                        </div>
+
+                        <!-- Cultivos disponibles -->
+                        <div class="flex flex-wrap gap-1.5 mb-4" aria-label="Cultivos de @familia.Nombre">
+                            @foreach (var cultivo in familia.Cultivos)
+                            {
+                                @if (cultivo.Disponible)
+                                {
+                                    <span class="cultivo-disponible" title="@cultivo.NombreCultivo disponible">
+                                        @cultivo.Icono @cultivo.NombreCultivo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="cultivo-no-disponible" title="@cultivo.NombreCultivo no disponible">
+                                        @cultivo.Icono @cultivo.NombreCultivo
+                                    </span>
+                                }
+                            }
+                        </div>
                     </div>
 
                     <!-- Contacto y acción -->
-                    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-2">
                         <a href="https://wa.me/57@familia.TelefonoContacto.Replace(" ", "").Replace("-", "")"
                            target="_blank"
                            rel="noopener noreferrer"
-                           class="text-xs text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
-                           id="link-whatsapp-@familia.Id"
-                           aria-label="Contactar a @familia.NombreContacto por WhatsApp">
-                            📱 @familia.NombreContacto
+                           class="text-xs text-primary-700 hover:text-primary-900 font-semibold flex items-center gap-1"
+                           id="link-whatsapp-@familia.Id">
+                            📱 WhatsApp
                         </a>
-                        <button class="text-xs text-gray-400 hover:text-gray-700 transition-colors font-medium"
+                        <button class="text-xs text-gray-500 hover:text-primary-700 transition-colors font-bold"
                                 id="btn-ver-mas-@familia.Id"
-                                aria-label="Ver ficha completa de @familia.Nombre"
                                 onclick="verFichaFamilia(@familia.Id)">
-                            Ver más →
+                            Ver Ficha →
                         </button>
                     </div>
                 </article>
@@ -135,12 +148,123 @@
     }
 </section>
 
+<!-- ── Modal Emergente de Ficha Completa de Familia ───────────────────── -->
+<div id="modal-familia-dir" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-gray-100 transform transition-all">
+        
+        <!-- Header del Modal -->
+        <div class="relative bg-gradient-to-r from-primary-900 via-primary-800 to-brand-900 text-white p-6">
+            <button id="btn-cerrar-modal-dir" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg transition-colors">
+                ✕
+            </button>
+            <div class="flex items-center gap-4">
+                <div id="modal-dir-foto-container" class="w-16 h-16 rounded-2xl bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl overflow-hidden shrink-0">
+                    👨‍👩‍👧
+                </div>
+                <div>
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 mb-1">
+                        Familia Productora ASCAMPESINA
+                    </span>
+                    <h3 id="modal-dir-nombre" class="text-xl font-bold text-white leading-snug">Cargando...</h3>
+                    <p id="modal-dir-vereda" class="text-xs text-gray-300 flex items-center gap-1 mt-0.5">
+                        📍 Caldono, Cauca
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuerpo del Modal -->
+        <div class="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+            
+            <!-- Persona de contacto y WhatsApp -->
+            <div class="bg-gray-50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border border-gray-100">
+                <div>
+                    <span class="text-xs text-gray-400 block font-medium">Persona de Contacto</span>
+                    <span id="modal-dir-contacto" class="font-bold text-gray-800 text-sm">--</span>
+                </div>
+                <a id="modal-dir-whatsapp" href="#" target="_blank" class="btn-primary text-xs px-4 py-2 shadow-sm hover:shadow-md">
+                    <span>📱</span> Contactar por WhatsApp
+                </a>
+            </div>
+
+            <!-- Stock de Productos Agroecológicos -->
+            <div>
+                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>📦</span> Productos Disponibles en Caldono
+                </h4>
+                <div id="modal-dir-stock" class="space-y-2">
+                    <p class="text-xs text-gray-400 italic">Cargando catálogo...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="bg-gray-50 px-6 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
+            <span>InnovaFemIA · Proyecto Orquídeas ICESI</span>
+            <button id="btn-cerrar-modal-dir-footer" class="text-gray-600 hover:text-gray-900 font-semibold">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        // Función para mostrar la ficha completa de una familia (modal)
-        function verFichaFamilia(familiaId) {
-            // TODO: Implementar modal con detalle completo en Fase 2
-            console.log('Ver ficha de familia:', familiaId);
+        async function verFichaFamilia(familiaId) {
+            const modal = document.getElementById('modal-familia-dir');
+            modal.classList.remove('hidden');
+
+            document.getElementById('modal-dir-nombre').innerText = 'Cargando...';
+            document.getElementById('modal-dir-stock').innerHTML = '<p class="text-xs text-gray-400 italic">Cargando productos...</p>';
+
+            try {
+                const res = await fetch(`/api/mapa/familias/${familiaId}`);
+                if (!res.ok) throw new Error('Error al cargar la familia');
+                const f = await res.json();
+
+                document.getElementById('modal-dir-nombre').innerText = f.nombre;
+                document.getElementById('modal-dir-vereda').innerText = `📍 Vereda ${f.vereda}, ${f.municipio}, Cauca`;
+                document.getElementById('modal-dir-contacto').innerText = f.nombreContacto;
+                document.getElementById('modal-dir-whatsapp').href = `https://wa.me/57${f.telefonoContacto.replace(/\D/g, '')}`;
+
+                if (f.fotoBase64) {
+                    document.getElementById('modal-dir-foto-container').innerHTML = `<img src="${f.fotoBase64}" class="w-full h-full object-cover"/>`;
+                } else {
+                    document.getElementById('modal-dir-foto-container').innerHTML = '👨‍👩‍👧';
+                }
+
+                if (f.stockProductos && f.stockProductos.length > 0) {
+                    const stockHtml = f.stockProductos.map(s => `
+                        <div class="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center gap-2.5">
+                                <span class="text-xl">${s.icono}</span>
+                                <div>
+                                    <span class="font-semibold text-xs text-gray-900 block">${s.nombreCultivo}</span>
+                                    <span class="text-[10px] text-gray-400">${s.notas || 'Producto de finca agroecológica'}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-bold text-[11px] ${s.disponible ? 'text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200' : 'text-gray-400'} inline-block">
+                                    ${s.disponible ? '✓ Cosecha Disponible' : '✕ Agotado'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('modal-dir-stock').innerHTML = stockHtml;
+                } else {
+                    document.getElementById('modal-dir-stock').innerHTML = '<p class="text-xs text-gray-400 italic">No hay productos registrados en stock actualmente.</p>';
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('modal-dir-nombre').innerText = 'Error al cargar';
+            }
         }
+
+        const cerrarModalDir = () => document.getElementById('modal-familia-dir').classList.add('hidden');
+        document.getElementById('btn-cerrar-modal-dir')?.addEventListener('click', cerrarModalDir);
+        document.getElementById('btn-cerrar-modal-dir-footer')?.addEventListener('click', cerrarModalDir);
+        document.getElementById('modal-familia-dir')?.addEventListener('click', function(e) {
+            if (e.target === this) cerrarModalDir();
+        });
     </script>
 }

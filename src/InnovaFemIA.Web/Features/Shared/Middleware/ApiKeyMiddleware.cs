@@ -45,6 +45,13 @@ public class ApiKeyMiddleware
             return;
         }
 
+        // Permitir peticiones internas originadas por el mismo frontend de la aplicación (same-origin / referer)
+        if (IsSameOriginRequest(context))
+        {
+            await _next(context);
+            return;
+        }
+
         // Verificar si el endpoint tiene el atributo [PublicApi]
         var endpoint = context.Features.Get<IEndpointFeature>()?.Endpoint;
         var hasPublicApiAttribute = endpoint?.Metadata.GetMetadata<PublicApiAttribute>() is not null;
@@ -119,5 +126,35 @@ public class ApiKeyMiddleware
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawKey));
         return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Determina si una petición HTTP se originó desde la misma interfaz web de la aplicación (same-origin).
+    /// </summary>
+    private static bool IsSameOriginRequest(HttpContext context)
+    {
+        // 1. Header Sec-Fetch-Site (enviado por navegadores modernos)
+        if (context.Request.Headers.TryGetValue("Sec-Fetch-Site", out var fetchSite))
+        {
+            var site = fetchSite.ToString();
+            if (site.Equals("same-origin", StringComparison.OrdinalIgnoreCase) ||
+                site.Equals("same-site", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        // 2. Comprobar Referer vs Host
+        if (context.Request.Headers.TryGetValue("Referer", out var refererHeader))
+        {
+            var referer = refererHeader.ToString();
+            var host = context.Request.Host.Value;
+            if (!string.IsNullOrEmpty(referer) && !string.IsNullOrEmpty(host) && referer.Contains(host, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
