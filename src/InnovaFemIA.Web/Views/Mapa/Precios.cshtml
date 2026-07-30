@@ -1,0 +1,172 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerPrecios.PrecioMercadoDto>
+@{
+    ViewData["Title"] = "Precios de Mercado";
+    ViewData["Description"] = "Precios de productos agrícolas en tiempo real obtenidos del DANE Sipsa para productores de Caldono, Cauca.";
+}
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Header del módulo -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-slide-up">
+        <div class="flex items-center gap-3">
+            <span class="text-4xl">📊</span>
+            <div>
+                <h1 class="section-header">Precios de Mercado Agrícola</h1>
+                <p class="section-subtitle">Información del Sistema de Información de Precios Sipsa - DANE</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/mapa/mapa" class="btn-secondary text-xs" id="link-volver-mapa">
+                📍 Ver Mapa Interactivo
+            </a>
+            <a href="/mapa/directorio" class="btn-secondary text-xs" id="link-directorio">
+                👨‍👩‍👧 Directorio Familias
+            </a>
+        </div>
+    </div>
+
+    <!-- Indicador de Fuente y Estado de Scraping -->
+    <div class="bg-gradient-to-r from-primary-900 to-brand-950 rounded-2xl p-6 text-white mb-8 shadow-md relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+            <div>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1.5 mb-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Fuente Oficial DANE - Sipsa Mayoristas
+                </span>
+                <h2 class="text-lg font-bold text-white">Monitoreo de Precios en Colombia</h2>
+                <p class="text-xs text-gray-300 mt-1 max-w-2xl">
+                    Actualización automática periódica mediante servicios en segundo plano. Permite a las familias productoras de ASCAMPESINA comparar precios y negociar sus cosechas con mayor equidad.
+                </p>
+            </div>
+            <div class="text-right shrink-0">
+                <span class="text-xs text-gray-400 block">Última sincronización</span>
+                <span class="text-sm font-bold text-emerald-300">
+                    @(Model?.FirstOrDefault()?.FechaActualizacion.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Hoy")
+                </span>
+            </div>
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card text-center py-16 animate-fade-in">
+            <div class="text-6xl mb-4">📈</div>
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">No hay precios registrados</h2>
+            <p class="text-gray-400 text-sm max-w-md mx-auto">
+                El servicio de scraping está sincronizando la base de datos con el boletín del DANE. Por favor, vuelve a intentar en unos minutos.
+            </p>
+        </div>
+    }
+    else
+    {
+        <!-- Grid de Tarjetas de Precios por Cultivo -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-10" id="grid-precios">
+            @foreach (var precio in Model)
+            {
+                <div class="card relative overflow-hidden group">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-10 h-10 rounded-xl bg-primary-50 text-xl flex items-center justify-center border border-primary-100">
+                                @precio.IconoCultivo
+                            </span>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-sm leading-tight">@precio.NombreCultivo</h3>
+                                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Por kilogramo (Kg)</span>
+                            </div>
+                        </div>
+
+                        <!-- Badge de Variación -->
+                        @if (precio.EstadoVariacion == "Sube")
+                        {
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                                📈 +@precio.PorcentajeVariacion%
+                            </span>
+                        }
+                        else if (precio.EstadoVariacion == "Baja")
+                        {
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                                📉 @precio.PorcentajeVariacion%
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200 flex items-center gap-1">
+                                ➖ Estable
+                            </span>
+                        }
+                    </div>
+
+                    <!-- Precio Promedio Actual -->
+                    <div class="my-4 pt-3 border-t border-gray-100">
+                        <span class="text-xs text-gray-400 block font-medium">Precio Actual Promedio</span>
+                        <span class="text-2xl font-extrabold text-gray-900">
+                            $@precio.Precio.ToString("N0")
+                            <span class="text-xs font-normal text-gray-500">COP</span>
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-[11px] text-gray-400 pt-2 border-t border-gray-50">
+                        <span>Anterior: $@(precio.PrecioAnterior?.ToString("N0") ?? "--")</span>
+                        <span class="text-emerald-700 font-medium">@precio.Fuente</span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Tabla Informativa Detallada -->
+        <div class="card p-0 overflow-hidden shadow-sm border border-gray-200">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="font-bold text-sm text-gray-900">Tabla Comparativa de Precios Agrícolas</h3>
+                <span class="text-xs text-gray-500">Valores de referencia mayorista</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-gray-600">
+                    <thead class="bg-gray-100 text-gray-700 uppercase tracking-wider font-semibold border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3">Producto</th>
+                            <th class="px-6 py-3">Precio Vigente (Kg)</th>
+                            <th class="px-6 py-3">Precio Anterior</th>
+                            <th class="px-6 py-3">Tendencia</th>
+                            <th class="px-6 py-3">Fuente</th>
+                            <th class="px-6 py-3">Última Act.</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        @foreach (var p in Model)
+                        {
+                            <tr class="hover:bg-gray-50/80 transition-colors">
+                                <td class="px-6 py-4 font-bold text-gray-900 flex items-center gap-2">
+                                    <span class="text-base">@p.IconoCultivo</span>
+                                    <span>@p.NombreCultivo</span>
+                                </td>
+                                <td class="px-6 py-4 font-extrabold text-primary-700 text-sm">
+                                    $@p.Precio.ToString("N0") COP
+                                </td>
+                                <td class="px-6 py-4 text-gray-500">
+                                    $@(p.PrecioAnterior?.ToString("N0") ?? "--") COP
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if (p.EstadoVariacion == "Sube")
+                                    {
+                                        <span class="text-amber-600 font-bold">▲ Sube (+@p.PorcentajeVariacion%)</span>
+                                    }
+                                    else if (p.EstadoVariacion == "Baja")
+                                    {
+                                        <span class="text-emerald-600 font-bold">▼ Baja (@p.PorcentajeVariacion%)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-gray-500">= Mantengo</span>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 text-gray-500">@p.Fuente</td>
+                                <td class="px-6 py-4 text-gray-400">@p.FechaActualizacion.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</section>
