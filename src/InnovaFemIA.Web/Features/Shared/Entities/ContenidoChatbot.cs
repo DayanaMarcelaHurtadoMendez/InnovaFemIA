@@ -58,7 +58,12 @@ public enum TemaContenido
     CuandoSembrar = 1,
     CuandoCosechar = 2,
     PlagasEnfermedades = 3,
-    Abonado = 4
+    Abonado = 4,
+    PodaMantenimiento = 5,
+    RiegoDrenaje = 6,
+    PostcosechaManejo = 7,
+    ManejoAgroecologico = 8,
+    ComercializacionCalidad = 9
 }
 
 /// <summary>Tipos de recurso educativo que puede cargar el equipo investigador.</summary>

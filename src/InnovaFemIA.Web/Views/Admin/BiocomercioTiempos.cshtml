@@ -1,0 +1,203 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Admin.GestionTiemposCosecha.CultivoTiempoAdminDto>
+@using InnovaFemIA.Web.Features.Shared.Entities
+@{
+    ViewData["Title"] = "Tiempos Estándar de Cosecha — Admin";
+    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerCultivos.CultivoDto> ?? [];
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header y botón de creación -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div>
+            <a href="/admin/dashboard" class="text-xs text-emerald-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                <span>🧮</span> Tiempos Estándar de Cosecha
+            </h1>
+            <p class="text-xs text-gray-500 mt-0.5">Módulo 3 · Parámetros de meses requeridos por cultivo y actividad para la Calculadora de Cosecha</p>
+        </div>
+        <button onclick="abrirModalCrearTiempo()" class="px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-md transition-all shrink-0">
+            + Configurar Nuevo Tiempo
+        </button>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>✅</span> <span>@TempData["Exito"]</span>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>⚠️</span> <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Tabla de Tiempos -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase text-[10px] tracking-wider">
+                        <th class="p-4">Cultivo</th>
+                        <th class="p-4">Actividad Agrícola</th>
+                        <th class="p-4 text-center">Meses Hasta Cosecha</th>
+                        <th class="p-4">Plantilla Explicativa</th>
+                        <th class="p-4">Notas Agronómicas</th>
+                        <th class="p-4 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var t in Model)
+                        {
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="p-4 font-bold text-gray-900">🌱 @t.NombreCultivo</td>
+                                <td class="p-4">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                                        @t.Actividad
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center font-black text-emerald-800 text-sm">
+                                    @t.MesesHastaCosecha meses
+                                </td>
+                                <td class="p-4 text-gray-700 font-medium max-w-xs">@t.DescripcionTemplate</td>
+                                <td class="p-4 text-gray-400 italic">@(t.Notas ?? "--")</td>
+                                <td class="p-4 text-right space-x-2">
+                                    <button onclick='abrirModalEditarTiempo(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(t)))' class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-lg transition-all">
+                                        Editar
+                                    </button>
+                                    <button onclick="confirmarEliminarTiempo(@t.Id)" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition-all">
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-gray-400 italic">
+                                No se encontraron tiempos estándar configurados.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Formulario Crear / Editar Tiempo -->
+<div id="modal-tiempo-form" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100">
+        <div class="bg-emerald-900 text-white p-5 flex items-center justify-between">
+            <h3 id="modal-tiempo-title" class="font-extrabold text-sm text-white">Configurar Tiempo de Cosecha</h3>
+            <button onclick="cerrarModalTiempoForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
+        </div>
+        <form id="form-tiempo" action="/admin/biocomercio/tiempos/crear" method="POST" class="p-6 space-y-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="tiempo-id" name="Id" value="0" />
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cultivo</label>
+                    <select id="tiempo-cultivo" name="CultivoId" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600">
+                        @foreach (var cu in cultivos)
+                        {
+                            <option value="@cu.Id">@cu.Icono @cu.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Actividad Agrícola</label>
+                    <select id="tiempo-actividad" name="Actividad" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600">
+                        <option value="Siembra">Siembra</option>
+                        <option value="Abonado">Abonado</option>
+                        <option value="Poda">Poda</option>
+                        <option value="AplicacionAgroquimico">Aplicación Agroquímico</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Meses Hasta Cosecha</label>
+                <input type="number" id="tiempo-meses" name="MesesHastaCosecha" required min="1" max="60" value="8" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Plantilla de Explicación</label>
+                <textarea id="tiempo-template" name="DescripcionTemplate" rows="2" required placeholder="Ej: Tu café sembrado el {fecha} estará listo para cosechar aproximadamente en {mes} de {año}" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Notas Adicionales</label>
+                <input type="text" id="tiempo-notas" name="Notas" placeholder="Notas de recomendación agrónoma..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                <button type="button" onclick="cerrarModalTiempoForm()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
+                <button type="submit" class="px-5 py-2 bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md">Guardar Configuración</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Eliminar Tiempo -->
+<div id="modal-eliminar-tiempo" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border border-gray-100 space-y-4">
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto font-bold">
+            🗑️
+        </div>
+        <h3 class="font-black text-lg text-gray-900">¿Confirmar Eliminación?</h3>
+        <p class="text-xs text-gray-500">
+            ¿Estás seguro de eliminar esta regla de tiempo de cosecha?
+        </p>
+        <form action="/admin/biocomercio/tiempos/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="tiempo-id-eliminar" name="id" value="" />
+            <button type="button" onclick="cerrarModalEliminarTiempo()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
+            <button type="submit" class="px-5 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-rose-700">Sí, Eliminar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalCrearTiempo() {
+        document.getElementById('modal-tiempo-title').innerText = 'Configurar Tiempo de Cosecha';
+        document.getElementById('form-tiempo').action = '/admin/biocomercio/tiempos/crear';
+        document.getElementById('tiempo-id').value = 0;
+        document.getElementById('tiempo-meses').value = 8;
+        document.getElementById('tiempo-template').value = 'Tu cultivo estará listo para cosecha en aproximadamente {meses} meses.';
+        document.getElementById('tiempo-notas').value = '';
+        document.getElementById('modal-tiempo-form').classList.remove('hidden');
+    }
+
+    function abrirModalEditarTiempo(t) {
+        document.getElementById('modal-tiempo-title').innerText = 'Editar Tiempo de Cosecha';
+        document.getElementById('form-tiempo').action = '/admin/biocomercio/tiempos/editar';
+        document.getElementById('tiempo-id').value = t.Id;
+        document.getElementById('tiempo-cultivo').value = t.CultivoId;
+        document.getElementById('tiempo-actividad').value = t.Actividad;
+        document.getElementById('tiempo-meses').value = t.MesesHastaCosecha;
+        document.getElementById('tiempo-template').value = t.DescripcionTemplate;
+        document.getElementById('tiempo-notas').value = t.Notas || '';
+        document.getElementById('modal-tiempo-form').classList.remove('hidden');
+    }
+
+    function cerrarModalTiempoForm() {
+        document.getElementById('modal-tiempo-form').classList.add('hidden');
+    }
+
+    function confirmarEliminarTiempo(id) {
+        document.getElementById('tiempo-id-eliminar').value = id;
+        document.getElementById('modal-eliminar-tiempo').classList.remove('hidden');
+    }
+
+    function cerrarModalEliminarTiempo() {
+        document.getElementById('modal-eliminar-tiempo').classList.add('hidden');
+    }
+</script>
