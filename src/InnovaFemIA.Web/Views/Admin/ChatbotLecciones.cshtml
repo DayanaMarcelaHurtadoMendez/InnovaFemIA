@@ -1,0 +1,269 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Admin.GestionLeccionesChatbot.LeccionChatbotAdminDto>
+@{
+    ViewData["Title"] = "Gestión de Lecciones Duolingo — Admin";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header y botón de creación -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div>
+            <a href="/admin/dashboard" class="text-xs text-amber-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                <span>🎓</span> Modo Lección
+            </h1>
+            <p class="text-xs text-gray-500 mt-0.5">Módulo 2 · Secuencia de lecciones interactivas con preguntas de selección múltiple</p>
+        </div>
+        <button onclick="abrirModalCrearLeccion()" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-2xl shadow-md transition-all shrink-0">
+            + Crear Nueva Lección
+        </button>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>✅</span> <span>@TempData["Exito"]</span>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>⚠️</span> <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Lista de Lecciones y sus Preguntas -->
+    <div class="space-y-6">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var lec in Model)
+            {
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center font-black text-sm">
+                                #@lec.NumeroLeccion
+                            </span>
+                            <div>
+                                <h3 class="font-extrabold text-base text-gray-900">@lec.Titulo</h3>
+                                <p class="text-xs text-gray-500">@lec.Descripcion</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="abrirModalAgregarPregunta(@lec.Id, '@lec.Titulo')" class="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-200">
+                                + Agregar Pregunta
+                            </button>
+                            <button onclick="confirmarEliminarLeccion(@lec.Id, '@lec.Titulo')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl">
+                                Eliminar Lección
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Preguntas asociadas -->
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                            Preguntas de la Lección (@lec.TotalPreguntas)
+                        </h4>
+                        @if (lec.Preguntas != null && lec.Preguntas.Any())
+                        {
+                            <div class="space-y-3">
+                                @foreach (var p in lec.Preguntas)
+                                {
+                                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold text-xs text-gray-900">
+                                                Pregunta #@p.Orden: @p.TextoPregunta
+                                            </span>
+                                            <form action="/admin/chatbot/lecciones/eliminar-pregunta" method="POST" class="inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@p.Id" />
+                                                <button type="submit" class="text-[11px] text-rose-600 font-bold hover:underline">Eliminar Pregunta</button>
+                                            </form>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(p.ContenidoExplicativo))
+                                        {
+                                            <p class="text-[11px] text-gray-500 italic bg-white p-2.5 rounded-xl border border-gray-100">
+                                                📖 Explicación: @p.ContenidoExplicativo
+                                            </p>
+                                        }
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                                            @foreach (var op in p.Opciones)
+                                            {
+                                                <div class="p-2 rounded-xl text-[11px] border @(op.EsCorrecta ? "bg-emerald-50 border-emerald-200 text-emerald-900 font-bold" : "bg-white border-gray-200 text-gray-600")">
+                                                    <span>@(op.EsCorrecta ? "✓" : "•") @op.TextoOpcion</span>
+                                                    @if (!string.IsNullOrEmpty(op.Retroalimentacion))
+                                                    {
+                                                        <span class="block text-[10px] text-gray-400 font-normal mt-0.5">💬 @op.Retroalimentacion</span>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-xs text-gray-400 italic bg-gray-50 p-4 rounded-2xl text-center">
+                                Esta lección aún no tiene preguntas configuradas. Presiona "+ Agregar Pregunta" para crearlas.
+                            </p>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="bg-white rounded-3xl border border-gray-100 p-8 text-center text-gray-400 italic">
+                No hay lecciones registradas en el sistema.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Crear Lección -->
+<div id="modal-crear-leccion" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100">
+        <div class="bg-amber-600 text-white p-5 flex items-center justify-between">
+            <h3 class="font-extrabold text-sm text-white">Crear Nueva Lección</h3>
+            <button onclick="cerrarModalCrearLeccion()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
+        </div>
+        <form action="/admin/chatbot/lecciones/crear" method="POST" class="p-6 space-y-4">
+            @Html.AntiForgeryToken()
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Número de Lección (Secuencia)</label>
+                <input type="number" name="NumeroLeccion" min="1" required value="1" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Título de la Lección</label>
+                <input type="text" name="Titulo" required placeholder="Ej: Fundamentos del Cultivo de Café" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Descripción Breve</label>
+                <textarea name="Descripcion" rows="2" placeholder="Aprende sobre las etapas de siembra y cuidado del café..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs"></textarea>
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                <button type="button" onclick="cerrarModalCrearLeccion()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
+                <button type="submit" class="px-5 py-2 bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md">Crear Lección</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Agregar Pregunta -->
+<div id="modal-agregar-pregunta" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-gray-100">
+        <div class="bg-gray-900 text-white p-5 flex items-center justify-between">
+            <h3 class="font-extrabold text-sm text-white">Agregar Pregunta a la Lección</h3>
+            <button onclick="cerrarModalAgregarPregunta()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
+        </div>
+        <form action="/admin/chatbot/lecciones/agregar-pregunta" method="POST" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="pregunta-leccion-id" name="leccionId" value="" />
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Texto de la Pregunta</label>
+                <input type="text" name="textoPregunta" required placeholder="Ej: ¿Cuántos meses tarda el café en germinar?" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Contenido Explicativo (Se muestra antes de la pregunta)</label>
+                <textarea name="contenidoExplicativo" rows="2" placeholder="El café es una planta perenne de montaña..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Orden de la Pregunta</label>
+                <input type="number" name="orden" value="1" min="1" required class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+            </div>
+
+            <!-- Opciones (3 opciones según especificación Sección 9.8) -->
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Opciones de Respuesta (Marca cuál es la correcta)</label>
+                
+                <div class="space-y-3">
+                    <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <input type="radio" name="opcionCorrectaIndex" value="0" checked class="w-4 h-4 text-emerald-600" />
+                            <span class="text-xs font-bold text-emerald-800">Opción 1 (Correcta si está marcada)</span>
+                        </div>
+                        <input type="text" name="opcionTexto" required placeholder="Texto de la opción 1..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs" />
+                        <input type="text" name="opcionRetro" placeholder="Retroalimentación al seleccionar esta opción..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white" />
+                    </div>
+
+                    <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <input type="radio" name="opcionCorrectaIndex" value="1" class="w-4 h-4 text-emerald-600" />
+                            <span class="text-xs font-bold text-gray-700">Opción 2</span>
+                        </div>
+                        <input type="text" name="opcionTexto" required placeholder="Texto de la opción 2..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs" />
+                        <input type="text" name="opcionRetro" placeholder="Retroalimentación al seleccionar esta opción..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white" />
+                    </div>
+
+                    <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <input type="radio" name="opcionCorrectaIndex" value="2" class="w-4 h-4 text-emerald-600" />
+                            <span class="text-xs font-bold text-gray-700">Opción 3</span>
+                        </div>
+                        <input type="text" name="opcionTexto" required placeholder="Texto de la opción 3..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs" />
+                        <input type="text" name="opcionRetro" placeholder="Retroalimentación al seleccionar esta opción..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                <button type="button" onclick="cerrarModalAgregarPregunta()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
+                <button type="submit" class="px-5 py-2 bg-gray-900 text-white font-bold text-xs rounded-xl shadow-md">Guardar Pregunta</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Eliminar Lección -->
+<div id="modal-eliminar-leccion" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border border-gray-100 space-y-4">
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto font-bold">
+            🗑️
+        </div>
+        <h3 class="font-black text-lg text-gray-900">¿Confirmar Eliminación?</h3>
+        <p class="text-xs text-gray-500">
+            ¿Estás seguro de eliminar la lección <strong id="leccion-nombre-eliminar" class="text-gray-800"></strong> y todas sus preguntas asociadas?
+        </p>
+        <form action="/admin/chatbot/lecciones/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="leccion-id-eliminar" name="id" value="" />
+            <button type="button" onclick="cerrarModalEliminarLeccion()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
+            <button type="submit" class="px-5 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-rose-700">Sí, Eliminar Todo</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalCrearLeccion() {
+        document.getElementById('modal-crear-leccion').classList.remove('hidden');
+    }
+    function cerrarModalCrearLeccion() {
+        document.getElementById('modal-crear-leccion').classList.add('hidden');
+    }
+
+    function abrirModalAgregarPregunta(leccionId, titulo) {
+        document.getElementById('pregunta-leccion-id').value = leccionId;
+        document.getElementById('modal-agregar-pregunta').classList.remove('hidden');
+    }
+    function cerrarModalAgregarPregunta() {
+        document.getElementById('modal-agregar-pregunta').classList.add('hidden');
+    }
+
+    function confirmarEliminarLeccion(id, titulo) {
+        document.getElementById('leccion-id-eliminar').value = id;
+        document.getElementById('leccion-nombre-eliminar').innerText = titulo;
+        document.getElementById('modal-eliminar-leccion').classList.remove('hidden');
+    }
+    function cerrarModalEliminarLeccion() {
+        document.getElementById('modal-eliminar-leccion').classList.add('hidden');
+    }
+</script>
