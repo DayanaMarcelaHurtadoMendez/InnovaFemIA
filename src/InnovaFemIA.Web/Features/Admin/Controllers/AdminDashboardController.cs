@@ -9,6 +9,7 @@ using InnovaFemIA.Web.Features.Admin.GestionRegistros;
 using InnovaFemIA.Web.Features.Admin.GestionStockConsolidado;
 using InnovaFemIA.Web.Features.Admin.GestionTiemposCosecha;
 using InnovaFemIA.Web.Features.Shared.Entities;
+using InnovaFemIA.Web.Features.Shared.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,10 +21,12 @@ namespace InnovaFemIA.Web.Features.Admin.Controllers;
 public class AdminDashboardController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IMediaCacheService _mediaCacheService;
 
-    public AdminDashboardController(IMediator mediator)
+    public AdminDashboardController(IMediator mediator, IMediaCacheService mediaCacheService)
     {
         _mediator = mediator;
+        _mediaCacheService = mediaCacheService;
     }
 
     // ── DASHBOARD PRINCIPAL ──────────────────────────────────────────────────
@@ -175,40 +178,16 @@ public class AdminDashboardController : Controller
     [AllowAnonymous] // Permite que el chatbot y las vistas muestren el archivo sin requerir sesión admin
     public async Task<IActionResult> ServirArchivoContenido(int id)
     {
-        try
+        var medio = await _mediaCacheService.ObtenerRutaMedioAsync(id);
+        if (medio == null || string.IsNullOrEmpty(medio.Value.FilePath))
         {
-            var tempDir = Path.Combine(Path.GetTempPath(), "InnovaFemIA_Media");
-            if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
-
-            var cachePath = Path.Combine(tempDir, $"{id}.media");
-            var metaPath = Path.Combine(tempDir, $"{id}.meta");
-
-            // Si el archivo ya está en caché local de alto rendimiento, responder mediante streaming kernel-mode PhysicalFile
-            if (System.IO.File.Exists(cachePath) && System.IO.File.Exists(metaPath))
-            {
-                var cachedMime = await System.IO.File.ReadAllTextAsync(metaPath);
-                return PhysicalFile(cachePath, cachedMime, enableRangeProcessing: true);
-            }
-
-            var result = await _mediator.Send(new ObtenerArchivoContenidoQuery(id));
-            if (!result.IsSuccess || result.Value == null)
-            {
-                return NotFound("El archivo no se encuentra disponible.");
-            }
-
-            // Guardar en caché física local para reducir consumo de RAM y CPU a cero en solicitudes por rango HTTP
-            await System.IO.File.WriteAllBytesAsync(cachePath, result.Value.Bytes);
-            await System.IO.File.WriteAllTextAsync(metaPath, result.Value.MimeType);
-
-            return PhysicalFile(cachePath, result.Value.MimeType, enableRangeProcessing: true);
+            return NotFound("El archivo no se encuentra disponible.");
         }
-        catch
-        {
-            // Fallback a transmisión directa en memoria si ocurre alguna restricción de permisos de archivos temporales
-            var result = await _mediator.Send(new ObtenerArchivoContenidoQuery(id));
-            if (!result.IsSuccess || result.Value == null) return NotFound("El archivo no se encuentra disponible.");
-            return File(result.Value.Bytes, result.Value.MimeType, enableRangeProcessing: true);
-        }
+
+        Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
+        Response.Headers["Accept-Ranges"] = "bytes";
+
+        return PhysicalFile(medio.Value.FilePath, medio.Value.MimeType, enableRangeProcessing: true);
     }
 
     // ── GESTIÓN DE CULTIVOS DEL SISTEMA (ADMIN) ──────────────────────────────
@@ -285,8 +264,20 @@ public class AdminDashboardController : Controller
             var command = new CrearContenidoChatbotCommand(cultivoId, tema, titulo, finalUrl, orden, archivoBytes, mimeType, archivoNombre);
             var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess) TempData["Error"] = result.Error;
-            else TempData["Exito"] = "Recurso educativo registrado exitosamente.";
+            if (!result.IsSuccess)
+            {
+                TempData["Error"] = result.Error;
+            }
+            else
+            {
+                // Guardar en la caché local persistente del servidor inmediatamente
+                if (archivoBytes != null && archivoBytes.Length > 0)
+                {
+                    await _mediaCacheService.GuardarEnCacheAsync(result.Value, archivoBytes, mimeType, archivoNombre);
+                }
+
+                TempData["Exito"] = "Recurso educativo registrado exitosamente.";
+            }
         }
         catch (Microsoft.EntityFrameworkCore.DbUpdateException)
         {
@@ -339,8 +330,20 @@ public class AdminDashboardController : Controller
                 id, cultivoId, tema, titulo, url, orden, activo, archivoBytes, mimeType, archivoNombre);
 
             var result = await _mediator.Send(command);
-            if (!result.IsSuccess) TempData["Error"] = result.Error;
-            else TempData["Exito"] = "Recurso educativo actualizado exitosamente.";
+            if (!result.IsSuccess)
+            {
+                TempData["Error"] = result.Error;
+            }
+            else
+            {
+                // Actualizar caché física local en el servidor
+                if (archivoBytes != null && archivoBytes.Length > 0)
+                {
+                    await _mediaCacheService.GuardarEnCacheAsync(id, archivoBytes, mimeType, archivoNombre);
+                }
+
+                TempData["Exito"] = "Recurso educativo actualizado exitosamente.";
+            }
         }
         catch (Exception ex)
         {
@@ -355,8 +358,15 @@ public class AdminDashboardController : Controller
     public async Task<IActionResult> EliminarContenidoChatbot([FromForm] int id)
     {
         var result = await _mediator.Send(new EliminarContenidoChatbotCommand(id));
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Recurso educativo eliminado exitosamente.";
+        if (!result.IsSuccess)
+        {
+            TempData["Error"] = result.Error;
+        }
+        else
+        {
+            _mediaCacheService.InvalidarCache(id);
+            TempData["Exito"] = "Recurso educativo eliminado exitosamente.";
+        }
         return RedirectToAction("ChatbotContenidos");
     }
 
