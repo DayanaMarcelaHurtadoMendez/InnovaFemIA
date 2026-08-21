@@ -30,3 +30,13 @@ npm-debug.log
 
 # Mac
 .DS_Store
+
+# Local Media Cache & Heavy Uploads (Almacenados en BD, cacheados localmente)
+[Ww][Ww][Ww]root/media_cache/
+[Ww][Ww][Ww]root/uploads/
+**/media_cache/
+**/uploads/
+*.media
+*.mp4
+*.webm
+*.mkv
