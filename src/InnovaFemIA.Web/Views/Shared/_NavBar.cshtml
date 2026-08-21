@@ -36,9 +36,9 @@
 
             <!-- Acciones derecha -->
             <div class="flex items-center gap-2">
-                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Administrador") || User.IsInRole("Admin")))
                 {
-                    <a href="/admin" id="nav-admin" class="nav-link text-brand-700 bg-brand-50 hover:bg-brand-100">
+                    <a href="/admin/dashboard" id="nav-admin" class="nav-link text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold border border-emerald-200">
                         <span aria-hidden="true">⚙️</span>
                         <span class="hidden sm:inline">Panel Admin</span>
                     </a>

@@ -1,0 +1,264 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Admin.GestionFamilias.FamiliaAdminDto>
+@{
+    ViewData["Title"] = "Gestión de Familias — Panel de Admin";
+    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerCultivos.CultivoDto> ?? [];
+    var busqueda = ViewBag.Busqueda as string;
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header y botón de creación -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div>
+            <a href="/admin/dashboard" class="text-xs text-emerald-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                <span>👩‍🌾</span> Gestión de Familias ASCAMPESINA
+            </h1>
+            <p class="text-xs text-gray-500 mt-0.5">Módulo 1 · Administración del Directorio y puntos verdes en el Mapa</p>
+        </div>
+        <button onclick="abrirModalCrearFamilia()" class="px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-md transition-all shrink-0">
+            + Agregar Nueva Familia
+        </button>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>✅</span> <span>@TempData["Exito"]</span>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>⚠️</span> <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Buscador -->
+    <form action="/admin/familias" method="GET" class="flex gap-3">
+        <input type="text" name="busqueda" value="@busqueda" placeholder="Buscar por nombre de familia o vereda..." class="w-full max-w-md px-4 py-2.5 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+        <button type="submit" class="px-4 py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-gray-800">
+            Buscar
+        </button>
+        @if (!string.IsNullOrEmpty(busqueda))
+        {
+            <a href="/admin/familias" class="px-4 py-2.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200">
+                Limpiar
+            </a>
+        }
+    </form>
+
+    <!-- Tabla de Familias -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase text-[10px] tracking-wider">
+                        <th class="p-4">Familia</th>
+                        <th class="p-4">Vereda / Municipio</th>
+                        <th class="p-4">Contacto</th>
+                        <th class="p-4">Coordenadas GPS</th>
+                        <th class="p-4">Cultivos</th>
+                        <th class="p-4 text-center">Estado</th>
+                        <th class="p-4 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var f in Model)
+                        {
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="p-4 font-bold text-gray-900">@f.Nombre</td>
+                                <td class="p-4 text-gray-600">📍 @f.Vereda, @f.Municipio</td>
+                                <td class="p-4 text-gray-600">
+                                    <span class="block font-medium text-gray-900">@f.NombreContacto</span>
+                                    <span class="text-[10px] text-gray-400">📞 @f.TelefonoContacto</span>
+                                </td>
+                                <td class="p-4 font-mono text-[11px] text-emerald-700">@f.Latitud, @f.Longitud</td>
+                                <td class="p-4">
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach (var c in f.CultivosNombres)
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">@c</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold @(f.Activo ? "bg-emerald-100 text-emerald-800" : "bg-gray-100 text-gray-500")">
+                                        @(f.Activo ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td class="p-4 text-right space-x-2">
+                                    <button onclick='abrirModalEditarFamilia(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(f)))' class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-lg transition-all">
+                                        Editar
+                                    </button>
+                                    <button onclick="confirmarEliminarFamilia(@f.Id, '@f.Nombre')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition-all">
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="p-8 text-center text-gray-400 italic">
+                                No se encontraron familias registradas.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Formulario Crear / Editar Familia -->
+<div id="modal-familia-form" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-gray-100">
+        <div class="bg-gray-900 text-white p-5 flex items-center justify-between">
+            <h3 id="modal-title" class="font-extrabold text-sm text-white">Agregar Nueva Familia</h3>
+            <button onclick="cerrarModalFamiliaForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
+        </div>
+        <form id="form-familia" action="/admin/familias/crear" method="POST" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="input-id" name="Id" value="0" />
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nombre de la Familia</label>
+                <input type="text" id="input-nombre" name="Nombre" required placeholder="Ej: Familia Hurtado Méndez" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Vereda</label>
+                    <input type="text" id="input-vereda" name="Vereda" required placeholder="Ej: Pescador" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Municipio</label>
+                    <input type="text" id="input-municipio" name="Municipio" value="Caldono" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600 bg-gray-50" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Persona de Contacto</label>
+                    <input type="text" id="input-contacto" name="NombreContacto" required placeholder="Ej: Dayana Hurtado" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Teléfono / WhatsApp</label>
+                    <input type="text" id="input-telefono" name="TelefonoContacto" required placeholder="Ej: 3124567890" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1">Latitud (Colombia)</label>
+                    <input type="number" step="0.000001" id="input-latitud" name="Latitud" required placeholder="Ej: 2.7845" class="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1">Longitud (Colombia)</label>
+                    <input type="number" step="0.000001" id="input-longitud" name="Longitud" required placeholder="Ej: -76.5381" class="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Cultivos de la Familia</label>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    @foreach (var c in cultivos)
+                    {
+                        <label class="flex items-center gap-2 p-2 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer text-xs">
+                            <input type="checkbox" name="CultivosIds" value="@c.Id" class="chk-cultivo w-4 h-4 text-emerald-600 rounded" />
+                            <span>@c.Icono @c.Nombre</span>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <div id="div-activo" class="hidden">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="input-activo" name="Activo" value="true" checked class="w-4 h-4 text-emerald-600 rounded" />
+                    <span class="text-xs font-bold text-gray-700">Estado Activo</span>
+                </label>
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                <button type="button" onclick="cerrarModalFamiliaForm()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
+                <button type="submit" class="px-5 py-2 bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md">Guardar Familia</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Confirmación Eliminar (Regla 9.8: Confirmación Explícita) -->
+<div id="modal-eliminar" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border border-gray-100 space-y-4">
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto font-bold">
+            🗑️
+        </div>
+        <h3 class="font-black text-lg text-gray-900">¿Confirmar Eliminación?</h3>
+        <p class="text-xs text-gray-500">
+            ¿Estás seguro de eliminar a <strong id="nombre-eliminar" class="text-gray-800"></strong>? Esta acción no se puede deshacer.
+        </p>
+        <form action="/admin/familias/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="id-eliminar" name="id" value="" />
+            <button type="button" onclick="cerrarModalEliminar()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
+            <button type="submit" class="px-5 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-rose-700">Sí, Eliminar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalCrearFamilia() {
+        document.getElementById('modal-title').innerText = 'Agregar Nueva Familia';
+        document.getElementById('form-familia').action = '/admin/familias/crear';
+        document.getElementById('input-id').value = 0;
+        document.getElementById('input-nombre').value = '';
+        document.getElementById('input-vereda').value = '';
+        document.getElementById('input-contacto').value = '';
+        document.getElementById('input-telefono').value = '';
+        document.getElementById('input-latitud').value = '2.8051';
+        document.getElementById('input-longitud').value = '-76.5512';
+        document.getElementById('div-activo').classList.add('hidden');
+        document.querySelectorAll('.chk-cultivo').forEach(c => c.checked = false);
+        document.getElementById('modal-familia-form').classList.remove('hidden');
+    }
+
+    function abrirModalEditarFamilia(f) {
+        document.getElementById('modal-title').innerText = 'Editar Familia: ' + f.Nombre;
+        document.getElementById('form-familia').action = '/admin/familias/editar';
+        document.getElementById('input-id').value = f.Id;
+        document.getElementById('input-nombre').value = f.Nombre;
+        document.getElementById('input-vereda').value = f.Vereda;
+        document.getElementById('input-municipio').value = f.Municipio;
+        document.getElementById('input-contacto').value = f.NombreContacto;
+        document.getElementById('input-telefono').value = f.TelefonoContacto;
+        document.getElementById('input-latitud').value = f.Latitud;
+        document.getElementById('input-longitud').value = f.Longitud;
+        document.getElementById('div-activo').classList.remove('hidden');
+        document.getElementById('input-activo').checked = f.Activo;
+
+        document.querySelectorAll('.chk-cultivo').forEach(c => {
+            c.checked = f.CultivosIds.includes(parseInt(c.value));
+        });
+
+        document.getElementById('modal-familia-form').classList.remove('hidden');
+    }
+
+    function cerrarModalFamiliaForm() {
+        document.getElementById('modal-familia-form').classList.add('hidden');
+    }
+
+    function confirmarEliminarFamilia(id, nombre) {
+        document.getElementById('id-eliminar').value = id;
+        document.getElementById('nombre-eliminar').innerText = nombre;
+        document.getElementById('modal-eliminar').classList.remove('hidden');
+    }
+
+    function cerrarModalEliminar() {
+        document.getElementById('modal-eliminar').classList.add('hidden');
+    }
+</script>

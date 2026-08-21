@@ -1,0 +1,470 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Admin.GestionContenidosChatbot.ContenidoChatbotAdminDto>
+@using InnovaFemIA.Web.Features.Shared.Entities
+@{
+    ViewData["Title"] = "Catálogo de Contenidos Chatbot — Admin";
+    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerCultivos.CultivoDto> ?? [];
+    var cultivoSeleccionado = ViewBag.CultivoSeleccionado as int?;
+    var temaSeleccionado = ViewBag.TemaSeleccionado as TemaContenido?;
+
+    string FormatearTamano(long bytes)
+    {
+        if (bytes <= 0) return "0 KB";
+        double kb = bytes / 1024.0;
+        if (kb < 1024) return $"{kb:F1} KB";
+        double mb = kb / 1024.0;
+        return $"{mb:F1} MB";
+    }
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header y botones de creación -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div>
+            <a href="/admin/dashboard" class="text-xs text-amber-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                <span>🤖</span> Catálogo de Contenidos del Chatbot
+            </h1>
+            <p class="text-xs text-gray-500 mt-0.5">Módulo 2 · Gestión de recursos y materiales educativos digitales</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="/admin/cultivos" class="px-4 py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-2xl border border-emerald-200 transition-all">
+                🌱 Catálogo de Cultivos
+            </a>
+            <button onclick="abrirModalCrearContenido()" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-2xl shadow-md transition-all">
+                + Agregar Recurso
+            </button>
+        </div>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>✅</span> <span>@TempData["Exito"]</span>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>⚠️</span> <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Tabla de Contenidos -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase text-[10px] tracking-wider">
+                        <th class="p-4">Cultivo</th>
+                        <th class="p-4">Tema del Chatbot</th>
+                        <th class="p-4">Tipo Recurso</th>
+                        <th class="p-4">Título del Recurso</th>
+                        <th class="p-4">Material / Archivo</th>
+                        <th class="p-4 text-center">Orden</th>
+                        <th class="p-4 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var c in Model)
+                        {
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="p-4 font-bold text-gray-900">🌱 @c.NombreCultivo</td>
+                                <td class="p-4">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                                        @switch (c.Tema)
+                                        {
+                                            case TemaContenido.CuandoSembrar: <span>🌱 Cuándo Sembrar</span> break;
+                                            case TemaContenido.CuandoCosechar: <span>🌾 Cuándo Cosechar</span> break;
+                                            case TemaContenido.PlagasEnfermedades: <span>🐛 Plagas y Enfermedades</span> break;
+                                            case TemaContenido.Abonado: <span>🧪 Abonado y Nutrición</span> break;
+                                            case TemaContenido.PodaMantenimiento: <span>✂️ Poda y Mantenimiento</span> break;
+                                            case TemaContenido.RiegoDrenaje: <span>💧 Riego y Drenaje</span> break;
+                                            case TemaContenido.PostcosechaManejo: <span>📦 Cosecha y Postcosecha</span> break;
+                                            case TemaContenido.ManejoAgroecologico: <span>🌿 Manejo Agroecológico</span> break;
+                                            case TemaContenido.ComercializacionCalidad: <span>🏷️ Calidad y Comercialización</span> break;
+                                            default: <span>🌱 @c.Tema</span> break;
+                                        }
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold @(c.TipoRecurso == TipoRecurso.Video ? "bg-red-50 text-red-700 border border-red-200" : c.TipoRecurso == TipoRecurso.Infografia ? "bg-purple-50 text-purple-700 border border-purple-200" : "bg-blue-50 text-blue-700 border border-blue-200")">
+                                        @(c.TipoRecurso == TipoRecurso.Video ? "📺 Video" : c.TipoRecurso == TipoRecurso.Infografia ? "🖼️ Infografía" : "📄 Documento PDF")
+                                    </span>
+                                </td>
+                                <td class="p-4 font-bold text-gray-900 max-w-xs">@c.Titulo</td>
+                                <td class="p-4">
+                                    @if (c.TieneArchivoEnBd)
+                                    {
+                                        <div class="flex flex-col gap-1">
+                                            <span class="font-bold text-emerald-900 text-[11px] truncate max-w-xs flex items-center gap-1">
+                                                📦 @(string.IsNullOrEmpty(c.ArchivoNombre) ? "Archivo_Adjunto.dat" : c.ArchivoNombre)
+                                                <span class="text-[10px] text-gray-400 font-normal">(@FormatearTamano(c.TamanoBytes))</span>
+                                            </span>
+                                            <button onclick='abrirVistaPrevia(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(c)))' class="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md hover:bg-blue-100 w-fit border border-blue-200">
+                                                👁️ Previsualizar Recurso
+                                            </button>
+                                        </div>
+                                    }
+                                    else if (!string.IsNullOrEmpty(c.Url))
+                                    {
+                                        <div class="flex flex-col gap-1">
+                                            <button onclick='abrirVistaPrevia(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(c)))' class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline w-fit">
+                                                🔗 @c.Url
+                                            </button>
+                                            <span class="text-[10px] text-gray-400">Enlace Web</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-gray-400 italic">No disponible</span>
+                                    }
+                                </td>
+                                <td class="p-4 text-center font-bold text-gray-700">#@c.Orden</td>
+                                <td class="p-4 text-right space-x-2 shrink-0">
+                                    <button onclick='abrirModalEditarContenido(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(c)))' class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg transition-all border border-amber-200">
+                                        Editar
+                                    </button>
+                                    <button onclick="confirmarEliminarContenido(@c.Id, '@c.Titulo')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition-all">
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="p-8 text-center text-gray-400 italic">
+                                No se encontraron recursos educativos registrados en el chatbot.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Visualizador / Previsualización Profesional de Medios (0% CPU/RAM) -->
+<div id="modal-vista-previa" class="fixed inset-0 z-50 hidden bg-gray-900/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl border border-gray-100 flex flex-col max-h-[90vh]">
+        <div class="bg-gray-900 text-white p-5 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+                <span id="preview-icon" class="text-xl">🎬</span>
+                <div>
+                    <h3 id="preview-title" class="font-extrabold text-sm text-white">Vista Previa del Recurso</h3>
+                    <span id="preview-subtitle" class="text-[11px] text-gray-400">Material Educativo Chatbot</span>
+                </div>
+            </div>
+            <button onclick="cerrarVistaPrevia()" class="text-white hover:text-gray-300 font-bold text-xl px-2">✕</button>
+        </div>
+
+        <div class="p-6 overflow-y-auto flex-1 flex items-center justify-center bg-gray-950/90 text-white">
+            <div id="preview-content-container" class="w-full flex justify-center">
+                <!-- Se inserta dinámicamente HTML5 <video>, <iframe> o <img> -->
+            </div>
+        </div>
+
+        <div class="p-4 bg-gray-900 border-t border-gray-800 flex items-center justify-between shrink-0 text-xs text-gray-300">
+            <span id="preview-filename" class="font-mono text-[11px] text-gray-400 truncate max-w-md"></span>
+            <div class="flex items-center gap-3">
+                <a id="preview-direct-link" href="#" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all">
+                    Abrir en Nueva Pestaña ↗
+                </a>
+                <button onclick="cerrarVistaPrevia()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-xl">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Formulario Crear Recurso Chatbot -->
+<div id="modal-contenido-form" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100">
+        <div class="bg-amber-600 text-white p-5 flex items-center justify-between">
+            <h3 class="font-extrabold text-sm text-white">Agregar Recurso Educativo</h3>
+            <button onclick="cerrarModalContenidoForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
+        </div>
+        <form action="/admin/chatbot/contenidos/crear" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            @Html.AntiForgeryToken()
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Cultivo</label>
+                        <a href="/admin/cultivos" target="_blank" class="text-[10px] text-emerald-800 font-bold hover:underline">+ Crear Cultivo</a>
+                    </div>
+                    <select name="CultivoId" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
+                        @foreach (var cu in cultivos)
+                        {
+                            <option value="@cu.Id">@cu.Icono @cu.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tema del Chatbot</label>
+                    <select name="Tema" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
+                        <option value="CuandoSembrar">🌱 Cuándo Sembrar</option>
+                        <option value="CuandoCosechar">🌾 Cuándo Cosechar</option>
+                        <option value="PlagasEnfermedades">🐛 Plagas y Enfermedades</option>
+                        <option value="Abonado">🧪 Abonado y Nutrición</option>
+                        <option value="PodaMantenimiento">✂️ Poda y Mantenimiento</option>
+                        <option value="RiegoDrenaje">💧 Riego y Drenaje</option>
+                        <option value="PostcosechaManejo">📦 Cosecha y Postcosecha</option>
+                        <option value="ManejoAgroecologico">🌿 Manejo Agroecológico</option>
+                        <option value="ComercializacionCalidad">🏷️ Calidad y Comercialización</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Título del Recurso</label>
+                <input type="text" name="Titulo" required placeholder="Ej: Guía completa de nutrición y siembra de café" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600" />
+            </div>
+
+            <div class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 space-y-3">
+                <span class="text-xs font-extrabold text-amber-900 block">📁 Adjuntar Archivo o Enlace Web</span>
+                
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">1. Cargar Archivo (Video, Infografía o PDF)</label>
+                    <input type="file" name="archivo" accept=".pdf,.png,.jpg,.jpeg,.mp4,.webm,.mkv" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white" />
+                    <span class="text-[10px] text-gray-500 block mt-1">El sistema detectará automáticamente el tipo de recurso (Video, Infografía o PDF).</span>
+                </div>
+
+                <div class="pt-2 border-t border-amber-200/60">
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">2. O Ingresar Enlace Web (YouTube, Vimeo, Drive)</label>
+                    <input type="url" name="Url" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white" />
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Orden de Presentación</label>
+                <input type="number" name="Orden" value="1" min="1" required class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                <button type="button" onclick="cerrarModalContenidoForm()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
+                <button type="submit" class="px-5 py-2 bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Formulario Editar Recurso Chatbot (Con previsualización del archivo/URL actual) -->
+<div id="modal-contenido-editar-form" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100">
+        <div class="bg-amber-700 text-white p-5 flex items-center justify-between">
+            <h3 class="font-extrabold text-sm text-white">Editar Recurso Educativo</h3>
+            <button onclick="cerrarModalEditarContenidoForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
+        </div>
+        <form action="/admin/chatbot/contenidos/editar" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="edit-id" name="id" value="" />
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cultivo</label>
+                    <select id="edit-cultivoId" name="cultivoId" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
+                        @foreach (var cu in cultivos)
+                        {
+                            <option value="@cu.Id">@cu.Icono @cu.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tema del Chatbot</label>
+                    <select id="edit-tema" name="tema" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
+                        <option value="CuandoSembrar">🌱 Cuándo Sembrar</option>
+                        <option value="CuandoCosechar">🌾 Cuándo Cosechar</option>
+                        <option value="PlagasEnfermedades">🐛 Plagas y Enfermedades</option>
+                        <option value="Abonado">🧪 Abonado y Nutrición</option>
+                        <option value="PodaMantenimiento">✂️ Poda y Mantenimiento</option>
+                        <option value="RiegoDrenaje">💧 Riego y Drenaje</option>
+                        <option value="PostcosechaManejo">📦 Cosecha y Postcosecha</option>
+                        <option value="ManejoAgroecologico">🌿 Manejo Agroecológico</option>
+                        <option value="ComercializacionCalidad">🏷️ Calidad y Comercialización</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Título del Recurso</label>
+                <input type="text" id="edit-titulo" name="titulo" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600" />
+            </div>
+
+            <!-- Indicador del Archivo o Enlace Actual Cargado -->
+            <div id="edit-info-actual" class="p-3 bg-blue-50 border border-blue-200 rounded-2xl text-xs space-y-1">
+                <span class="font-extrabold text-blue-900 block">📌 Contenido cargado actualmente:</span>
+                <div id="edit-info-actual-detalle" class="text-blue-800 font-bold truncate"></div>
+            </div>
+
+            <div class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 space-y-3">
+                <span class="text-xs font-extrabold text-amber-900 block">📁 Reemplazar Archivo o Enlace Web (Opcional)</span>
+                
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">1. Subir Nuevo Archivo (Dejar vacío para conservar el actual)</label>
+                    <input type="file" name="archivo" accept=".pdf,.png,.jpg,.jpeg,.mp4,.webm,.mkv" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white" />
+                </div>
+
+                <div class="pt-2 border-t border-amber-200/60">
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">2. O Actualizar Enlace Web</label>
+                    <input type="url" id="edit-url" name="url" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 items-center">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Orden</label>
+                    <input type="number" id="edit-orden" name="orden" value="1" min="1" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+                </div>
+                <div class="pt-4">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="edit-activo" name="activo" value="true" checked class="w-4 h-4 text-amber-600 rounded" />
+                        <span class="text-xs font-bold text-gray-700">Recurso Activo</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                <button type="button" onclick="cerrarModalEditarContenidoForm()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
+                <button type="submit" class="px-5 py-2 bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div id="modal-eliminar-contenido" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border border-gray-100 space-y-4">
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto font-bold">
+            🗑️
+        </div>
+        <h3 class="font-black text-lg text-gray-900">¿Confirmar Eliminación?</h3>
+        <p class="text-xs text-gray-500">
+            ¿Estás seguro de eliminar el recurso <strong id="contenido-nombre-eliminar" class="text-gray-800"></strong>?
+        </p>
+        <form action="/admin/chatbot/contenidos/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="contenido-id-eliminar" name="id" value="" />
+            <button type="button" onclick="cerrarModalEliminarContenido()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
+            <button type="submit" class="px-5 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-rose-700">Sí, Eliminar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalCrearContenido() {
+        document.getElementById('modal-contenido-form').classList.remove('hidden');
+    }
+    function cerrarModalContenidoForm() {
+        document.getElementById('modal-contenido-form').classList.add('hidden');
+    }
+
+    function abrirModalEditarContenido(recurso) {
+        document.getElementById('edit-id').value = recurso.Id;
+        document.getElementById('edit-cultivoId').value = recurso.CultivoId;
+        
+        // Mapeo Tema
+        let temaVal = 'CuandoSembrar';
+        if (recurso.Tema === 1 || recurso.Tema === 'CuandoSembrar') temaVal = 'CuandoSembrar';
+        else if (recurso.Tema === 2 || recurso.Tema === 'CuandoCosechar') temaVal = 'CuandoCosechar';
+        else if (recurso.Tema === 3 || recurso.Tema === 'PlagasEnfermedades') temaVal = 'PlagasEnfermedades';
+        else if (recurso.Tema === 4 || recurso.Tema === 'Abonado') temaVal = 'Abonado';
+        else if (recurso.Tema === 5 || recurso.Tema === 'PodaMantenimiento') temaVal = 'PodaMantenimiento';
+        else if (recurso.Tema === 6 || recurso.Tema === 'RiegoDrenaje') temaVal = 'RiegoDrenaje';
+        else if (recurso.Tema === 7 || recurso.Tema === 'PostcosechaManejo') temaVal = 'PostcosechaManejo';
+        else if (recurso.Tema === 8 || recurso.Tema === 'ManejoAgroecologico') temaVal = 'ManejoAgroecologico';
+        else if (recurso.Tema === 9 || recurso.Tema === 'ComercializacionCalidad') temaVal = 'ComercializacionCalidad';
+        else temaVal = recurso.Tema;
+        document.getElementById('edit-tema').value = temaVal;
+
+        document.getElementById('edit-titulo').value = recurso.Titulo || '';
+        document.getElementById('edit-url').value = recurso.Url || '';
+        document.getElementById('edit-orden').value = recurso.Orden || 1;
+        document.getElementById('edit-activo').checked = recurso.Activo;
+
+        // Mostrar información del contenido actual
+        const detalleEl = document.getElementById('edit-info-actual-detalle');
+        if (recurso.TieneArchivoEnBd) {
+            const tamMb = (recurso.TamanoBytes / (1024 * 1024)).toFixed(1);
+            detalleEl.innerHTML = `📦 Archivo almacenado: <span>${recurso.ArchivoNombre || 'recurso'}</span> (${tamMb} MB) — <span class="text-xs text-gray-500 font-normal">Se conservará este archivo a menos que subas uno nuevo a continuación.</span>`;
+        } else if (recurso.Url) {
+            detalleEl.innerHTML = `🔗 Enlace Web actual: <a href="${recurso.Url}" target="_blank" class="underline">${recurso.Url}</a>`;
+        } else {
+            detalleEl.innerHTML = `⚠️ Sin archivo ni enlace registrado.`;
+        }
+
+        document.getElementById('modal-contenido-editar-form').classList.remove('hidden');
+    }
+
+    function cerrarModalEditarContenidoForm() {
+        document.getElementById('modal-contenido-editar-form').classList.add('hidden');
+    }
+
+    function confirmarEliminarContenido(id, titulo) {
+        document.getElementById('contenido-id-eliminar').value = id;
+        document.getElementById('contenido-nombre-eliminar').innerText = titulo;
+        document.getElementById('modal-eliminar-contenido').classList.remove('hidden');
+    }
+    function cerrarModalEliminarContenido() {
+        document.getElementById('modal-eliminar-contenido').classList.add('hidden');
+    }
+
+    function abrirVistaPrevia(recurso) {
+        const titleEl = document.getElementById('preview-title');
+        const iconEl = document.getElementById('preview-icon');
+        const filenameEl = document.getElementById('preview-filename');
+        const directLinkEl = document.getElementById('preview-direct-link');
+        const container = document.getElementById('preview-content-container');
+
+        titleEl.innerText = recurso.Titulo;
+        container.innerHTML = '';
+
+        let fileUrl = '';
+        if (recurso.TieneArchivoEnBd) {
+            fileUrl = `/admin/chatbot/contenidos/${recurso.Id}/archivo`;
+            filenameEl.innerText = `Archivo: ${recurso.ArchivoNombre || 'recurso'} (${(recurso.TamanoBytes / (1024 * 1024)).toFixed(1)} MB)`;
+        } else {
+            fileUrl = recurso.Url;
+            filenameEl.innerText = `Enlace: ${recurso.Url}`;
+        }
+        directLinkEl.href = fileUrl;
+
+        // Tipo Recurso: 1 = Video, 2 = Infografía, 3 = Documento
+        if (recurso.TipoRecurso === 1 || (recurso.ArchivoMimeType && recurso.ArchivoMimeType.includes('video'))) {
+            iconEl.innerText = '🎬';
+            if (recurso.TieneArchivoEnBd || (recurso.Url && (recurso.Url.endsWith('.mp4') || recurso.Url.endsWith('.webm')))) {
+                container.innerHTML = `<video controls autoplay class="max-h-[65vh] w-full max-w-3xl rounded-2xl shadow-2xl bg-black"><source src="${fileUrl}" type="${recurso.ArchivoMimeType || 'video/mp4'}">Tu navegador no soporta reproducción de video.</video>`;
+            } else if (recurso.Url && (recurso.Url.includes('youtube.com') || recurso.Url.includes('youtu.be'))) {
+                let embedUrl = recurso.Url;
+                if (recurso.Url.includes('watch?v=')) {
+                    embedUrl = recurso.Url.replace('watch?v=', 'embed/');
+                } else if (recurso.Url.includes('youtu.be/')) {
+                    embedUrl = recurso.Url.replace('youtu.be/', 'www.youtube.com/embed/');
+                }
+                container.innerHTML = `<iframe src="${embedUrl}" class="w-full h-[60vh] max-w-3xl rounded-2xl shadow-2xl border-0" allowfullscreen></iframe>`;
+            } else {
+                container.innerHTML = `<iframe src="${fileUrl}" class="w-full h-[60vh] max-w-3xl rounded-2xl shadow-2xl border-0"></iframe>`;
+            }
+        } else if (recurso.TipoRecurso === 2 || (recurso.ArchivoMimeType && recurso.ArchivoMimeType.includes('image'))) {
+            iconEl.innerText = '🖼️';
+            container.innerHTML = `<img src="${fileUrl}" alt="${recurso.Titulo}" class="max-h-[65vh] max-w-full object-contain rounded-2xl shadow-2xl border border-gray-800" />`;
+        } else {
+            iconEl.innerText = '📄';
+            container.innerHTML = `<iframe src="${fileUrl}" class="w-full h-[65vh] max-w-4xl rounded-2xl shadow-2xl border-0 bg-white"></iframe>`;
+        }
+
+        document.getElementById('modal-vista-previa').classList.remove('hidden');
+    }
+
+    function cerrarVistaPrevia() {
+        const container = document.getElementById('preview-content-container');
+        container.innerHTML = ''; // Detiene el audio/video al cerrar
+        document.getElementById('modal-vista-previa').classList.add('hidden');
+    }
+</script>

@@ -1,0 +1,131 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Admin.GestionRegistros.RegistroLogDto>
+@{
+    ViewData["Title"] = "Log de Errores y Registros del Sistema — Admin";
+    var modulo = ViewBag.Modulo as string;
+    var tipo = ViewBag.Tipo as string;
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div>
+            <a href="/admin/dashboard" class="text-xs text-emerald-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                <span>📋</span> Log de Errores y Auditoría del Sistema
+            </h1>
+            <p class="text-xs text-gray-500 mt-0.5">Registro de eventos, fallos de scraping, errores de conexión y excepciones técnicas</p>
+        </div>
+    </div>
+
+    <!-- Filtros por módulo y tipo de evento -->
+    <form action="/admin/registros" method="GET" class="flex flex-wrap gap-3">
+        <select name="modulo" class="px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none">
+            <option value="">Todos los Módulos</option>
+            <option value="Mapa" selected="@(modulo == "Mapa")">Módulo 1: Mapa</option>
+            <option value="Chatbot" selected="@(modulo == "Chatbot")">Módulo 2: Chatbot</option>
+            <option value="Biocomercio" selected="@(modulo == "Biocomercio")">Módulo 3: Biocomercio</option>
+            <option value="Sistema" selected="@(modulo == "Sistema")">Sistema / General</option>
+            <option value="Scraping" selected="@(modulo == "Scraping")">Scraping DANE</option>
+        </select>
+
+        <select name="tipo" class="px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none">
+            <option value="">Todos los Eventos</option>
+            <option value="Error" selected="@(tipo == "Error")">Error / Excepción</option>
+            <option value="Warning" selected="@(tipo == "Warning")">Advertencia</option>
+            <option value="Info" selected="@(tipo == "Info")">Información</option>
+        </select>
+
+        <button type="submit" class="px-4 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl">
+            Filtrar
+        </button>
+
+        @if (!string.IsNullOrEmpty(modulo) || !string.IsNullOrEmpty(tipo))
+        {
+            <a href="/admin/registros" class="px-4 py-2 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl">
+                Limpiar Filtros
+            </a>
+        }
+    </form>
+
+    <!-- Tabla de Logs -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase text-[10px] tracking-wider">
+                        <th class="p-4">Fecha / Hora (UTC)</th>
+                        <th class="p-4">Módulo</th>
+                        <th class="p-4">Tipo Evento</th>
+                        <th class="p-4">Descripción del Evento</th>
+                        <th class="p-4">IP Origen</th>
+                        <th class="p-4 text-right">Detalle</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var log in Model)
+                        {
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="p-4 text-gray-500 font-mono text-[11px] shrink-0">@log.FechaHoraUtc.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                <td class="p-4 font-bold text-gray-900">@log.Modulo</td>
+                                <td class="p-4">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold @(log.TipoEvento == "Error" ? "bg-rose-100 text-rose-800" : log.TipoEvento == "Warning" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800")">
+                                        @log.TipoEvento
+                                    </span>
+                                </td>
+                                <td class="p-4 text-gray-800 font-medium max-w-md truncate">@log.Descripcion</td>
+                                <td class="p-4 text-gray-400 font-mono text-[11px]">@(log.IpOrigen ?? "--")</td>
+                                <td class="p-4 text-right">
+                                    @if (!string.IsNullOrEmpty(log.StackTrace))
+                                    {
+                                        <button onclick='verStackTrace(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(log.StackTrace)))' class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[11px] rounded-lg">
+                                            Ver Trace
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-[10px] text-gray-300">--</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-gray-400 italic">
+                                No se encontraron registros de auditoría con los filtros aplicados.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Stack Trace -->
+<div id="modal-trace" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-gray-100 space-y-4">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 class="font-black text-sm text-gray-900">Stack Trace del Error</h3>
+            <button onclick="cerrarModalTrace()" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
+        </div>
+        <pre id="trace-content" class="bg-gray-900 text-rose-300 p-4 rounded-2xl text-[11px] font-mono overflow-x-auto max-h-96 whitespace-pre-wrap"></pre>
+        <div class="text-right">
+            <button onclick="cerrarModalTrace()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function verStackTrace(trace) {
+        document.getElementById('trace-content').innerText = trace;
+        document.getElementById('modal-trace').classList.remove('hidden');
+    }
+    function cerrarModalTrace() {
+        document.getElementById('modal-trace').classList.add('hidden');
+    }
+</script>
