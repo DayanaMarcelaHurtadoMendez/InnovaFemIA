@@ -17,12 +17,26 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         {
             mysqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 3,
-                maxRetryDelay: TimeSpan.FromSeconds(5),
+                maxRetryDelay: TimeSpan.FromSeconds(10),
                 errorNumbersToAdd: null);
-            mysqlOptions.CommandTimeout(30);
+            mysqlOptions.CommandTimeout(300); // 5 minutos de timeout para subidas de videos pesados
+            mysqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
         }
     )
 );
+
+// ─── CONFIGURACIÓN DE TAMAÑO MÁXIMO DE CARGA DE ARCHIVOS (500 MB) ────────────
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 500 * 1024 * 1024; // 500 MB
+    options.ValueLengthLimit = 500 * 1024 * 1024;
+    options.MultipartHeadersLengthLimit = 500 * 1024 * 1024;
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 500 * 1024 * 1024; // 500 MB
+});
 
 // ─── MVC + RAZOR VIEWS ────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
@@ -127,6 +141,18 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
+        // Configura max_allowed_packet del servidor MySQL a 512 MB para soportar archivos de video pesados en LONGBLOB
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync("SET GLOBAL max_allowed_packet = 536870912; SET SESSION max_allowed_packet = 536870912;");
+            MySqlConnector.MySqlConnection.ClearAllPools();
+            logger.LogInformation("MySQL max_allowed_packet configurado globalmente a 512 MB y pool de conexiones renovado.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning("No se pudo ejecutar SET GLOBAL max_allowed_packet: {Msg}", ex.Message);
+        }
+
         // Aplica migraciones pendientes automáticamente
         await db.Database.MigrateAsync();
         logger.LogInformation("Migraciones aplicadas correctamente.");

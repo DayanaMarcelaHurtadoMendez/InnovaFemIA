@@ -1,0 +1,75 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Admin.GestionStockConsolidado.StockConsolidadoFamiliaDto>
+@{
+    ViewData["Title"] = "Stock Consolidado de Biocomercio — Admin";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div>
+            <a href="/admin/dashboard" class="text-xs text-emerald-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                <span>📦</span> Vista Consolidada del Stock (Biocomercio)
+            </h1>
+            <p class="text-xs text-gray-500 mt-0.5">Módulo 3 · Estado de disponibilidad de productos agroecológicos por familia en Caldono, Cauca</p>
+        </div>
+    </div>
+
+    <!-- Lista Consolidada por Familia -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var f in Model)
+            {
+                <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-3 mb-3">
+                            <div>
+                                <span class="text-xs text-gray-400 block font-medium">📍 Vereda @f.Vereda</span>
+                                <h3 class="font-extrabold text-base text-gray-900 leading-snug">@f.NombreFamilia</h3>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                📞 @f.Telefono
+                            </span>
+                        </div>
+
+                        <!-- Lista de productos en stock -->
+                        <div class="space-y-2">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Catálogo de Oferta:</span>
+                            @if (f.ProductosDisponibles != null && f.ProductosDisponibles.Any())
+                            {
+                                foreach (var prod in f.ProductosDisponibles)
+                                {
+                                    <div class="flex items-center justify-between p-2.5 rounded-xl border text-xs @(prod.Disponible ? "bg-emerald-50/50 border-emerald-100 text-emerald-900" : "bg-gray-50 border-gray-100 text-gray-400")">
+                                        <div class="flex items-center gap-2">
+                                            <span>@prod.Icono</span>
+                                            <span class="font-bold">@prod.NombreCultivo</span>
+                                        </div>
+                                        <span class="font-bold text-[10px] px-2 py-0.5 rounded-full @(prod.Disponible ? "bg-emerald-200/80 text-emerald-900" : "bg-gray-200 text-gray-500")">
+                                            @(prod.Disponible ? "✓ Disponible" : "✕ Agotado")
+                                        </span>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-xs text-gray-400 italic">No registra productos en catálogo.</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-gray-100 text-[11px] text-gray-400 text-right">
+                        Contacto: @f.Contacto
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-span-full bg-white rounded-3xl border border-gray-100 p-8 text-center text-gray-400 italic">
+                No hay información de stock disponible.
+            </div>
+        }
+    </div>
+</div>
