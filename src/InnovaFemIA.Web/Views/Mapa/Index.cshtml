@@ -85,27 +85,32 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="grid-familias">
             @foreach (var familia in Model)
             {
-                <article class="card group cursor-pointer animate-fade-in flex flex-col justify-between" id="card-familia-@familia.Id">
+                <article class="card group cursor-pointer animate-fade-in flex flex-col justify-between hover:shadow-lg hover:border-emerald-200 transition-all" id="card-familia-@familia.Id" onclick="verFichaFamilia(@familia.Id)">
                     <div>
                         <!-- Foto de la familia -->
-                        <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center gap-3 mb-3">
                             @if (!string.IsNullOrEmpty(familia.FotoBase64))
                             {
                                 <img src="@familia.FotoBase64"
                                      alt="Foto de @familia.Nombre"
-                                     class="w-14 h-14 rounded-full object-cover ring-2 ring-primary-200" />
+                                     class="w-14 h-14 rounded-2xl object-cover ring-2 ring-emerald-200 shadow-sm shrink-0" />
                             }
                             else
                             {
-                                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center text-2xl ring-2 ring-primary-200 shrink-0">
-                                    👨‍👩‍👧
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center text-2xl ring-2 ring-emerald-200 shrink-0">
+                                    👩‍🌾
                                 </div>
                             }
                             <div class="flex-1 min-w-0">
-                                <h2 class="font-bold text-gray-900 text-sm truncate group-hover:text-primary-700 transition-colors">@familia.Nombre</h2>
-                                <p class="text-xs text-gray-500 truncate">📍 Vereda @familia.Vereda, Caldono</p>
+                                <h2 class="font-bold text-gray-900 text-sm truncate group-hover:text-emerald-800 transition-colors">@familia.Nombre</h2>
+                                <p class="text-xs text-emerald-700 font-medium truncate">📍 Vereda @familia.Vereda, Caldono</p>
                             </div>
                         </div>
+
+                        @if (!string.IsNullOrEmpty(familia.Descripcion))
+                        {
+                            <p class="text-[11px] text-gray-500 line-clamp-2 mb-3 italic">"@familia.Descripcion"</p>
+                        }
 
                         <!-- Cultivos disponibles -->
                         <div class="flex flex-wrap gap-1.5 mb-4" aria-label="Cultivos de @familia.Nombre">
@@ -135,13 +140,14 @@
                         <a href="https://wa.me/57@(telLimpio)"
                            target="_blank"
                            rel="noopener noreferrer"
+                           onclick="event.stopPropagation()"
                            class="text-xs text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1"
                            id="link-whatsapp-@familia.Id">
                             📱 WhatsApp
                         </a>
-                        <button class="text-xs text-gray-500 hover:text-primary-700 transition-colors font-bold"
+                        <button class="text-xs text-gray-500 hover:text-emerald-800 transition-colors font-bold"
                                 id="btn-ver-mas-@familia.Id"
-                                onclick="verFichaFamilia(@familia.Id)">
+                                onclick="event.stopPropagation(); verFichaFamilia(@familia.Id)">
                             Ver Ficha →
                         </button>
                     </div>
@@ -156,20 +162,20 @@
     <div class="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-gray-100 transform transition-all">
         
         <!-- Header del Modal -->
-        <div class="relative bg-gradient-to-r from-primary-900 via-primary-800 to-brand-900 text-white p-6">
+        <div class="relative bg-gradient-to-r from-emerald-950 via-emerald-900 to-gray-900 text-white p-6">
             <button id="btn-cerrar-modal-dir" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg transition-colors">
                 ✕
             </button>
             <div class="flex items-center gap-4">
                 <div id="modal-dir-foto-container" class="w-16 h-16 rounded-2xl bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl overflow-hidden shrink-0">
-                    👨‍👩‍👧
+                    👩‍🌾
                 </div>
                 <div>
                     <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 mb-1">
                         Familia Productora ASCAMPESINA
                     </span>
                     <h3 id="modal-dir-nombre" class="text-xl font-bold text-white leading-snug">Cargando...</h3>
-                    <p id="modal-dir-vereda" class="text-xs text-gray-300 flex items-center gap-1 mt-0.5">
+                    <p id="modal-dir-vereda" class="text-xs text-emerald-200 flex items-center gap-1 mt-0.5">
                         📍 Caldono, Cauca
                     </p>
                 </div>
@@ -177,7 +183,7 @@
         </div>
 
         <!-- Cuerpo del Modal -->
-        <div class="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+        <div class="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
             
             <!-- Persona de contacto y WhatsApp -->
             <div class="bg-gray-50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border border-gray-100">
@@ -188,6 +194,12 @@
                 <a id="modal-dir-whatsapp" href="#" target="_blank" class="btn-primary text-xs px-4 py-2 shadow-sm hover:shadow-md">
                     <span>📱</span> Contactar por WhatsApp
                 </a>
+            </div>
+
+            <!-- Descripción de la Familia -->
+            <div id="modal-dir-desc-container" class="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100 text-xs text-gray-700 leading-relaxed">
+                <span class="font-extrabold text-emerald-950 block text-[11px] uppercase tracking-wider mb-1">🌿 Sobre la Familia:</span>
+                <p id="modal-dir-descripcion" class="italic text-gray-600">--</p>
             </div>
 
             <!-- Stock de Productos Agroecológicos -->
@@ -233,7 +245,14 @@
                 if (f.fotoBase64) {
                     document.getElementById('modal-dir-foto-container').innerHTML = `<img src="${f.fotoBase64}" class="w-full h-full object-cover"/>`;
                 } else {
-                    document.getElementById('modal-dir-foto-container').innerHTML = '👨‍👩‍👧';
+                    document.getElementById('modal-dir-foto-container').innerHTML = '👩‍🌾';
+                }
+
+                if (f.descripcion) {
+                    document.getElementById('modal-dir-descripcion').innerText = f.descripcion;
+                    document.getElementById('modal-dir-desc-container').classList.remove('hidden');
+                } else {
+                    document.getElementById('modal-dir-desc-container').classList.add('hidden');
                 }
 
                 if (f.stockProductos && f.stockProductos.length > 0) {

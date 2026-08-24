@@ -15,6 +15,9 @@ public class FamiliaDto
     public double Latitud { get; init; }
     public double Longitud { get; init; }
 
+    /// <summary>Descripción de la familia campesina.</summary>
+    public string? Descripcion { get; init; }
+
     /// <summary>
     /// Foto como string Base64 con prefijo data URI.
     /// Formato: "data:image/jpeg;base64,/9j/4AAQ..."

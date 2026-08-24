@@ -44,6 +44,7 @@ public class ObtenerDetalleFamiliaHandler : IRequestHandler<ObtenerDetalleFamili
             TelefonoContacto = familia.TelefonoContacto,
             Latitud = familia.Latitud,
             Longitud = familia.Longitud,
+            Descripcion = familia.Descripcion,
             FotoBase64 = familia.FotoBytes is not null && familia.FotoMimeType is not null
                 ? $"data:{familia.FotoMimeType};base64,{Convert.ToBase64String(familia.FotoBytes)}"
                 : null,

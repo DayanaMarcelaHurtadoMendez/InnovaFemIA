@@ -16,6 +16,8 @@ public record FamiliaAdminDto(
     string TelefonoContacto,
     double Latitud,
     double Longitud,
+    string? Descripcion,
+    string? FotoBase64,
     bool Activo,
     List<int> CultivosIds,
     List<string> CultivosNombres
@@ -32,7 +34,10 @@ public record CrearFamiliaAdminCommand(
     string TelefonoContacto,
     double Latitud,
     double Longitud,
-    List<int> CultivosIds
+    string? Descripcion,
+    List<int> CultivosIds,
+    byte[]? FotoBytes = null,
+    string? FotoMimeType = null
 ) : IRequest<Result<int>>;
 
 public record EditarFamiliaAdminCommand(
@@ -44,8 +49,11 @@ public record EditarFamiliaAdminCommand(
     string TelefonoContacto,
     double Latitud,
     double Longitud,
+    string? Descripcion,
     bool Activo,
-    List<int> CultivosIds
+    List<int> CultivosIds,
+    byte[]? FotoBytes = null,
+    string? FotoMimeType = null
 ) : IRequest<Result<bool>>;
 
 public record EliminarFamiliaAdminCommand(int Id) : IRequest<Result<bool>>;
@@ -85,6 +93,8 @@ public class GestionFamiliasHandler :
                 f.TelefonoContacto,
                 f.Latitud,
                 f.Longitud,
+                f.Descripcion,
+                f.FotoBytes != null && f.FotoMimeType != null ? $"data:{f.FotoMimeType};base64,{Convert.ToBase64String(f.FotoBytes)}" : null,
                 f.Activo,
                 f.FamiliaCultivos.Select(fc => fc.CultivoId).ToList(),
                 f.FamiliaCultivos.Select(fc => fc.Cultivo.Nombre).ToList()
@@ -115,6 +125,9 @@ public class GestionFamiliasHandler :
             TelefonoContacto = request.TelefonoContacto.Trim(),
             Latitud = request.Latitud,
             Longitud = request.Longitud,
+            Descripcion = string.IsNullOrWhiteSpace(request.Descripcion) ? null : request.Descripcion.Trim(),
+            FotoBytes = request.FotoBytes,
+            FotoMimeType = request.FotoMimeType,
             Activo = true
         };
 
@@ -150,7 +163,14 @@ public class GestionFamiliasHandler :
         familia.TelefonoContacto = request.TelefonoContacto.Trim();
         familia.Latitud = request.Latitud;
         familia.Longitud = request.Longitud;
+        familia.Descripcion = string.IsNullOrWhiteSpace(request.Descripcion) ? null : request.Descripcion.Trim();
         familia.Activo = request.Activo;
+
+        if (request.FotoBytes != null && request.FotoBytes.Length > 0)
+        {
+            familia.FotoBytes = request.FotoBytes;
+            familia.FotoMimeType = request.FotoMimeType;
+        }
 
         // Actualizar cultivos
         _db.FamiliaCultivos.RemoveRange(familia.FamiliaCultivos);

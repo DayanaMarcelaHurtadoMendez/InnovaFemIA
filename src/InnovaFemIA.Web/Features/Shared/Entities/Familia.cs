@@ -31,6 +31,11 @@ public class Familia
     public double Longitud { get; set; }
 
     /// <summary>
+    /// Descripción de la familia campesina.
+    /// </summary>
+    public string? Descripcion { get; set; }
+
+    /// <summary>
     /// Foto de la familia almacenada como bytes (LONGBLOB en MySQL).
     /// Se sirve como base64 en los DTOs al frontend.
     /// Null si no se ha subido foto.
