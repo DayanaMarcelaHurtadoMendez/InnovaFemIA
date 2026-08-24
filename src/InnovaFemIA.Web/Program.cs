@@ -41,6 +41,9 @@ builder.WebHost.ConfigureKestrel(options =>
 // ─── MVC + RAZOR VIEWS ────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
 
+// ─── SERVICIOS DE ALTO RENDIMIENTO (CACHÉ LOCAL DE MEDIOS) ───────────────────
+builder.Services.AddSingleton<InnovaFemIA.Web.Features.Shared.Services.IMediaCacheService, InnovaFemIA.Web.Features.Shared.Services.MediaCacheService>();
+
 // ─── MEDIATOR (CQRS - Vertical Slice Architecture) ───────────────────────────
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<Program>());
