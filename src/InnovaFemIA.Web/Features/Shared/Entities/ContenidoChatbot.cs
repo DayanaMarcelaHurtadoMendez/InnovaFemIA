@@ -52,18 +52,17 @@ public class ContenidoChatbot
     public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
 }
 
-/// <summary>Temas disponibles en el flujo del chatbot por menú.</summary>
+/// <summary>Temas disponibles en el flujo del chatbot por menú y gestión administrativa.</summary>
 public enum TemaContenido
 {
-    CuandoSembrar = 1,
-    CuandoCosechar = 2,
-    PlagasEnfermedades = 3,
-    Abonado = 4,
-    PodaMantenimiento = 5,
-    RiegoDrenaje = 6,
-    PostcosechaManejo = 7,
-    ManejoAgroecologico = 8,
-    ComercializacionCalidad = 9
+    Siembra = 1,
+    Cosecha = 2,
+    AbonadoNutricion = 3,
+    PlagasEnfermedades = 4,
+    PodasManejo = 5,
+    Riego = 6,
+    PostcosechaAlmacenamiento = 7,
+    Comercializacion = 8
 }
 
 /// <summary>Tipos de recurso educativo que puede cargar el equipo investigador.</summary>

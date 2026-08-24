@@ -77,15 +77,14 @@
                                     <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200">
                                         @switch (c.Tema)
                                         {
-                                            case TemaContenido.CuandoSembrar: <span>🌱 Cuándo Sembrar</span> break;
-                                            case TemaContenido.CuandoCosechar: <span>🌾 Cuándo Cosechar</span> break;
-                                            case TemaContenido.PlagasEnfermedades: <span>🐛 Plagas y Enfermedades</span> break;
-                                            case TemaContenido.Abonado: <span>🧪 Abonado y Nutrición</span> break;
-                                            case TemaContenido.PodaMantenimiento: <span>✂️ Poda y Mantenimiento</span> break;
-                                            case TemaContenido.RiegoDrenaje: <span>💧 Riego y Drenaje</span> break;
-                                            case TemaContenido.PostcosechaManejo: <span>📦 Cosecha y Postcosecha</span> break;
-                                            case TemaContenido.ManejoAgroecologico: <span>🌿 Manejo Agroecológico</span> break;
-                                            case TemaContenido.ComercializacionCalidad: <span>🏷️ Calidad y Comercialización</span> break;
+                                            case TemaContenido.Siembra: <span>🌱 Siembra</span> break;
+                                            case TemaContenido.Cosecha: <span>🌾 Cosecha</span> break;
+                                            case TemaContenido.AbonadoNutricion: <span>🧪 Abonado - Nutrición</span> break;
+                                            case TemaContenido.PlagasEnfermedades: <span>🐛 Plagas y enfermedades</span> break;
+                                            case TemaContenido.PodasManejo: <span>✂️ Podas - Manejo</span> break;
+                                            case TemaContenido.Riego: <span>💧 Riego</span> break;
+                                            case TemaContenido.PostcosechaAlmacenamiento: <span>📦 Postcosecha - Almacenamiento</span> break;
+                                            case TemaContenido.Comercializacion: <span>🏷️ Comercialización</span> break;
                                             default: <span>🌱 @c.Tema</span> break;
                                         }
                                     </span>
@@ -209,15 +208,14 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tema del Chatbot</label>
                     <select name="Tema" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
-                        <option value="CuandoSembrar">🌱 Cuándo Sembrar</option>
-                        <option value="CuandoCosechar">🌾 Cuándo Cosechar</option>
-                        <option value="PlagasEnfermedades">🐛 Plagas y Enfermedades</option>
-                        <option value="Abonado">🧪 Abonado y Nutrición</option>
-                        <option value="PodaMantenimiento">✂️ Poda y Mantenimiento</option>
-                        <option value="RiegoDrenaje">💧 Riego y Drenaje</option>
-                        <option value="PostcosechaManejo">📦 Cosecha y Postcosecha</option>
-                        <option value="ManejoAgroecologico">🌿 Manejo Agroecológico</option>
-                        <option value="ComercializacionCalidad">🏷️ Calidad y Comercialización</option>
+                        <option value="Siembra">🌱 Siembra</option>
+                        <option value="Cosecha">🌾 Cosecha</option>
+                        <option value="AbonadoNutricion">🧪 Abonado - Nutrición</option>
+                        <option value="PlagasEnfermedades">🐛 Plagas y enfermedades</option>
+                        <option value="PodasManejo">✂️ Podas - Manejo</option>
+                        <option value="Riego">💧 Riego</option>
+                        <option value="PostcosechaAlmacenamiento">📦 Postcosecha - Almacenamiento</option>
+                        <option value="Comercializacion">🏷️ Comercialización</option>
                     </select>
                 </div>
             </div>
@@ -279,15 +277,14 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tema del Chatbot</label>
                     <select id="edit-tema" name="tema" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
-                        <option value="CuandoSembrar">🌱 Cuándo Sembrar</option>
-                        <option value="CuandoCosechar">🌾 Cuándo Cosechar</option>
-                        <option value="PlagasEnfermedades">🐛 Plagas y Enfermedades</option>
-                        <option value="Abonado">🧪 Abonado y Nutrición</option>
-                        <option value="PodaMantenimiento">✂️ Poda y Mantenimiento</option>
-                        <option value="RiegoDrenaje">💧 Riego y Drenaje</option>
-                        <option value="PostcosechaManejo">📦 Cosecha y Postcosecha</option>
-                        <option value="ManejoAgroecologico">🌿 Manejo Agroecológico</option>
-                        <option value="ComercializacionCalidad">🏷️ Calidad y Comercialización</option>
+                        <option value="Siembra">🌱 Siembra</option>
+                        <option value="Cosecha">🌾 Cosecha</option>
+                        <option value="AbonadoNutricion">🧪 Abonado - Nutrición</option>
+                        <option value="PlagasEnfermedades">🐛 Plagas y enfermedades</option>
+                        <option value="PodasManejo">✂️ Podas - Manejo</option>
+                        <option value="Riego">💧 Riego</option>
+                        <option value="PostcosechaAlmacenamiento">📦 Postcosecha - Almacenamiento</option>
+                        <option value="Comercializacion">🏷️ Comercialización</option>
                     </select>
                 </div>
             </div>
@@ -320,12 +317,12 @@
             <div class="grid grid-cols-2 gap-3 items-center">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Orden</label>
-                    <input type="number" id="edit-orden" name="orden" value="1" min="1" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+                    <input type="number" id="edit-orden" name="orden" min="1" required class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-xs" />
                 </div>
                 <div class="pt-4">
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" id="edit-activo" name="activo" value="true" checked class="w-4 h-4 text-amber-600 rounded" />
-                        <span class="text-xs font-bold text-gray-700">Recurso Activo</span>
+                    <label class="inline-flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="edit-activo" name="activo" value="true" class="rounded text-amber-600 focus:ring-amber-500" />
+                        <span>Recurso Activo</span>
                     </label>
                 </div>
             </div>
@@ -370,16 +367,15 @@
         document.getElementById('edit-cultivoId').value = recurso.CultivoId;
         
         // Mapeo Tema
-        let temaVal = 'CuandoSembrar';
-        if (recurso.Tema === 1 || recurso.Tema === 'CuandoSembrar') temaVal = 'CuandoSembrar';
-        else if (recurso.Tema === 2 || recurso.Tema === 'CuandoCosechar') temaVal = 'CuandoCosechar';
-        else if (recurso.Tema === 3 || recurso.Tema === 'PlagasEnfermedades') temaVal = 'PlagasEnfermedades';
-        else if (recurso.Tema === 4 || recurso.Tema === 'Abonado') temaVal = 'Abonado';
-        else if (recurso.Tema === 5 || recurso.Tema === 'PodaMantenimiento') temaVal = 'PodaMantenimiento';
-        else if (recurso.Tema === 6 || recurso.Tema === 'RiegoDrenaje') temaVal = 'RiegoDrenaje';
-        else if (recurso.Tema === 7 || recurso.Tema === 'PostcosechaManejo') temaVal = 'PostcosechaManejo';
-        else if (recurso.Tema === 8 || recurso.Tema === 'ManejoAgroecologico') temaVal = 'ManejoAgroecologico';
-        else if (recurso.Tema === 9 || recurso.Tema === 'ComercializacionCalidad') temaVal = 'ComercializacionCalidad';
+        let temaVal = 'Siembra';
+        if (recurso.Tema === 1 || recurso.Tema === 'Siembra' || recurso.Tema === 'CuandoSembrar') temaVal = 'Siembra';
+        else if (recurso.Tema === 2 || recurso.Tema === 'Cosecha' || recurso.Tema === 'CuandoCosechar') temaVal = 'Cosecha';
+        else if (recurso.Tema === 3 || recurso.Tema === 'AbonadoNutricion' || recurso.Tema === 'Abonado') temaVal = 'AbonadoNutricion';
+        else if (recurso.Tema === 4 || recurso.Tema === 'PlagasEnfermedades') temaVal = 'PlagasEnfermedades';
+        else if (recurso.Tema === 5 || recurso.Tema === 'PodasManejo' || recurso.Tema === 'PodaMantenimiento' || recurso.Tema === 'ManejoAgroecologico') temaVal = 'PodasManejo';
+        else if (recurso.Tema === 6 || recurso.Tema === 'Riego' || recurso.Tema === 'RiegoDrenaje') temaVal = 'Riego';
+        else if (recurso.Tema === 7 || recurso.Tema === 'PostcosechaAlmacenamiento' || recurso.Tema === 'PostcosechaManejo') temaVal = 'PostcosechaAlmacenamiento';
+        else if (recurso.Tema === 8 || recurso.Tema === 'Comercializacion' || recurso.Tema === 'ComercializacionCalidad') temaVal = 'Comercializacion';
         else temaVal = recurso.Tema;
         document.getElementById('edit-tema').value = temaVal;
 
