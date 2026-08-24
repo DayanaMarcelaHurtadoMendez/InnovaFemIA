@@ -50,6 +50,7 @@ public class AppDbContext : DbContext
             e.Property(f => f.Municipio).IsRequired().HasMaxLength(100).HasDefaultValue("Caldono");
             e.Property(f => f.NombreContacto).IsRequired().HasMaxLength(200);
             e.Property(f => f.TelefonoContacto).IsRequired().HasMaxLength(20);
+            e.Property(f => f.Descripcion).HasMaxLength(1000);
             e.Property(f => f.FotoBytes).HasColumnType("LONGBLOB");
             e.Property(f => f.FotoMimeType).HasMaxLength(50);
             e.Property(f => f.Activo).HasDefaultValue(true);

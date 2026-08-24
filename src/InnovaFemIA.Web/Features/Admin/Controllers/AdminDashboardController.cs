@@ -52,8 +52,43 @@ public class AdminDashboardController : Controller
 
     [HttpPost("familias/crear")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CrearFamilia([FromForm] CrearFamiliaAdminCommand command)
+    public async Task<IActionResult> CrearFamilia(
+        [FromForm] string nombre,
+        [FromForm] string vereda,
+        [FromForm] string municipio,
+        [FromForm] string nombreContacto,
+        [FromForm] string telefonoContacto,
+        [FromForm] double latitud,
+        [FromForm] double longitud,
+        [FromForm] string? descripcion,
+        [FromForm] List<int>? cultivosIds,
+        IFormFile? foto)
     {
+        byte[]? fotoBytes = null;
+        string? fotoMimeType = null;
+
+        if (foto != null && foto.Length > 0)
+        {
+            using var ms = new MemoryStream();
+            await foto.CopyToAsync(ms);
+            fotoBytes = ms.ToArray();
+            fotoMimeType = foto.ContentType;
+        }
+
+        var command = new CrearFamiliaAdminCommand(
+            nombre,
+            vereda,
+            municipio,
+            nombreContacto,
+            telefonoContacto,
+            latitud,
+            longitud,
+            descripcion,
+            cultivosIds ?? [],
+            fotoBytes,
+            fotoMimeType
+        );
+
         var result = await _mediator.Send(command);
         if (!result.IsSuccess) TempData["Error"] = result.Error;
         else TempData["Exito"] = "Familia creada exitosamente.";
@@ -62,8 +97,47 @@ public class AdminDashboardController : Controller
 
     [HttpPost("familias/editar")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditarFamilia([FromForm] EditarFamiliaAdminCommand command)
+    public async Task<IActionResult> EditarFamilia(
+        [FromForm] int id,
+        [FromForm] string nombre,
+        [FromForm] string vereda,
+        [FromForm] string municipio,
+        [FromForm] string nombreContacto,
+        [FromForm] string telefonoContacto,
+        [FromForm] double latitud,
+        [FromForm] double longitud,
+        [FromForm] string? descripcion,
+        [FromForm] bool activo,
+        [FromForm] List<int>? cultivosIds,
+        IFormFile? foto)
     {
+        byte[]? fotoBytes = null;
+        string? fotoMimeType = null;
+
+        if (foto != null && foto.Length > 0)
+        {
+            using var ms = new MemoryStream();
+            await foto.CopyToAsync(ms);
+            fotoBytes = ms.ToArray();
+            fotoMimeType = foto.ContentType;
+        }
+
+        var command = new EditarFamiliaAdminCommand(
+            id,
+            nombre,
+            vereda,
+            municipio,
+            nombreContacto,
+            telefonoContacto,
+            latitud,
+            longitud,
+            descripcion,
+            activo,
+            cultivosIds ?? [],
+            fotoBytes,
+            fotoMimeType
+        );
+
         var result = await _mediator.Send(command);
         if (!result.IsSuccess) TempData["Error"] = result.Error;
         else TempData["Exito"] = "Familia actualizada exitosamente.";
