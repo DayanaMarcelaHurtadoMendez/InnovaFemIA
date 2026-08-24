@@ -117,6 +117,18 @@ else
     app.UseDeveloperExceptionPage();
 }
 
+// ─── LOCALIZACIÓN (Punto decimal para coordenadas GPS y números en formularios) ───
+var defaultCulture = new System.Globalization.CultureInfo("es-CO");
+defaultCulture.NumberFormat.NumberDecimalSeparator = ".";
+defaultCulture.NumberFormat.NumberGroupSeparator = ",";
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(defaultCulture),
+    SupportedCultures = [defaultCulture, System.Globalization.CultureInfo.InvariantCulture],
+    SupportedUICultures = [defaultCulture, System.Globalization.CultureInfo.InvariantCulture]
+};
+app.UseRequestLocalization(localizationOptions);
+
 app.UseStaticFiles();
 app.UseRouting();
 
@@ -159,6 +171,40 @@ using (var scope = app.Services.CreateScope())
         // Aplica migraciones pendientes automáticamente
         await db.Database.MigrateAsync();
         logger.LogInformation("Migraciones aplicadas correctamente.");
+
+        // Migrar automáticamente nombres de temas del chatbot si existen registros antiguos en BD
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync(@"
+                UPDATE ContenidosChatbot SET Tema = 'Siembra' WHERE Tema = 'CuandoSembrar';
+                UPDATE ContenidosChatbot SET Tema = 'Cosecha' WHERE Tema = 'CuandoCosechar';
+                UPDATE ContenidosChatbot SET Tema = 'AbonadoNutricion' WHERE Tema = 'Abonado';
+                UPDATE ContenidosChatbot SET Tema = 'PlagasEnfermedades' WHERE Tema = 'PlagasEnfermedades';
+                UPDATE ContenidosChatbot SET Tema = 'PodasManejo' WHERE Tema IN ('PodaMantenimiento', 'ManejoAgroecologico');
+                UPDATE ContenidosChatbot SET Tema = 'Riego' WHERE Tema = 'RiegoDrenaje';
+                UPDATE ContenidosChatbot SET Tema = 'PostcosechaAlmacenamiento' WHERE Tema = 'PostcosechaManejo';
+                UPDATE ContenidosChatbot SET Tema = 'Comercializacion' WHERE Tema = 'ComercializacionCalidad';
+            ");
+            logger.LogInformation("Temas de ContenidosChatbot sincronizados con los 8 temas oficiales.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning("Advertencia al sincronizar temas de ContenidosChatbot: {Msg}", ex.Message);
+        }
+
+        // Asegurar que la columna Descripcion exista en la tabla Familias
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE Familias ADD COLUMN IF NOT EXISTS Descripcion TEXT NULL;");
+        }
+        catch
+        {
+            try
+            {
+                await db.Database.ExecuteSqlRawAsync("ALTER TABLE Familias ADD COLUMN Descripcion TEXT NULL;");
+            }
+            catch { }
+        }
 
         // Seed del administrador por defecto si no existe
         await SeedAdminAsync(db, app.Configuration, logger);

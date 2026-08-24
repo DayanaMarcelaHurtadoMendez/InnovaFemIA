@@ -70,7 +70,27 @@
                         foreach (var f in Model)
                         {
                             <tr class="hover:bg-gray-50/50 transition-colors">
-                                <td class="p-4 font-bold text-gray-900">@f.Nombre</td>
+                                <td class="p-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 border border-emerald-200 overflow-hidden flex items-center justify-center font-bold text-emerald-800 text-lg shrink-0">
+                                            @if (!string.IsNullOrEmpty(f.FotoBase64))
+                                            {
+                                                <img src="@f.FotoBase64" alt="Foto @f.Nombre" class="w-full h-full object-cover" />
+                                            }
+                                            else
+                                            {
+                                                <span>👩‍🌾</span>
+                                            }
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-gray-900 block text-xs">@f.Nombre</span>
+                                            @if (!string.IsNullOrEmpty(f.Descripcion))
+                                            {
+                                                <p class="text-[11px] text-gray-400 line-clamp-1 max-w-xs" title="@f.Descripcion">@f.Descripcion</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="p-4 text-gray-600">📍 @f.Vereda, @f.Municipio</td>
                                 <td class="p-4 text-gray-600">
                                     <span class="block font-medium text-gray-900">@f.NombreContacto</span>
@@ -122,13 +142,32 @@
             <h3 id="modal-title" class="font-extrabold text-sm text-white">Agregar Nueva Familia</h3>
             <button onclick="cerrarModalFamiliaForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form id="form-familia" action="/admin/familias/crear" method="POST" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <form id="form-familia" action="/admin/familias/crear" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
             @Html.AntiForgeryToken()
             <input type="hidden" id="input-id" name="Id" value="0" />
+
+            <!-- Foto de la Familia -->
+            <div class="p-3.5 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-2">
+                <label class="block text-xs font-bold text-emerald-950 uppercase tracking-wider">Foto de la Familia</label>
+                <div class="flex items-center gap-3">
+                    <div id="preview-foto-box" class="w-14 h-14 rounded-2xl bg-white border border-emerald-200 flex items-center justify-center text-2xl overflow-hidden shrink-0 shadow-sm">
+                        👩‍🌾
+                    </div>
+                    <div class="flex-1">
+                        <input type="file" id="input-foto" name="foto" accept="image/png,image/jpeg,image/webp,image/jpg" onchange="previsualizarFotoFamilia(this)" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-800 file:text-white hover:file:bg-emerald-900 cursor-pointer" />
+                        <span class="text-[10px] text-gray-400 block mt-1">Formato JPG, PNG o WEBP. Esta imagen se mostrará en el pin del mapa y en la ficha de la familia.</span>
+                    </div>
+                </div>
+            </div>
 
             <div>
                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nombre de la Familia</label>
                 <input type="text" id="input-nombre" name="Nombre" required placeholder="Ej: Familia Hurtado Méndez" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Descripción de la Familia</label>
+                <textarea id="input-descripcion" name="descripcion" rows="3" placeholder="Ej: Familia campesina dedicada a la producción agroecológica de café y frutales en Caldono..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600"></textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -149,18 +188,18 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Teléfono / WhatsApp</label>
-                    <input type="text" id="input-telefono" name="TelefonoContacto" required placeholder="Ej: 3124567890" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+                    <input type="tel" id="input-telefono" name="TelefonoContacto" required placeholder="Ej: 3124567890" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" pattern="[0-9]{7,15}" title="Solo se permiten números (entre 7 y 15 dígitos)" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-600" />
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
                 <div>
                     <label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1">Latitud (Colombia)</label>
-                    <input type="number" step="0.000001" id="input-latitud" name="Latitud" required placeholder="Ej: 2.7845" class="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+                    <input type="number" step="any" id="input-latitud" name="Latitud" required placeholder="Ej: 2.4422295" class="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:ring-2 focus:ring-emerald-600" />
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1">Longitud (Colombia)</label>
-                    <input type="number" step="0.000001" id="input-longitud" name="Longitud" required placeholder="Ej: -76.5381" class="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:ring-2 focus:ring-emerald-600" />
+                    <input type="number" step="any" id="input-longitud" name="Longitud" required placeholder="Ej: -76.6072368" class="w-full px-3 py-2 rounded-xl border border-emerald-200 text-xs focus:ring-2 focus:ring-emerald-600" />
                 </div>
             </div>
 
@@ -212,16 +251,29 @@
 </div>
 
 <script>
+    function previsualizarFotoFamilia(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview-foto-box').innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover"/>`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
     function abrirModalCrearFamilia() {
         document.getElementById('modal-title').innerText = 'Agregar Nueva Familia';
         document.getElementById('form-familia').action = '/admin/familias/crear';
         document.getElementById('input-id').value = 0;
         document.getElementById('input-nombre').value = '';
+        document.getElementById('input-descripcion').value = '';
         document.getElementById('input-vereda').value = '';
         document.getElementById('input-contacto').value = '';
         document.getElementById('input-telefono').value = '';
         document.getElementById('input-latitud').value = '2.8051';
         document.getElementById('input-longitud').value = '-76.5512';
+        document.getElementById('input-foto').value = '';
+        document.getElementById('preview-foto-box').innerHTML = '👩‍🌾';
         document.getElementById('div-activo').classList.add('hidden');
         document.querySelectorAll('.chk-cultivo').forEach(c => c.checked = false);
         document.getElementById('modal-familia-form').classList.remove('hidden');
@@ -232,17 +284,26 @@
         document.getElementById('form-familia').action = '/admin/familias/editar';
         document.getElementById('input-id').value = f.Id;
         document.getElementById('input-nombre').value = f.Nombre;
+        document.getElementById('input-descripcion').value = f.Descripcion || '';
         document.getElementById('input-vereda').value = f.Vereda;
         document.getElementById('input-municipio').value = f.Municipio;
         document.getElementById('input-contacto').value = f.NombreContacto;
         document.getElementById('input-telefono').value = f.TelefonoContacto;
         document.getElementById('input-latitud').value = f.Latitud;
         document.getElementById('input-longitud').value = f.Longitud;
+        document.getElementById('input-foto').value = '';
+        
+        if (f.FotoBase64) {
+            document.getElementById('preview-foto-box').innerHTML = `<img src="${f.FotoBase64}" class="w-full h-full object-cover"/>`;
+        } else {
+            document.getElementById('preview-foto-box').innerHTML = '👩‍🌾';
+        }
+
         document.getElementById('div-activo').classList.remove('hidden');
         document.getElementById('input-activo').checked = f.Activo;
 
         document.querySelectorAll('.chk-cultivo').forEach(c => {
-            c.checked = f.CultivosIds.includes(parseInt(c.value));
+            c.checked = f.CultivosIds && f.CultivosIds.includes(parseInt(c.value));
         });
 
         document.getElementById('modal-familia-form').classList.remove('hidden');

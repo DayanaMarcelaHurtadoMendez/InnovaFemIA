@@ -121,15 +121,14 @@ public class ChatbotQueriesHandler :
 
     public static (string Nombre, string Icono) ObtenerNombreEIconoTema(TemaContenido tema) => tema switch
     {
-        TemaContenido.CuandoSembrar => ("Cuándo Sembrar", "🌱"),
-        TemaContenido.CuandoCosechar => ("Cuándo Cosechar", "🌾"),
-        TemaContenido.PlagasEnfermedades => ("Plagas y Enfermedades", "🐛"),
-        TemaContenido.Abonado => ("Abonado y Nutrición", "🧪"),
-        TemaContenido.PodaMantenimiento => ("Poda y Mantenimiento", "✂️"),
-        TemaContenido.RiegoDrenaje => ("Riego y Drenaje", "💧"),
-        TemaContenido.PostcosechaManejo => ("Cosecha y Postcosecha", "📦"),
-        TemaContenido.ManejoAgroecologico => ("Manejo Agroecológico", "🌿"),
-        TemaContenido.ComercializacionCalidad => ("Calidad y Comercialización", "🏷️"),
+        TemaContenido.Siembra => ("Siembra", "🌱"),
+        TemaContenido.Cosecha => ("Cosecha", "🌾"),
+        TemaContenido.AbonadoNutricion => ("Abonado - Nutrición", "🧪"),
+        TemaContenido.PlagasEnfermedades => ("Plagas y enfermedades", "🐛"),
+        TemaContenido.PodasManejo => ("Podas - Manejo", "✂️"),
+        TemaContenido.Riego => ("Riego", "💧"),
+        TemaContenido.PostcosechaAlmacenamiento => ("Postcosecha - Almacenamiento", "📦"),
+        TemaContenido.Comercializacion => ("Comercialización", "🏷️"),
         _ => (tema.ToString(), "🌱")
     };
 
