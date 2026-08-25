@@ -1,172 +1,690 @@
-@model IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerPrecios.PrecioMercadoDto>
+@model InnovaFemIA.Web.Features.Mapa.ObtenerPrecios.PreciosSipsaViewModel
 @{
     ViewData["Title"] = "Precios de Mercado";
-    ViewData["Description"] = "Precios de productos agrícolas en tiempo real obtenidos del DANE Sipsa para productores de Caldono, Cauca.";
+    ViewData["Description"] = "Precios y cotizaciones de productos agrícolas en tiempo real obtenidos del Sistema de Información de Precios y Abastecimiento del Sector Agropecuario (SIPSA) del DANE.";
+    
+    var boletin = Model?.BoletinActual;
 }
 
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
 
-    <!-- Header del módulo -->
-    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-slide-up">
-        <div class="flex items-center gap-3">
-            <span class="text-4xl">📊</span>
-            <div>
-                <h1 class="section-header">Precios de Mercado Agrícola</h1>
-                <p class="section-subtitle">Información del Sistema de Información de Precios Sipsa - DANE</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <a href="/mapa/mapa" class="btn-secondary text-xs" id="link-volver-mapa">
-                📍 Ver Mapa Interactivo
-            </a>
-            <a href="/mapa/directorio" class="btn-secondary text-xs" id="link-directorio">
-                👨‍👩‍👧 Directorio Familias
-            </a>
-        </div>
-    </div>
-
-    <!-- Indicador de Fuente y Estado de Scraping -->
-    <div class="bg-gradient-to-r from-primary-900 to-brand-950 rounded-2xl p-6 text-white mb-8 shadow-md relative overflow-hidden">
-        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-            <div>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1.5 mb-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Fuente Oficial DANE - Sipsa Mayoristas
-                </span>
-                <h2 class="text-lg font-bold text-white">Monitoreo de Precios en Colombia</h2>
-                <p class="text-xs text-gray-300 mt-1 max-w-2xl">
-                    Actualización automática periódica mediante servicios en segundo plano. Permite a las familias productoras de ASCAMPESINA comparar precios y negociar sus cosechas con mayor equidad.
-                </p>
-            </div>
-            <div class="text-right shrink-0">
-                <span class="text-xs text-gray-400 block">Última sincronización</span>
-                <span class="text-sm font-bold text-emerald-300">
-                    @(Model?.FirstOrDefault()?.FechaActualizacion.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Hoy")
-                </span>
-            </div>
-        </div>
-    </div>
-
-    @if (Model == null || !Model.Any())
+    <!-- Notificaciones de TempData -->
+    @if (TempData["MensajeExito"] != null)
     {
-        <div class="card text-center py-16 animate-fade-in">
-            <div class="text-6xl mb-4">📈</div>
-            <h2 class="text-xl font-semibold text-gray-700 mb-2">No hay precios registrados</h2>
-            <p class="text-gray-400 text-sm max-w-md mx-auto">
-                El servicio de scraping está sincronizando la base de datos con el boletín del DANE. Por favor, vuelve a intentar en unos minutos.
-            </p>
+        <div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-sm animate-slide-down">
+            <div class="flex items-center gap-3">
+                <span class="text-xl">✅</span>
+                <span class="text-xs sm:text-sm font-semibold">@TempData["MensajeExito"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700 text-sm font-bold">&times;</button>
         </div>
     }
-    else
+    @if (TempData["MensajeError"] != null)
     {
-        <!-- Grid de Tarjetas de Precios por Cultivo -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-10" id="grid-precios">
-            @foreach (var precio in Model)
-            {
-                <div class="card relative overflow-hidden group">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-10 h-10 rounded-xl bg-primary-50 text-xl flex items-center justify-center border border-primary-100">
-                                @precio.IconoCultivo
-                            </span>
-                            <div>
-                                <h3 class="font-bold text-gray-900 text-sm leading-tight">@precio.NombreCultivo</h3>
-                                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Por kilogramo (Kg)</span>
+        <div class="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center justify-between shadow-sm animate-slide-down">
+            <div class="flex items-center gap-3">
+                <span class="text-xl">⚠️</span>
+                <span class="text-xs sm:text-sm font-semibold">@TempData["MensajeError"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-amber-500 hover:text-amber-700 text-sm font-bold">&times;</button>
+        </div>
+    }
+
+    <!-- Header del módulo -->
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                📊
+            </div>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Precios de Mercado</h1>
+                <p class="text-xs sm:text-sm text-gray-500 font-medium">
+                    Sistema de Información de Precios y Abastecimiento del Sector Agropecuario (SIPSA) &mdash; <strong class="text-emerald-700 font-bold">DANE</strong>
+                </p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+            <a href="/mapa/mapa" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 shadow-sm transition-all" id="link-volver-mapa">
+                <span>📍</span>
+                <span>Mapa Interactivo</span>
+            </a>
+            <a href="/mapa/directorio" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 shadow-sm transition-all" id="link-directorio">
+                <span>👨‍👩‍👧</span>
+                <span>Directorio Familias</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Banner Oficial DANE con Enlaces al Boletín Técnico y Anexo Excel -->
+    <div class="bg-gradient-to-br from-gray-900 via-emerald-950 to-primary-950 rounded-3xl p-6 sm:p-8 text-white mb-8 shadow-xl border border-emerald-500/20 relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-10 -top-10 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="max-w-2xl">
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 inline-flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        DANE &bull; SIPSA Semanal
+                    </span>
+                    @if (boletin != null && !string.IsNullOrEmpty(boletin.Periodo))
+                    {
+                        <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-white/10 text-white border border-white/15">
+                            🗓️ Período: @boletin.Periodo
+                        </span>
+                    }
+                </div>
+
+                <h2 class="text-xl sm:text-2xl font-black text-white leading-snug">
+                    Monitoreo Oficial de Precios Mayoristas
+                </h2>
+                <p class="text-xs sm:text-sm text-emerald-100/80 mt-2 leading-relaxed">
+                    Información estratégica para que las familias productoras de <strong>ASCAMPESINA (Caldono, Cauca)</strong> y aliados conozcan las cotizaciones del mercado y negocien sus cosechas con mayor equidad.
+                </p>
+
+                <div class="mt-3 flex items-center gap-2 text-[11px] text-gray-300">
+                    <span>⏱️ Sincronización periódica automática (cada 5 horas).</span>
+                    <span class="text-emerald-400 font-bold">&bull; Última: @((boletin?.FechaSincronizacion ?? DateTime.UtcNow).ToLocalTime().ToString("dd/MM/yyyy HH:mm"))</span>
+                </div>
+            </div>
+
+            <!-- Botones de Acción Oficiales DANE -->
+            <div class="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+                @if (boletin != null && !string.IsNullOrEmpty(boletin.BoletinTecnicoUrl))
+                {
+                    <!-- Botón Boletín Técnico (PDF) -->
+                    <a href="@boletin.BoletinTecnicoUrl" 
+                       title="@(boletin.BoletinTecnicoTitulo ?? "Boletín Técnico formato pdf")"
+                       role="button" 
+                       target="_blank" 
+                       rel="noopener"
+                       class="inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl text-xs sm:text-sm font-black bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-950/40 hover:scale-105 transition-all border border-rose-400/30 group">
+                        <span class="text-lg group-hover:animate-bounce">📄</span>
+                        <div class="text-left">
+                            <span class="block text-xs uppercase tracking-wider font-extrabold text-rose-100">Boletín Oficial</span>
+                            <span class="text-sm font-black">Boletín Técnico</span>
+                        </div>
+                    </a>
+                }
+
+                @if (boletin != null && !string.IsNullOrEmpty(boletin.AnexoExcelUrl))
+                {
+                    <!-- Botón Anexo (Excel) -->
+                    <a href="@boletin.AnexoExcelUrl" 
+                       title="@(boletin.AnexoExcelTitulo ?? "Anexo formato excel")"
+                       role="button" 
+                       target="_blank" 
+                       rel="noopener"
+                       class="inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl text-xs sm:text-sm font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/40 hover:scale-105 transition-all border border-emerald-400/30 group">
+                        <span class="text-lg group-hover:rotate-12 transition-transform">📊</span>
+                        <div class="text-left">
+                            <span class="block text-xs uppercase tracking-wider font-extrabold text-emerald-100">Descarga .XLSX</span>
+                            <span class="text-sm font-black">Anexo</span>
+                        </div>
+                    </a>
+                }
+
+                <!-- Botón de Sincronización Manual -->
+                <form asp-action="SincronizarPrecios" asp-controller="Mapa" method="post" class="inline-block" onsubmit="document.getElementById('btn-sync-text').innerText='Sincronizando...';">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" 
+                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold bg-white/10 hover:bg-white/20 text-emerald-200 border border-white/20 transition-all shadow-sm backdrop-blur-sm"
+                            id="btn-sync-dane">
+                        <span class="animate-spin text-sm">🔄</span>
+                        <span id="btn-sync-text">Actualizar Datos DANE</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección 1: Cultivos de Caldono y la Región (ÚNICAMENTE Mercados de Popayán y Cali) -->
+    @if (Model?.PreciosCultivos != null && Model.PreciosCultivos.Any())
+    {
+        <div class="mb-10">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-gray-950 tracking-tight flex items-center gap-2">
+                        <span>🌱</span> Precios de Referencia &mdash; Cultivos de Caldono
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-600 font-medium mt-0.5">
+                        Cotizaciones de los mercados locales más cercanos: <strong class="text-emerald-800 font-bold">Popayán (Cauca)</strong> y <strong class="text-emerald-800 font-bold">Cali (Valle)</strong>
+                    </p>
+                </div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-200 self-start sm:self-auto">
+                    📍 Exclusivo Popayán y Cali
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5" id="grid-cultivos-caldono">
+                @foreach (var cultivo in Model.PreciosCultivos)
+                {
+                    var esPopayan = cultivo.MercadoReferencia.Contains("Popayán", StringComparison.OrdinalIgnoreCase);
+                    
+                    <div class="bg-white rounded-3xl p-6 border-2 border-emerald-100 shadow-md hover:shadow-xl hover:border-emerald-300 transition-all relative overflow-hidden group flex flex-col justify-between">
+                        <div>
+                            <!-- Encabezado de la Tarjeta con Icono y Nombre Grande -->
+                            <div class="flex items-start justify-between gap-2 mb-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-13 h-13 rounded-2xl bg-emerald-50 text-3xl flex items-center justify-center border border-emerald-200 group-hover:scale-110 transition-transform p-2 shadow-inner">
+                                        @cultivo.IconoCultivo
+                                    </span>
+                                    <div>
+                                        <h3 class="font-black text-gray-950 text-base leading-tight">@cultivo.NombreCultivo</h3>
+                                        <span class="text-xs text-emerald-800 font-extrabold uppercase tracking-wider">Cultivo Principal</span>
+                                    </div>
+                                </div>
+
+                                <!-- Badge de Tendencia Fácil de Leer para Personas Mayores -->
+                                @switch (cultivo.Tendencia?.Trim())
+                                {
+                                    case "+++":
+                                        <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-red-100 text-red-900 border border-red-300 text-right leading-none" title="Aumento alto: más del 20%">
+                                            ▲ +++ <br><span class="text-[10px] font-bold">Aumento alto</span>
+                                        </span>
+                                        break;
+                                    case "++":
+                                        <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-orange-100 text-orange-900 border border-orange-300 text-right leading-none" title="Aumento moderado: entre 10% y 20%">
+                                            ▲ ++ <br><span class="text-[10px] font-bold">Aumento mod.</span>
+                                        </span>
+                                        break;
+                                    case "+":
+                                        <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 text-right leading-none" title="Aumento leve: entre 0% y 10%">
+                                            ▲ + <br><span class="text-[10px] font-bold">Aumento leve</span>
+                                        </span>
+                                        break;
+                                    case "---":
+                                        <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-emerald-200 text-emerald-950 border border-emerald-400 text-right leading-none" title="Disminución alta: menor al -20%">
+                                            ▼ --- <br><span class="text-[10px] font-bold">Disminución alta</span>
+                                        </span>
+                                        break;
+                                    case "--":
+                                        <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 text-right leading-none" title="Disminución moderada: entre -10% y -20%">
+                                            ▼ -- <br><span class="text-[10px] font-bold">Disminución mod.</span>
+                                        </span>
+                                        break;
+                                    case "-":
+                                        <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-teal-100 text-teal-900 border border-teal-300 text-right leading-none" title="Disminución leve: entre 0% y -10%">
+                                            ▼ - <br><span class="text-[10px] font-bold">Disminución leve</span>
+                                        </span>
+                                        break;
+                                    default:
+                                        <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-slate-100 text-slate-800 border border-slate-300 text-right leading-none" title="Estable: 0% de variación">
+                                            ▬ = <br><span class="text-[10px] font-bold">Estable</span>
+                                        </span>
+                                        break;
+                                }
+                            </div>
+
+                            <!-- PRECIO MEDIO EN TAMAÑO GIGANTE Y ALTO CONTRASTE (Senior Friendly) -->
+                            <div class="my-3 p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-200/80">
+                                <span class="text-xs text-gray-600 block font-bold mb-1">Precio Mayorista Promedio:</span>
+                                <div class="flex items-baseline justify-between gap-1">
+                                    <span class="text-3xl sm:text-4xl font-black text-gray-950 tracking-tight">
+                                        $@cultivo.Precio.ToString("N0")
+                                    </span>
+                                    <span class="text-xs font-black text-emerald-900 bg-emerald-200/80 px-2 py-0.5 rounded-lg">
+                                        COP / Kg
+                                    </span>
+                                </div>
+
+                                <!-- Rango Mínimo y Máximo Claro -->
+                                <div class="mt-2 pt-2 border-t border-emerald-200/60 flex items-center justify-between text-xs font-bold text-gray-700">
+                                    <span>Mín: $@cultivo.PrecioMinimo.ToString("N0")</span>
+                                    <span>Máx: $@cultivo.PrecioMaximo.ToString("N0")</span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Badge de Variación -->
-                        @if (precio.EstadoVariacion == "Sube")
-                        {
-                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
-                                📈 +@precio.PorcentajeVariacion%
+                        <!-- Mercado de Referencia (Solo Popayán o Cali) -->
+                        <div class="pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs">
+                            <span class="font-extrabold truncate max-w-full" title="Mercado: @cultivo.MercadoReferencia">
+                                @if (esPopayan)
+                                {
+                                    <span class="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-extrabold inline-flex items-center gap-1 shadow-sm">
+                                        📍 Popayán (Cauca)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-2.5 py-1 rounded-lg bg-blue-700 text-white font-extrabold inline-flex items-center gap-1 shadow-sm">
+                                        📍 Cali (Valle)
+                                    </span>
+                                }
                             </span>
-                        }
-                        else if (precio.EstadoVariacion == "Baja")
-                        {
-                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                                📉 @precio.PorcentajeVariacion%
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200 flex items-center gap-1">
-                                ➖ Estable
-                            </span>
-                        }
+                            <span class="text-[11px] font-bold text-gray-500">SIPSA DANE</span>
+                        </div>
                     </div>
-
-                    <!-- Precio Promedio Actual -->
-                    <div class="my-4 pt-3 border-t border-gray-100">
-                        <span class="text-xs text-gray-400 block font-medium">Precio Actual Promedio</span>
-                        <span class="text-2xl font-extrabold text-gray-900">
-                            $@precio.Precio.ToString("N0")
-                            <span class="text-xs font-normal text-gray-500">COP</span>
-                        </span>
-                    </div>
-
-                    <div class="flex items-center justify-between text-[11px] text-gray-400 pt-2 border-t border-gray-50">
-                        <span>Anterior: $@(precio.PrecioAnterior?.ToString("N0") ?? "--")</span>
-                        <span class="text-emerald-700 font-medium">@precio.Fuente</span>
-                    </div>
-                </div>
-            }
-        </div>
-
-        <!-- Tabla Informativa Detallada -->
-        <div class="card p-0 overflow-hidden shadow-sm border border-gray-200">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                <h3 class="font-bold text-sm text-gray-900">Tabla Comparativa de Precios Agrícolas</h3>
-                <span class="text-xs text-gray-500">Valores de referencia mayorista</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs text-gray-600">
-                    <thead class="bg-gray-100 text-gray-700 uppercase tracking-wider font-semibold border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-3">Producto</th>
-                            <th class="px-6 py-3">Precio Vigente (Kg)</th>
-                            <th class="px-6 py-3">Precio Anterior</th>
-                            <th class="px-6 py-3">Tendencia</th>
-                            <th class="px-6 py-3">Fuente</th>
-                            <th class="px-6 py-3">Última Act.</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 bg-white">
-                        @foreach (var p in Model)
-                        {
-                            <tr class="hover:bg-gray-50/80 transition-colors">
-                                <td class="px-6 py-4 font-bold text-gray-900 flex items-center gap-2">
-                                    <span class="text-base">@p.IconoCultivo</span>
-                                    <span>@p.NombreCultivo</span>
-                                </td>
-                                <td class="px-6 py-4 font-extrabold text-primary-700 text-sm">
-                                    $@p.Precio.ToString("N0") COP
-                                </td>
-                                <td class="px-6 py-4 text-gray-500">
-                                    $@(p.PrecioAnterior?.ToString("N0") ?? "--") COP
-                                </td>
-                                <td class="px-6 py-4">
-                                    @if (p.EstadoVariacion == "Sube")
-                                    {
-                                        <span class="text-amber-600 font-bold">▲ Sube (+@p.PorcentajeVariacion%)</span>
-                                    }
-                                    else if (p.EstadoVariacion == "Baja")
-                                    {
-                                        <span class="text-emerald-600 font-bold">▼ Baja (@p.PorcentajeVariacion%)</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-gray-500">= Mantengo</span>
-                                    }
-                                </td>
-                                <td class="px-6 py-4 text-gray-500">@p.Fuente</td>
-                                <td class="px-6 py-4 text-gray-400">@p.FechaActualizacion.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                }
             </div>
         </div>
     }
+
+    <!-- 🌟 SECCIÓN 2: TABLA EXPLICATIVA OFICIAL DE TENDENCIAS DANE (7 Símbolos con Significado y Variación) -->
+    <div class="mb-8 bg-gradient-to-br from-slate-50 via-white to-emerald-50/50 rounded-3xl p-6 sm:p-7 border-2 border-emerald-200/80 shadow-md">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5 border-b border-emerald-100 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-emerald-800 text-white flex items-center justify-center text-xl font-bold shadow-sm shrink-0">
+                    ℹ️
+                </div>
+                <div>
+                    <h3 class="text-base sm:text-lg font-black text-gray-950 tracking-tight">
+                        Guía Oficial de Tendencias SIPSA &mdash; DANE
+                    </h3>
+                    <p class="text-xs sm:text-sm text-gray-600 font-medium">
+                        La tendencia compara la cotización actual frente a la semana inmediatamente anterior para el mismo mercado mayorista:
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla Estructurada de los 7 Símbolos -->
+        <div class="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <table class="w-full text-left text-xs sm:text-sm divide-y divide-gray-200">
+                <thead class="bg-gray-100/90 text-gray-800 font-black uppercase text-xs tracking-wider">
+                    <tr>
+                        <th class="px-4 sm:px-6 py-3.5 w-32">Símbolo</th>
+                        <th class="px-4 sm:px-6 py-3.5">Tendencia</th>
+                        <th class="px-4 sm:px-6 py-3.5 text-right">Variación Porcentual</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 font-medium text-gray-800">
+                    <tr class="hover:bg-red-50/60 transition-colors">
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs sm:text-sm font-black bg-red-100 text-red-900 border border-red-300">
+                                ▲ +++
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 font-extrabold text-red-950 text-sm">
+                            Aumento alto
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-black text-red-800 text-sm">
+                            Más del 20 %
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-orange-50/60 transition-colors">
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs sm:text-sm font-black bg-orange-100 text-orange-900 border border-orange-300">
+                                ▲ ++
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 font-extrabold text-orange-950 text-sm">
+                            Aumento moderado
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-black text-orange-800 text-sm">
+                            Entre 10 % y 20 %
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-amber-50/60 transition-colors">
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs sm:text-sm font-black bg-amber-100 text-amber-900 border border-amber-300">
+                                ▲ +
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 font-extrabold text-amber-950 text-sm">
+                            Aumento leve
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-black text-amber-800 text-sm">
+                            Entre 0 % y 10 %
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-100/60 transition-colors">
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs sm:text-sm font-black bg-slate-100 text-slate-800 border border-slate-300">
+                                ▬ =
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 font-extrabold text-slate-800 text-sm">
+                            Estable
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-black text-slate-700 text-sm">
+                            0 % (Sin variación)
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-teal-50/60 transition-colors">
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs sm:text-sm font-black bg-teal-100 text-teal-900 border border-teal-300">
+                                ▼ -
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 font-extrabold text-teal-950 text-sm">
+                            Disminución leve
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-black text-teal-800 text-sm">
+                            Entre 0 % y -10 %
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-emerald-50/60 transition-colors">
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs sm:text-sm font-black bg-emerald-100 text-emerald-900 border border-emerald-300">
+                                ▼ --
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 font-extrabold text-emerald-950 text-sm">
+                            Disminución moderada
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-black text-emerald-800 text-sm">
+                            Entre -10 % y -20 %
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-emerald-100/60 transition-colors">
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs sm:text-sm font-black bg-emerald-200 text-emerald-950 border border-emerald-400">
+                                ▼ ---
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 font-extrabold text-emerald-950 text-sm">
+                            Disminución alta
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-black text-emerald-900 text-sm">
+                            Menor al -20 %
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sección 3: Catálogo Completo SIPSA DANE con Filtros Reactivos sin Recarga de Página -->
+    <div class="bg-white rounded-3xl p-5 sm:p-7 border border-gray-200/80 shadow-md mb-8">
+        
+        <!-- Filtros Superiores (Buscador y Selectores en Vivo) -->
+        <div class="mb-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gray-100 pb-5">
+            <div>
+                <h2 class="text-lg sm:text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                    <span>📋</span> Cotizaciones Mayoristas por Grupo de Alimentos
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 mt-0.5">
+                    Cotizaciones visibles: <strong id="contador-cotizaciones" class="text-emerald-900 font-black text-base">@(Model?.TotalRegistros ?? 0)</strong> de @(Model?.TotalRegistros ?? 0)
+                </p>
+            </div>
+
+            <!-- Buscador y Selector en tiempo real (Sin recarga de página) -->
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="relative min-w-[220px]">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-sm">🔍</span>
+                    <input type="text" 
+                           id="filtro-busqueda" 
+                           oninput="aplicarFiltrosReactivos()" 
+                           placeholder="Buscar producto o mercado en tiempo real..." 
+                           class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm" />
+                </div>
+
+                <select id="filtro-mercado" onchange="aplicarFiltrosReactivos()" class="py-2 px-3 text-xs sm:text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-gray-800 shadow-sm font-semibold">
+                    <option value="">🏛️ Todos los Mercados</option>
+                    @if (Model?.MercadosDisponibles != null)
+                    {
+                        foreach (var m in Model.MercadosDisponibles)
+                        {
+                            <option value="@m">@m</option>
+                        }
+                    }
+                </select>
+
+                <button type="button" 
+                        id="btn-limpiar-filtros" 
+                        onclick="limpiarFiltrosReactivos()" 
+                        class="hidden px-3.5 py-2 text-xs font-bold rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all">
+                    ✕ Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- 🌟 Pestañas de Grupos de Alimentos (Filtrado Instantáneo sin Recargar Página) -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-5 scrollbar-thin" id="contenedor-pestanas-grupos">
+            <button type="button" 
+                    onclick="seleccionarGrupoReactivo('')" 
+                    data-grupo="" 
+                    class="btn-filtro-grupo px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all bg-emerald-900 text-white shadow-md shadow-emerald-950/20">
+                🌱 Todos los Grupos
+            </button>
+
+            @if (Model?.GruposDisponibles != null)
+            {
+                foreach (var grp in Model.GruposDisponibles)
+                {
+                    var icon = grp switch
+                    {
+                        var s when s.Contains("Verdura", StringComparison.OrdinalIgnoreCase) => "🥬",
+                        var s when s.Contains("Fruta", StringComparison.OrdinalIgnoreCase) => "🥑",
+                        var s when s.Contains("Tubérculo", StringComparison.OrdinalIgnoreCase) || s.Contains("Plátano", StringComparison.OrdinalIgnoreCase) => "🥔",
+                        var s when s.Contains("Grano", StringComparison.OrdinalIgnoreCase) || s.Contains("Cereal", StringComparison.OrdinalIgnoreCase) => "🌾",
+                        var s when s.Contains("Huevo", StringComparison.OrdinalIgnoreCase) || s.Contains("Lácteo", StringComparison.OrdinalIgnoreCase) => "🥚",
+                        var s when s.Contains("Carne", StringComparison.OrdinalIgnoreCase) => "🥩",
+                        var s when s.Contains("Pescado", StringComparison.OrdinalIgnoreCase) => "🐟",
+                        var s when s.Contains("Procesado", StringComparison.OrdinalIgnoreCase) => "🥫",
+                        _ => "📦"
+                    };
+
+                    <button type="button" 
+                            onclick="seleccionarGrupoReactivo('@grp')" 
+                            data-grupo="@grp" 
+                            class="btn-filtro-grupo px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        <span>@icon</span>
+                        <span class="ml-1">@grp</span>
+                    </button>
+                }
+            }
+        </div>
+
+        <!-- Estado cuando no hay resultados en el filtro -->
+        <div id="sin-resultados-filtro" class="hidden text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-300 animate-fade-in">
+            <div class="text-4xl mb-3">🔍</div>
+            <h3 class="text-base font-bold text-gray-700">No se encontraron cotizaciones con los filtros actuales</h3>
+            <p class="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+                Prueba cambiando el término de búsqueda o seleccionando "Todos los Grupos".
+            </p>
+            <button type="button" onclick="limpiarFiltrosReactivos()" class="mt-4 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 transition-all">
+                Ver todas las cotizaciones
+            </button>
+        </div>
+
+        <!-- Tabla de Precios Mayoristas SIPSA (Alta Legibilidad para Personas Mayores) -->
+        <div id="contenedor-tabla-sipsa" class="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
+            <table class="w-full text-left text-xs sm:text-sm text-gray-800 divide-y divide-gray-200" id="tabla-precios-sipsa">
+                <thead class="bg-gray-100 text-gray-800 font-black uppercase tracking-wider text-xs">
+                    <tr>
+                        <th class="px-4 py-3.5">Producto</th>
+                        <th class="px-3.5 py-3.5 hidden md:table-cell">Grupo</th>
+                        <th class="px-4 py-3.5">Mercado Mayorista</th>
+                        <th class="px-3.5 py-3.5 text-right">Rango Mín &ndash; Máx</th>
+                        <th class="px-4 py-3.5 text-right">Precio Medio (Kg)</th>
+                        <th class="px-4 py-3.5 text-center">Tendencia Semanal</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white">
+                    @if (Model?.CotizacionesSipsa != null)
+                    {
+                        foreach (var item in Model.CotizacionesSipsa)
+                        {
+                            var esCaliCauca = item.MercadoMayorista.Contains("Cali", StringComparison.OrdinalIgnoreCase) ||
+                                              item.MercadoMayorista.Contains("Popayán", StringComparison.OrdinalIgnoreCase) ||
+                                              item.MercadoMayorista.Contains("Cavasa", StringComparison.OrdinalIgnoreCase);
+
+                            <tr class="fila-cotizacion hover:bg-emerald-50/50 transition-colors"
+                                data-grupo="@item.GrupoAlimento.ToLowerInvariant()"
+                                data-producto="@item.Producto.ToLowerInvariant()"
+                                data-mercado="@item.MercadoMayorista.ToLowerInvariant()">
+                                
+                                <!-- Producto -->
+                                <td class="px-4 py-3 font-black text-gray-950 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base">🌱</span>
+                                        <span>@item.Producto</span>
+                                    </div>
+                                    <span class="md:hidden text-[11px] text-gray-500 font-bold block mt-0.5">@item.GrupoAlimento</span>
+                                </td>
+
+                                <!-- Grupo -->
+                                <td class="px-3.5 py-3 text-gray-600 hidden md:table-cell whitespace-nowrap">
+                                    <span class="px-2.5 py-1 rounded-md bg-gray-100 text-xs font-bold text-gray-800">
+                                        @item.GrupoAlimento
+                                    </span>
+                                </td>
+
+                                <!-- Mercado -->
+                                <td class="px-4 py-3 font-semibold whitespace-nowrap">
+                                    @if (esCaliCauca)
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-100 text-emerald-950 border border-emerald-300">
+                                            📍 @item.MercadoMayorista
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-gray-800">@item.MercadoMayorista</span>
+                                    }
+                                </td>
+
+                                <!-- Rango Min - Max -->
+                                <td class="px-3.5 py-3 text-right font-bold text-gray-600 whitespace-nowrap text-xs">
+                                    $@item.PrecioMinimo.ToString("N0") &ndash; $@item.PrecioMaximo.ToString("N0")
+                                </td>
+
+                                <!-- Precio Medio en Tamaño Grande y Resaltado -->
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <span class="inline-block px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 font-black text-sm sm:text-base">
+                                        $@item.PrecioMedio.ToString("N0") <span class="text-[10px] font-extrabold text-emerald-800">COP</span>
+                                    </span>
+                                </td>
+
+                                <!-- Tendencia Semanal con Badges Completos -->
+                                <td class="px-4 py-3 text-center whitespace-nowrap">
+                                    @switch (item.Tendencia?.Trim())
+                                    {
+                                        case "+++":
+                                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black bg-red-100 text-red-900 border border-red-300" title="Aumento alto: más del 20%">
+                                                ▲ +++ Aumento alto
+                                            </span>
+                                            break;
+                                        case "++":
+                                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black bg-orange-100 text-orange-900 border border-orange-300" title="Aumento moderado: entre 10% y 20%">
+                                                ▲ ++ Aumento mod.
+                                            </span>
+                                            break;
+                                        case "+":
+                                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black bg-amber-100 text-amber-900 border border-amber-300" title="Aumento leve: entre 0% y 10%">
+                                                ▲ + Aumento leve
+                                            </span>
+                                            break;
+                                        case "---":
+                                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-200 text-emerald-950 border border-emerald-400" title="Disminución alta: menor al -20%">
+                                                ▼ --- Disminución alta
+                                            </span>
+                                            break;
+                                        case "--":
+                                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300" title="Disminución moderada: entre -10% y -20%">
+                                                ▼ -- Disminución mod.
+                                            </span>
+                                            break;
+                                        case "-":
+                                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black bg-teal-100 text-teal-900 border border-teal-300" title="Disminución leve: entre 0% y -10%">
+                                                ▼ - Disminución leve
+                                            </span>
+                                            break;
+                                        case "=":
+                                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300" title="Estable: 0% variación">
+                                                ▬ = Estable
+                                            </span>
+                                            break;
+                                        default:
+                                            <span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600 font-bold">
+                                                @(string.IsNullOrWhiteSpace(item.Tendencia) ? "n.d" : item.Tendencia)
+                                            </span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </section>
+
+@section Scripts {
+<script>
+    let grupoActivo = '';
+
+    function seleccionarGrupoReactivo(grupo) {
+        grupoActivo = (grupo || '').trim().toLowerCase();
+
+        // Actualizar estilos de los botones de pestañas
+        document.querySelectorAll('.btn-filtro-grupo').forEach(btn => {
+            const btnGrupo = (btn.getAttribute('data-grupo') || '').trim().toLowerCase();
+            if (btnGrupo === grupoActivo) {
+                btn.className = 'btn-filtro-grupo px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all bg-emerald-900 text-white shadow-md shadow-emerald-950/20';
+            } else {
+                btn.className = 'btn-filtro-grupo px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all bg-gray-100 text-gray-700 hover:bg-gray-200';
+            }
+        });
+
+        aplicarFiltrosReactivos();
+    }
+
+    function aplicarFiltrosReactivos() {
+        const textoBusqueda = (document.getElementById('filtro-busqueda')?.value || '').trim().toLowerCase();
+        const mercadoSeleccionado = (document.getElementById('filtro-mercado')?.value || '').trim().toLowerCase();
+
+        const filas = document.querySelectorAll('.fila-cotizacion');
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const grupo = fila.getAttribute('data-grupo') || '';
+            const producto = fila.getAttribute('data-producto') || '';
+            const mercado = fila.getAttribute('data-mercado') || '';
+
+            const coincideGrupo = !grupoActivo || grupo === grupoActivo;
+            const coincideBusqueda = !textoBusqueda || producto.includes(textoBusqueda) || mercado.includes(textoBusqueda) || grupo.includes(textoBusqueda);
+            const coincideMercado = !mercadoSeleccionado || mercado === mercadoSeleccionado;
+
+            if (coincideGrupo && coincideBusqueda && coincideMercado) {
+                fila.style.display = '';
+                visibles++;
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+
+        // Actualizar contador
+        const contadorEl = document.getElementById('contador-cotizaciones');
+        if (contadorEl) {
+            contadorEl.innerText = visibles;
+        }
+
+        // Mostrar / ocultar estado de sin resultados
+        const sinResultadosEl = document.getElementById('sin-resultados-filtro');
+        const tablaContenedor = document.getElementById('contenedor-tabla-sipsa');
+        if (sinResultadosEl && tablaContenedor) {
+            if (visibles === 0) {
+                sinResultadosEl.classList.remove('hidden');
+                tablaContenedor.classList.add('hidden');
+            } else {
+                sinResultadosEl.classList.add('hidden');
+                tablaContenedor.classList.remove('hidden');
+            }
+        }
+
+        // Control del botón limpiar
+        const btnLimpiar = document.getElementById('btn-limpiar-filtros');
+        if (btnLimpiar) {
+            if (grupoActivo || textoBusqueda || mercadoSeleccionado) {
+                btnLimpiar.classList.remove('hidden');
+            } else {
+                btnLimpiar.classList.add('hidden');
+            }
+        }
+    }
+
+    function limpiarFiltrosReactivos() {
+        const inputBusqueda = document.getElementById('filtro-busqueda');
+        const selectMercado = document.getElementById('filtro-mercado');
+        if (inputBusqueda) inputBusqueda.value = '';
+        if (selectMercado) selectMercado.value = '';
+        seleccionarGrupoReactivo('');
+    }
+</script>
+}

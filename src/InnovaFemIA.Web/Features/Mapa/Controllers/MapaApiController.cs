@@ -80,14 +80,17 @@ public class MapaApiController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene los precios de mercado vigentes del DANE.
+    /// Obtiene los precios de mercado mayoristas vigentes del DANE SIPSA.
     /// [PublicApi] → accesible externamente.
     /// </summary>
     [HttpGet("precios")]
     [PublicApi]
-    public async Task<IActionResult> ObtenerPrecios()
+    public async Task<IActionResult> ObtenerPrecios(
+        [FromQuery] string? grupo = null,
+        [FromQuery] string? busqueda = null,
+        [FromQuery] string? mercado = null)
     {
-        var result = await _mediator.Send(new ObtenerPreciosQuery());
+        var result = await _mediator.Send(new ObtenerPreciosQuery(grupo, busqueda, mercado));
         return result.IsSuccess
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, new { error = result.Error });

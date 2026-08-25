@@ -45,11 +45,32 @@ public class MapaController : Controller
         return View("~/Views/Mapa/Mapa.cshtml");
     }
 
-    /// <summary>Pantalla 3 — Precios de mercado del DANE (acceso público).</summary>
+    /// <summary>Pantalla 3 — Precios de mercado del DANE SIPSA (acceso público).</summary>
     [HttpGet("precios")]
-    public async Task<IActionResult> Precios()
+    public async Task<IActionResult> Precios(
+        [FromQuery] string? grupo = null,
+        [FromQuery] string? busqueda = null,
+        [FromQuery] string? mercado = null)
     {
-        var result = await _mediator.Send(new ObtenerPreciosQuery());
+        var result = await _mediator.Send(new ObtenerPreciosQuery(grupo, busqueda, mercado));
+        ViewBag.GrupoSeleccionado = grupo;
+        ViewBag.Busqueda = busqueda;
+        ViewBag.MercadoSeleccionado = mercado;
+
         return View("~/Views/Mapa/Precios.cshtml", result.Value);
+    }
+
+    /// <summary>Endpoint para forzar la sincronización manual de precios DANE.</summary>
+    [HttpPost("precios/sincronizar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SincronizarPrecios(
+        [FromServices] BackgroundServices.ScrapingPreciosService scrapingService)
+    {
+        var exito = await scrapingService.EjecutarScrapingAsync(HttpContext.RequestAborted);
+        TempData[exito ? "MensajeExito" : "MensajeError"] = exito
+            ? "Sincronización con DANE SIPSA completada con éxito."
+            : "No se pudo sincronizar en vivo con el DANE. Se mantuvieron los datos oficiales de contingencia.";
+
+        return RedirectToAction(nameof(Precios));
     }
 }
