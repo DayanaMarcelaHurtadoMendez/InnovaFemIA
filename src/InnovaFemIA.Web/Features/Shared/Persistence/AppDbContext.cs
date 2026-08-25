@@ -19,6 +19,8 @@ public class AppDbContext : DbContext
     public DbSet<ActorMapa> ActoresMapa => Set<ActorMapa>();
     public DbSet<Stock> Stocks => Set<Stock>();
     public DbSet<PrecioMercado> PreciosMercado => Set<PrecioMercado>();
+    public DbSet<PrecioMayoristaSipsa> PreciosMayoristasSipsa => Set<PrecioMayoristaSipsa>();
+    public DbSet<BoletinSipsaInfo> BoletinesSipsaInfo => Set<BoletinSipsaInfo>();
     public DbSet<ReglasLunares> ReglasLunares => Set<ReglasLunares>();
 
     // ─── Módulo 3 — Biocomercio ────────────────────────────────────────────
@@ -148,6 +150,48 @@ public class AppDbContext : DbContext
                 .WithMany(c => c.PreciosMercado)
                 .HasForeignKey(p => p.CultivoId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── PrecioMayoristaSipsa (DANE SIPSA) ─────────────────────────────
+        modelBuilder.Entity<PrecioMayoristaSipsa>(e =>
+        {
+            e.ToTable("PreciosMayoristasSipsa");
+            e.HasKey(p => p.Id);
+            e.Property(p => p.GrupoAlimento).IsRequired().HasMaxLength(100);
+            e.Property(p => p.Producto).IsRequired().HasMaxLength(150);
+            e.Property(p => p.MercadoMayorista).IsRequired().HasMaxLength(150);
+            e.Property(p => p.PrecioMinimo).HasColumnType("decimal(18,2)");
+            e.Property(p => p.PrecioMaximo).HasColumnType("decimal(18,2)");
+            e.Property(p => p.PrecioMedio).HasColumnType("decimal(18,2)");
+            e.Property(p => p.Tendencia).HasMaxLength(10).HasDefaultValue("=");
+            e.Property(p => p.PeriodoBoletin).HasMaxLength(150);
+            e.Property(p => p.FechaBoletin).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(p => p.FechaActualizacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+
+            e.HasIndex(p => new { p.Producto, p.MercadoMayorista });
+            e.HasIndex(p => p.GrupoAlimento);
+            e.HasIndex(p => p.FechaBoletin);
+
+            e.HasOne(p => p.Cultivo)
+                .WithMany()
+                .HasForeignKey(p => p.CultivoId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ── BoletinSipsaInfo (Metadatos del Boletín DANE) ───────────────────
+        modelBuilder.Entity<BoletinSipsaInfo>(e =>
+        {
+            e.ToTable("BoletinesSipsaInfo");
+            e.HasKey(b => b.Id);
+            e.Property(b => b.Periodo).IsRequired().HasMaxLength(150);
+            e.Property(b => b.BoletinTecnicoUrl).HasMaxLength(500);
+            e.Property(b => b.BoletinTecnicoTitulo).HasMaxLength(300);
+            e.Property(b => b.AnexoExcelUrl).HasMaxLength(500);
+            e.Property(b => b.AnexoExcelTitulo).HasMaxLength(300);
+            e.Property(b => b.FechaPublicacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(b => b.FechaSincronizacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(b => b.EsExitoso).HasDefaultValue(true);
         });
 
         // ── ReglasLunares ─────────────────────────────────────────────────
