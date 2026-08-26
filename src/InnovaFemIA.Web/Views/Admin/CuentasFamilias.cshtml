@@ -9,13 +9,13 @@
     <!-- Header y botón de creación -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div>
-            <a href="/admin/dashboard" class="text-xs text-emerald-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <a href="/admin/dashboard" class="text-xs text-verde font-bold hover:underline block mb-1">← Volver al Dashboard</a>
             <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
                 <span>🔑</span> Cuentas de Acceso (Biocomercio)
             </h1>
             <p class="text-xs text-gray-500 mt-0.5">Credenciales de inicio de sesión de las Familias Campesinas (Módulo 3)</p>
         </div>
-        <button onclick="abrirModalCrearCuenta()" class="px-5 py-3 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-2xl shadow-md transition-all shrink-0">
+        <button onclick="abrirModalCrearCuenta()" class="px-5 py-3 bg-verde hover:bg-verde text-white text-xs font-bold rounded-2xl shadow-md transition-all shrink-0">
             + Crear Cuenta de Familia
         </button>
     </div>
@@ -23,7 +23,7 @@
     <!-- Alertas -->
     @if (TempData["Exito"] != null)
     {
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+        <div class="bg-emerald-50 border border-emerald-200 text-verde px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
             <span>✅</span> <span>@TempData["Exito"]</span>
         </div>
     }
@@ -56,14 +56,14 @@
                         {
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="p-4 font-bold text-gray-900">👤 @c.NombreUsuario</td>
-                                <td class="p-4 font-semibold text-emerald-900">👩‍🌾 @c.NombreFamilia</td>
+                                <td class="p-4 font-semibold text-verde">👩‍🌾 @c.NombreFamilia</td>
                                 <td class="p-4 text-gray-600">📍 @c.Vereda</td>
                                 <td class="p-4 text-gray-500 text-[11px]">@c.FechaCreacion.ToString("dd/MM/yyyy")</td>
                                 <td class="p-4 text-gray-500 text-[11px]">
                                     @(c.UltimoLogin.HasValue ? c.UltimoLogin.Value.ToString("dd/MM/yyyy HH:mm") : "Nunca")
                                 </td>
                                 <td class="p-4 text-center">
-                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold @(c.Activo ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800")">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold @(c.Activo ? "bg-emerald-100 text-verde" : "bg-rose-100 text-rose-800")">
                                         @(c.Activo ? "Activa" : "Desactivada")
                                     </span>
                                 </td>
@@ -95,7 +95,7 @@
 <!-- Modal Formulario Crear Cuenta -->
 <div id="modal-crear-cuenta" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100">
-        <div class="bg-emerald-900 text-white p-5 flex items-center justify-between">
+        <div class="bg-verde text-white p-5 flex items-center justify-between">
             <h3 class="font-extrabold text-sm text-white">Crear Cuenta de Familia</h3>
             <button onclick="cerrarModalCrearCuenta()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
@@ -127,7 +127,7 @@
 
             <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
                 <button type="button" onclick="cerrarModalCrearCuenta()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
-                <button type="submit" class="px-5 py-2 bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md">Crear Cuenta</button>
+                <button type="submit" class="px-5 py-2 bg-verde text-white font-bold text-xs rounded-xl shadow-md">Crear Cuenta</button>
             </div>
         </form>
     </div>
