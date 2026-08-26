@@ -95,4 +95,18 @@ public class MapaApiController : ControllerBase
             ? Ok(result.Value)
             : StatusCode(result.StatusCode, new { error = result.Error });
     }
+
+    /// <summary>
+    /// Obtiene la fase lunar actual, datos astronómicos precisos para Caldono, Cauca y recomendaciones agroecológicas.
+    /// [PublicApi] → accesible externamente y por el mapa interactivo.
+    /// </summary>
+    [HttpGet("lunar")]
+    [PublicApi]
+    public async Task<IActionResult> ObtenerLunar([FromQuery] int? cultivoId = null)
+    {
+        var result = await _mediator.Send(new InnovaFemIA.Web.Features.Mapa.ObtenerLunar.ObtenerInformacionLunarQuery(cultivoId));
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : StatusCode(result.StatusCode, new { error = result.Error });
+    }
 }
