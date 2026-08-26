@@ -5,35 +5,35 @@
     var lecciones = ViewBag.Lecciones as IEnumerable<InnovaFemIA.Web.Features.Chatbot.LeccionResumenDto> ?? [];
 }
 
-<div class="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-amber-50/40 via-emerald-50/30 to-gray-50 py-6 px-3 sm:px-6 lg:px-8">
+<div class="min-h-[calc(100vh-4rem)] bg-gray-50 py-6 px-3 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto flex flex-col h-[85vh] bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
         
         <!-- Header del Chatbot -->
-        <header class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white p-4 sm:p-5 flex items-center justify-between shadow-md shrink-0">
+        <header class="bg-white px-4 sm:px-6 py-4 flex items-center justify-between border-b border-gray-100 shrink-0">
             <div class="flex items-center gap-3.5">
                 <div class="relative">
-                    <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-2xl shadow-inner">
+                    <div class="w-12 h-12 rounded-2xl bg-naranja-light text-naranja flex items-center justify-center text-2xl shadow-sm border border-naranja/10">
                         👩‍🌾
                     </div>
-                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-emerald-800 rounded-full animate-pulse"></span>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-naranja border-2 border-white rounded-full animate-pulse"></span>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h1 class="font-black text-base sm:text-lg tracking-tight">Amalia</h1>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/30 border border-emerald-300/40 text-emerald-100">
+                        <h1 class="font-black text-base sm:text-lg tracking-tight text-gray-900">Amalia</h1>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-naranja-light border border-naranja/20 text-naranja">
                             Asistente Educativo
                         </span>
                     </div>
-                    <p class="text-xs text-emerald-100/90 font-medium">InnovaFemIA · Saberes Agroecológicos de Caldono</p>
+                    <p class="text-xs text-gray-500 font-medium">InnovaFemIA · Saberes Agroecológicos de Caldono</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <a href="/chatbot/lecciones" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm">
+                <a href="/chatbot/lecciones" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 btn-secondary text-xs">
                     <span>🎓</span>
                     <span>Modo Lección</span>
                 </a>
-                <button onclick="reiniciarChat()" title="Reiniciar conversación" class="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all border border-white/10 text-xs font-bold flex items-center gap-1">
+                <button onclick="reiniciarChat()" title="Reiniciar conversación" class="p-2.5 btn-secondary flex items-center gap-1">
                     <span>🔄</span>
                     <span class="hidden md:inline">Reiniciar</span>
                 </button>
@@ -49,7 +49,7 @@
         <footer class="p-3.5 bg-white border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 shrink-0">
             <div class="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full text-xs">
                 <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider pl-1">Accesos:</span>
-                <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-xl border border-emerald-200/80 transition-all flex items-center gap-1 shrink-0">
+                <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-verde font-bold rounded-xl border border-emerald-200/80 transition-all flex items-center gap-1 shrink-0">
                     🌾 Consultar Cultivos
                 </button>
                 <a href="/chatbot/lecciones" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-xl border border-amber-200/80 transition-all flex items-center gap-1 shrink-0">
@@ -116,7 +116,7 @@
         wrapper.className = 'flex items-start gap-3 animate-fade-in max-w-2xl';
         
         wrapper.innerHTML = `
-            <div class="w-9 h-9 rounded-2xl bg-emerald-800 text-white flex items-center justify-center text-base shrink-0 shadow-sm border border-emerald-700">
+            <div class="w-9 h-9 rounded-2xl bg-verde text-white flex items-center justify-center text-base shrink-0 shadow-sm border border-verde">
                 👩‍🌾
             </div>
             <div class="bg-white p-4 rounded-3xl rounded-tl-sm border border-gray-100 shadow-sm text-xs text-gray-800 space-y-3 leading-relaxed w-full">
@@ -134,10 +134,10 @@
         wrapper.className = 'flex items-end justify-end gap-2 animate-fade-in';
         
         wrapper.innerHTML = `
-            <div class="bg-emerald-700 text-white px-4 py-3 rounded-3xl rounded-tr-sm shadow-md text-xs font-bold max-w-md">
+            <div class="bg-verde text-white px-4 py-3 rounded-3xl rounded-tr-sm shadow-md text-xs font-bold max-w-md">
                 ${texto}
             </div>
-            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">
+            <div class="w-8 h-8 rounded-full bg-emerald-100 text-verde flex items-center justify-center text-xs font-bold shrink-0">
                 👤
             </div>
         `;
@@ -158,24 +158,31 @@
 
         const welcomeHtml = `
             <div>
-                <p class="font-extrabold text-emerald-950 text-sm mb-1">${saludo} Soy <strong>Amalia</strong>, tu asistente educativa de InnovaFemIA.</p>
+                <p class="font-extrabold text-verde text-sm mb-1">${saludo} Soy <strong>Amalia</strong>, tu asistente educativa de InnovaFemIA.</p>
                 <p class="text-gray-600">Estoy aquí para acompañarte y compartir conocimientos prácticos sobre el campo en Caldono, Cauca.</p>
             </div>
             <div class="pt-2 border-t border-gray-100">
                 <p class="font-bold text-gray-700 mb-2">¿Qué te gustaría hacer hoy?</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <button onclick="iniciarFlujoCultivos()" class="p-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-2xl border border-emerald-200 text-left font-bold flex items-center gap-2 transition-all group">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button onclick="iniciarFlujoCultivos()" class="p-3 bg-emerald-50 hover:bg-emerald-100 text-verde rounded-2xl border border-emerald-200 text-left font-bold flex items-center gap-2 transition-all group">
                         <span class="text-xl group-hover:scale-110 transition-transform">🌾</span>
                         <div>
-                            <span class="block">Aprender sobre mis Cultivos</span>
-                            <span class="text-[10px] text-emerald-700 font-normal">Guías prácticas, abonos y calidad</span>
+                            <span class="block">Mis Cultivos</span>
+                            <span class="text-[10px] text-verde font-normal">Guías prácticas y calidad</span>
+                        </div>
+                    </button>
+                    <button onclick="consultarCalendarioLunarChatbot()" class="p-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-950 rounded-2xl border border-indigo-200 text-left font-bold flex items-center gap-2 transition-all group">
+                        <span class="text-xl group-hover:scale-110 transition-transform">🌒</span>
+                        <div>
+                            <span class="block">Fase Lunar</span>
+                            <span class="text-[10px] text-indigo-700 font-normal">Cuándo sembrar y podar</span>
                         </div>
                     </button>
                     <a href="/chatbot/lecciones" class="p-3 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-2xl border border-amber-200 text-left font-bold flex items-center gap-2 transition-all group">
                         <span class="text-xl group-hover:scale-110 transition-transform">🎓</span>
                         <div>
                             <span class="block">Modo Lección</span>
-                            <span class="text-[10px] text-amber-700 font-normal">Aprende respondiendo preguntas</span>
+                            <span class="text-[10px] text-amber-700 font-normal">Aprende con trivias</span>
                         </div>
                     </a>
                 </div>
@@ -238,7 +245,7 @@
                 const sinTemasHtml = `
                     <p class="font-bold text-amber-900">No encontramos temas con recursos disponibles para <strong>${nombre}</strong>.</p>
                     <div class="pt-2">
-                        <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs">
+                        <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-emerald-100 text-verde font-bold rounded-xl text-xs">
                             ← Elegir otro cultivo
                         </button>
                     </div>
@@ -273,7 +280,7 @@
                     ${temasBotonesHtml}
                 </div>
                 <div class="pt-2">
-                    <button onclick="iniciarFlujoCultivos()" class="text-[11px] text-emerald-800 font-bold hover:underline">
+                    <button onclick="iniciarFlujoCultivos()" class="text-[11px] text-verde font-bold hover:underline">
                         ← Cambiar de cultivo
                     </button>
                 </div>
@@ -284,7 +291,7 @@
         } catch (err) {
             agregarBurbujaBot(`
                 <p class="text-rose-700 font-bold">Ocurrió un inconveniente al consultar los temas disponibles.</p>
-                <button onclick="seleccionarCultivo(${id}, '${nombre}', '${icono}')" class="mt-2 px-3 py-1 bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs">Reintentar</button>
+                <button onclick="seleccionarCultivo(${id}, '${nombre}', '${icono}')" class="mt-2 px-3 py-1 bg-emerald-100 text-verde font-bold rounded-xl text-xs">Reintentar</button>
             `);
         }
     }
@@ -308,7 +315,7 @@
                         <p class="font-bold text-amber-900">No tenemos información disponible sobre este tema todavía. Prueba con otra combinación.</p>
                     </div>
                     <div class="pt-2 flex flex-wrap gap-2">
-                        <button onclick="seleccionarCultivo(${cultivo.id}, '${cultivo.nombre}', '${cultivo.icono}')" class="px-3 py-1.5 bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs">
+                        <button onclick="seleccionarCultivo(${cultivo.id}, '${cultivo.nombre}', '${cultivo.icono}')" class="px-3 py-1.5 bg-emerald-100 text-verde font-bold rounded-xl text-xs">
                             🔄 Elegir otro tema para ${cultivo.nombre}
                         </button>
                         <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-gray-100 text-gray-700 font-bold rounded-xl text-xs">
@@ -326,7 +333,7 @@
         } catch (err) {
             agregarBurbujaBot(`
                 <p class="text-rose-700 font-bold">Ocurrió un inconveniente al cargar el contenido. Por favor intenta nuevamente.</p>
-                <button onclick="seleccionarTema('${temaId}', '${temaNombre}', '${temaIcono}')" class="mt-2 px-3 py-1 bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs">Reintentar</button>
+                <button onclick="seleccionarTema('${temaId}', '${temaNombre}', '${temaIcono}')" class="mt-2 px-3 py-1 bg-emerald-100 text-verde font-bold rounded-xl text-xs">Reintentar</button>
             `);
         }
     }
@@ -391,7 +398,7 @@
                     </div>
                     <div class="flex items-center justify-between text-[11px] text-gray-500 pt-1">
                         <span>📦 ${rArchivoNombre || 'infografia.jpg'} ${formatearTamano(rTamano)}</span>
-                        <a href="${fileUrl}" target="_blank" download class="font-bold text-emerald-800 hover:underline">Descargar Imagen 📥</a>
+                        <a href="${fileUrl}" target="_blank" download class="font-bold text-verde hover:underline">Descargar Imagen 📥</a>
                     </div>
                 </div>
             `;
@@ -443,7 +450,7 @@
 
         const recursoHtml = `
             <div>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-200 inline-block mb-1.5">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-verde border border-emerald-200 inline-block mb-1.5">
                     ${cultivo.icono} ${cultivo.nombre} · ${tema.icono} ${tema.nombre} (Recurso ${index + 1} de ${total})
                 </span>
                 <h2 class="text-sm font-black text-gray-900 mb-2">${rTitulo}</h2>
@@ -455,7 +462,7 @@
             <div class="pt-3 border-t border-gray-100">
                 <p class="font-extrabold text-gray-800 text-xs mb-2">¿Te sirvió esta información?</p>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button onclick="responderFeedback('si')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all shadow-sm flex items-center gap-1">
+                    <button onclick="responderFeedback('si')" class="px-3 py-1.5 bg-emerald-600 hover:bg-verde text-white font-bold rounded-xl text-xs transition-all shadow-sm flex items-center gap-1">
                         <span>🟢</span> <span>Sí, ¡muchas gracias!</span>
                     </button>
                     <button onclick="responderFeedback('no')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 font-bold rounded-xl text-xs border border-rose-200 transition-all flex items-center gap-1">
@@ -478,10 +485,10 @@
         if (tipo === 'si') {
             agregarBurbujaUsuaria("🟢 Sí, ¡muchas gracias!");
             const html = `
-                <p class="font-bold text-emerald-900">¡Nos alegra muchísimo que te haya servido! 😊</p>
+                <p class="font-bold text-verde">¡Nos alegra muchísimo que te haya servido! 😊</p>
                 <p class="text-gray-600">¿Quieres consultar otro tema para <strong>${cultivo?.nombre || 'tus cultivos'}</strong> o volver al menú principal?</p>
                 <div class="pt-2 flex flex-wrap gap-2">
-                    <button onclick="seleccionarCultivo(${cultivo.id}, '${cultivo.nombre}', '${cultivo.icono}')" class="px-3 py-1.5 bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs">
+                    <button onclick="seleccionarCultivo(${cultivo.id}, '${cultivo.nombre}', '${cultivo.icono}')" class="px-3 py-1.5 bg-emerald-100 text-verde font-bold rounded-xl text-xs">
                         🌾 Consultar otro tema de ${cultivo.nombre}
                     </button>
                     <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-gray-100 text-gray-800 font-bold rounded-xl text-xs">
@@ -508,7 +515,7 @@
                     ` : `
                         <span class="text-xs text-gray-500 italic block w-full mb-1">No hay más recursos disponibles sobre este tema.</span>
                     `}
-                    <button onclick="seleccionarCultivo(${cultivo.id}, '${cultivo.nombre}', '${cultivo.icono}')" class="px-3 py-1.5 bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs">
+                    <button onclick="seleccionarCultivo(${cultivo.id}, '${cultivo.nombre}', '${cultivo.icono}')" class="px-3 py-1.5 bg-emerald-100 text-verde font-bold rounded-xl text-xs">
                         🌾 Elegir otro tema
                     </button>
                     <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-gray-100 text-gray-800 font-bold rounded-xl text-xs">
@@ -531,7 +538,7 @@
             const html = `
                 <p class="font-bold text-amber-900">No hay más recursos disponibles sobre este tema en este momento.</p>
                 <div class="pt-2 flex flex-wrap gap-2">
-                    <button onclick="seleccionarCultivo(${estadoActual.cultivoSeleccionado.id}, '${estadoActual.cultivoSeleccionado.nombre}', '${estadoActual.cultivoSeleccionado.icono}')" class="px-3 py-1.5 bg-emerald-100 text-emerald-900 font-bold rounded-xl text-xs">
+                    <button onclick="seleccionarCultivo(${estadoActual.cultivoSeleccionado.id}, '${estadoActual.cultivoSeleccionado.nombre}', '${estadoActual.cultivoSeleccionado.icono}')" class="px-3 py-1.5 bg-emerald-100 text-verde font-bold rounded-xl text-xs">
                         🌾 Elegir otro tema
                     </button>
                     <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-gray-100 text-gray-800 font-bold rounded-xl text-xs">
@@ -561,5 +568,69 @@
     function cerrarMediaModal() {
         document.getElementById('media-modal').classList.add('hidden');
         document.getElementById('media-modal-body').innerHTML = '';
+    }
+
+    // ─── Flujo 3: Consulta del Calendario Lunar Agrícola de Caldono ──────────
+    async function consultarCalendarioLunarChatbot() {
+        agregarBurbujaUsuaria("🌒 ¿En qué fase lunar estamos y qué labores se recomiendan en Caldono?");
+
+        try {
+            const resp = await fetch('/api/mapa/lunar');
+            if (!resp.ok) throw new Error("No se pudo obtener la fase lunar");
+            const data = await resp.json();
+
+            let recsHtml = '';
+            if (data.practicasRecomendadas && data.practicasRecomendadas.length > 0) {
+                recsHtml = data.practicasRecomendadas.slice(0, 3).map(p => `
+                    <li class="flex items-start gap-2 text-xs text-slate-700">
+                        <span class="text-emerald-600 font-bold">${p.iconoPractica || '🌱'}</span>
+                        <div><strong>${p.practica}:</strong> ${p.recomendacion}</div>
+                    </li>
+                `).join('');
+            }
+
+            const html = `
+                <div class="space-y-3">
+                    <div class="p-3.5 bg-gradient-to-r from-indigo-950 to-slate-900 text-white rounded-2xl border border-indigo-500/30 flex items-center gap-3">
+                        <span class="text-4xl">${data.icono}</span>
+                        <div>
+                            <span class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider block">Fase Lunar Actual · Caldono (Cauca)</span>
+                            <h4 class="text-base font-extrabold text-white">${data.nombreFase}</h4>
+                            <p class="text-[11px] text-indigo-200">Iluminación: <strong>${data.porcentajeIluminacion}</strong> • Cambia a <strong>${data.nombreProximaFase}</strong> en <strong>${data.diasParaProximoCambio} días</strong></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-xs text-gray-800 mb-1.5">🌿 Labores y recomendaciones de ASCAMPESINA para esta fase:</p>
+                        <ul class="space-y-1.5 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                            ${recsHtml || '<li class="text-xs text-gray-500 italic">No hay prácticas registradas para esta fase.</li>'}
+                        </ul>
+                    </div>
+
+                    <div class="pt-2 flex flex-wrap gap-2">
+                        <a href="/mapa/lunar" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow-sm">
+                            <span>📖</span> Ver Calendario Completo del Mes
+                        </a>
+                        <button onclick="iniciarFlujoCultivos()" class="px-3.5 py-2 bg-emerald-100 hover:bg-emerald-200 text-verde font-bold rounded-xl text-xs">
+                            🌾 Aprender de mis cultivos
+                        </button>
+                        <button onclick="reiniciarChat()" class="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl text-xs">
+                            🔄 Menú Principal
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            agregarBurbujaBot(html);
+
+        } catch (err) {
+            console.error(err);
+            agregarBurbujaBot(`
+                <p class="text-xs text-gray-700">No se pudo consultar el cálculo lunar en este momento. Puedes ingresar directamente a la sección de <a href="/mapa/lunar" class="text-indigo-600 font-bold underline">Calendario Lunar</a>.</p>
+                <div class="pt-2">
+                    <button onclick="reiniciarChat()" class="px-3 py-1.5 bg-gray-100 text-gray-800 font-bold rounded-xl text-xs">🔄 Volver</button>
+                </div>
+            `);
+        }
     }
 </script>

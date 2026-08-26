@@ -1,22 +1,22 @@
 @* Footer de InnovaFemIA *@
-<footer class="bg-gray-900 text-gray-300 mt-auto" role="contentinfo">
+<footer class="bg-morado text-morado-light mt-auto border-t border-morado/20" role="contentinfo">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
 
             <!-- Columna 1: Brand -->
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
-                    <div class="bg-white p-2.5 rounded-2xl shadow-md border border-gray-100 inline-flex items-center justify-center shrink-0">
+                    <div class="bg-white p-2.5 rounded-2xl shadow-md inline-flex items-center justify-center shrink-0">
                         <img src="~/images/general/Logo.png" alt="InnovaFemIA" class="h-14 w-auto object-contain" />
                     </div>
                     <div>
-                        <p class="font-bold text-white text-lg">InnovaFem<span class="text-brand-400">IA</span></p>
-                        <p class="text-xs text-gray-400">Proyecto Orquídeas</p>
+                        <p class="font-bold text-white text-lg">InnovaFem<span class="text-naranja">IA</span></p>
+                        <p class="text-xs text-morado-light/80 font-medium">Proyecto Orquídeas</p>
                     </div>
                 </div>
-                <p class="text-sm text-gray-400 leading-relaxed">
+                <p class="text-sm text-morado-light/90 leading-relaxed">
                     Plataforma digital para el empoderamiento de mujeres rurales
-                    y jóvenes de <strong class="text-gray-300">ASCAMPESINA</strong>,
+                    y jóvenes de <strong class="text-white">ASCAMPESINA</strong>,
                     Caldono, Cauca.
                 </p>
             </div>
@@ -26,55 +26,44 @@
                 <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Módulos</h3>
                 <ul class="space-y-2 text-sm">
                     <li>
-                        <a href="/mapa" class="text-gray-400 hover:text-primary-400 transition-colors duration-200 flex items-center gap-2">
-                            <span>🗺️</span> Mapa Interactivo de Oportunidades
+                        <a href="/mapa" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                            <span>🗺️</span> Mapa Interactivo
                         </a>
                     </li>
                     <li>
-                        <a href="/chatbot" class="text-gray-400 hover:text-brand-400 transition-colors duration-200 flex items-center gap-2">
-                            <span>🤖</span> Asistente Educativo
+                        <a href="/chatbot" class="text-morado-light hover:text-naranja transition-colors duration-200 flex items-center gap-2">
+                            <span>🤖</span> Asistente Amalia
                         </a>
                     </li>
                     <li>
-                        <a href="/biocomercio" class="text-gray-400 hover:text-secondary-400 transition-colors duration-200 flex items-center gap-2">
-                            <span>🌿</span> Biocomercio ASCAMPESINA
+                        <a href="/biocomercio" class="text-morado-light hover:text-verde transition-colors duration-200 flex items-center gap-2">
+                            <span>🌿</span> Biocomercio
                         </a>
                     </li>
                 </ul>
             </div>
 
             <!-- Columna 3: Institucional -->
-            <div>
+            <div class="md:col-span-2">
                 <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Institucional</h3>
-                <div class="space-y-3">
-                    <div class="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-3 group border border-gray-100">
-                        <div class="w-16 h-12 flex items-center justify-center shrink-0">
-                            <img src="~/images/general/Logo_universidad_icesi.webp" alt="Universidad ICESI" class="max-h-10 max-w-[56px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
-                        </div>
-                        <div class="flex flex-col border-l border-gray-200 pl-3">
-                            <span class="text-xs font-bold text-gray-900 leading-tight">Universidad ICESI</span>
-                            <span class="text-[11px] text-gray-500 font-medium">Entidad ejecutora</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-3 group border border-gray-100">
-                        <div class="w-16 h-12 flex items-center justify-center shrink-0">
-                            <img src="~/images/general/ascampesina.png" alt="ASCAMPESINA" class="max-h-10 max-w-[56px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
-                        </div>
-                        <div class="flex flex-col border-l border-gray-200 pl-3">
-                            <span class="text-xs font-bold text-gray-900 leading-tight">ASCAMPESINA</span>
-                            <span class="text-[11px] text-gray-500 font-medium">Caldono, Cauca</span>
-                        </div>
-                    </div>
+                <div class="relative w-full bg-white p-2.5 sm:p-3 rounded-2xl shadow-md overflow-hidden flex items-center justify-center">
+                    <img src="~/images/general/logos.jpeg" alt="Logos Institucionales: InnovaFemIA, ICESI, ASCAMPESINA, Minciencias" class="w-full h-auto object-contain" />
+                    
+                    <!-- Áreas clickeables (calculadas en porcentaje del ancho original 2438px) -->
+                    <a href="/" class="absolute top-0 bottom-0 left-0 w-[21%] z-10" title="Ir a Inicio - InnovaFemIA"></a>
+                    <a href="https://www.icesi.edu.co/" target="_blank" rel="noopener" class="absolute top-0 bottom-0 left-[21%] w-[30%] z-10" title="Universidad ICESI"></a>
+                    <a href="https://www.facebook.com/groups/23523347059/" target="_blank" rel="noopener" class="absolute top-0 bottom-0 left-[51%] w-[29%] z-10" title="ASCAMPESINA"></a>
+                    <a href="https://minciencias.gov.co/" target="_blank" rel="noopener" class="absolute top-0 bottom-0 left-[80%] w-[20%] z-10" title="Minciencias"></a>
                 </div>
             </div>
+
         </div>
 
         <!-- Línea inferior -->
-        <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+        <div class="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-morado-light/80">
             <p>&copy; @DateTime.Now.Year InnovaFemIA — Proyecto Orquídeas. Todos los derechos reservados.</p>
             <div class="flex items-center gap-4">
-                <a href="/admin/login" class="hover:text-gray-400 transition-colors" id="footer-admin-link">Administración</a>
+                <a href="/admin/login" class="hover:text-white transition-colors font-bold" id="footer-admin-link">🛡️ Administración</a>
             </div>
         </div>
     </div>

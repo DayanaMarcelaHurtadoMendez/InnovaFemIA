@@ -19,7 +19,7 @@
 
             <!-- Contador de Pregunta -->
             <div class="flex items-center gap-1.5 shrink-0">
-                <span class="text-xs font-black text-emerald-900" id="texto-progreso-paso">1 / @Model.Preguntas.Count</span>
+                <span class="text-xs font-black text-verde" id="texto-progreso-paso">1 / @Model.Preguntas.Count</span>
             </div>
         </header>
 
@@ -47,7 +47,7 @@
             </div>
 
             <div class="space-y-1">
-                <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 inline-block mb-1">
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-verde border border-emerald-300 inline-block mb-1">
                     ¡Lección Completada!
                 </span>
                 <h2 class="text-2xl font-black text-gray-900">@Model.Titulo</h2>
@@ -63,13 +63,13 @@
                 </div>
                 <div class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
                     <span class="text-2xl block mb-1">📊</span>
-                    <span id="resumen-precision" class="text-base font-black text-emerald-900 block leading-tight">100%</span>
+                    <span id="resumen-precision" class="text-base font-black text-verde block leading-tight">100%</span>
                     <span class="text-[10px] font-bold text-gray-500 uppercase">Precisión</span>
                 </div>
             </div>
 
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full max-w-sm pt-2">
-                <a href="/chatbot/lecciones" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-2xl shadow-md transition-all text-center">
+                <a href="/chatbot/lecciones" class="w-full py-3.5 bg-emerald-600 hover:bg-verde text-white font-extrabold text-xs rounded-2xl shadow-md transition-all text-center">
                     Ver Más Lecciones 🎓
                 </a>
                 <a href="/chatbot" class="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-2xl transition-all text-center">
@@ -126,7 +126,7 @@
         if (p.ContenidoExplicativo || p.TieneImagenExplicativa) {
             explicacionHtml = `
                 <div class="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl space-y-2">
-                    <div class="flex items-center gap-1.5 text-emerald-900 font-extrabold text-[11px] uppercase tracking-wider">
+                    <div class="flex items-center gap-1.5 text-verde font-extrabold text-[11px] uppercase tracking-wider">
                         <span>💡</span>
                         <span>Saberes Agroecológicos:</span>
                     </div>
@@ -135,7 +135,7 @@
                             <img src="/chatbot/preguntas/${p.Id}/imagen" alt="Ilustración explicativa" class="w-full h-full object-cover max-h-48" />
                         </div>
                     ` : ''}
-                    ${p.ContenidoExplicativo ? `<p class="text-xs text-emerald-950 leading-relaxed">${p.ContenidoExplicativo}</p>` : ''}
+                    ${p.ContenidoExplicativo ? `<p class="text-xs text-verde leading-relaxed">${p.ContenidoExplicativo}</p>` : ''}
                 </div>
             `;
         }
@@ -193,8 +193,8 @@
         // Habilitar botón comprobar
         const btn = document.getElementById('btn-comprobar');
         btn.disabled = false;
-        btn.className = 'px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-2xl transition-all shadow-md cursor-pointer';
-        document.getElementById('mensaje-feedback').innerHTML = '<span class="text-emerald-800 font-bold">¡Opción lista! Haz clic en Comprobar</span>';
+        btn.className = 'px-6 py-3 bg-emerald-600 hover:bg-verde text-white font-black text-xs rounded-2xl transition-all shadow-md cursor-pointer';
+        document.getElementById('mensaje-feedback').innerHTML = '<span class="text-verde font-bold">¡Opción lista! Haz clic en Comprobar</span>';
     }
 
     function comprobarRespuesta() {
@@ -212,7 +212,7 @@
         p.Opciones.forEach(op => {
             const btnEl = document.getElementById(`opcion-btn-${op.Id}`);
             if (op.EsCorrecta) {
-                btnEl.className = 'opcion-card w-full p-4 bg-emerald-100 border-2 border-emerald-500 rounded-2xl font-bold text-xs text-emerald-950 text-left flex items-center justify-between gap-3 shadow-md';
+                btnEl.className = 'opcion-card w-full p-4 bg-emerald-100 border-2 border-emerald-500 rounded-2xl font-bold text-xs text-verde text-left flex items-center justify-between gap-3 shadow-md';
             } else if (op.Id === opcionSeleccionada && !op.EsCorrecta) {
                 btnEl.className = 'opcion-card w-full p-4 bg-rose-100 border-2 border-rose-500 rounded-2xl font-bold text-xs text-rose-950 text-left flex items-center justify-between gap-3 shadow-md';
             }
@@ -223,7 +223,7 @@
         if (esAcierto) {
             const retro = opcionElegida.Retroalimentacion || '¡Excelente! Respuesta correcta.';
             feedbackEl.innerHTML = `
-                <div class="text-emerald-800 font-black flex items-center gap-1.5">
+                <div class="text-verde font-black flex items-center gap-1.5">
                     <span class="text-base">🌟</span>
                     <span>${retro}</span>
                 </div>
@@ -241,7 +241,7 @@
         // Cambiar botón a "Continuar"
         const btn = document.getElementById('btn-comprobar');
         btn.innerText = 'Continuar →';
-        btn.className = 'px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-2xl transition-all shadow-md cursor-pointer';
+        btn.className = 'px-6 py-3 bg-emerald-600 hover:bg-verde text-white font-black text-xs rounded-2xl transition-all shadow-md cursor-pointer';
         btn.onclick = avanzarPregunta;
     }
 
