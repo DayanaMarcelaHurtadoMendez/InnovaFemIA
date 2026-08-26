@@ -39,7 +39,7 @@
                     </option>
                 }
             </select>
-            <button type="submit" class="btn-primary" id="btn-filtrar-familias">
+            <button type="submit" class="btn-cian" id="btn-filtrar-familias">
                 Filtrar
             </button>
             @if (!string.IsNullOrEmpty(ViewBag.Busqueda?.ToString()) || cultivoSeleccionado.HasValue)
@@ -53,7 +53,7 @@
 
     <!-- Accesos rápidos a sub-pantallas -->
     <div class="flex flex-wrap gap-3 mb-8">
-        <a href="/mapa/mapa" class="btn-primary bg-gradient-to-r from-emerald-600 to-primary-700 hover:from-emerald-700 hover:to-primary-800" id="link-ver-mapa">
+        <a href="/mapa/mapa" class="btn-cian" id="link-ver-mapa">
             📍 Ver Mapa Interactivo de Caldono
         </a>
         <a href="/mapa/precios" class="btn-secondary" id="link-ver-precios">
@@ -91,9 +91,11 @@
                         <div class="flex items-center gap-3 mb-3">
                             @if (!string.IsNullOrEmpty(familia.FotoBase64))
                             {
-                                <img src="@familia.FotoBase64"
-                                     alt="Foto de @familia.Nombre"
-                                     class="w-14 h-14 rounded-2xl object-cover ring-2 ring-emerald-200 shadow-sm shrink-0" />
+                                <button onclick="event.stopPropagation(); window.abrirVistaPreviaImagen('@familia.FotoBase64')" title="Ampliar foto" class="shrink-0 cursor-zoom-in">
+                                    <img src="@familia.FotoBase64"
+                                         alt="Foto de @familia.Nombre"
+                                         class="w-14 h-14 rounded-2xl object-cover ring-2 ring-emerald-200 shadow-sm hover:scale-105 transition-transform" />
+                                </button>
                             }
                             else
                             {
@@ -102,8 +104,8 @@
                                 </div>
                             }
                             <div class="flex-1 min-w-0">
-                                <h2 class="font-bold text-gray-900 text-sm truncate group-hover:text-emerald-800 transition-colors">@familia.Nombre</h2>
-                                <p class="text-xs text-emerald-700 font-medium truncate">📍 Vereda @familia.Vereda, Caldono</p>
+                                <h2 class="font-bold text-gray-900 text-sm truncate group-hover:text-verde transition-colors">@familia.Nombre</h2>
+                                <p class="text-xs text-verde font-medium truncate">📍 Vereda @familia.Vereda, Caldono</p>
                             </div>
                         </div>
 
@@ -141,11 +143,11 @@
                            target="_blank"
                            rel="noopener noreferrer"
                            onclick="event.stopPropagation()"
-                           class="text-xs text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1"
+                           class="text-xs text-verde hover:text-verde font-bold flex items-center gap-1"
                            id="link-whatsapp-@familia.Id">
                             📱 WhatsApp
                         </a>
-                        <button class="text-xs text-gray-500 hover:text-emerald-800 transition-colors font-bold"
+                        <button class="text-xs text-gray-500 hover:text-verde transition-colors font-bold"
                                 id="btn-ver-mas-@familia.Id"
                                 onclick="event.stopPropagation(); verFichaFamilia(@familia.Id)">
                             Ver Ficha →
@@ -162,20 +164,20 @@
     <div class="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-gray-100 transform transition-all">
         
         <!-- Header del Modal -->
-        <div class="relative bg-gradient-to-r from-emerald-950 via-emerald-900 to-gray-900 text-white p-6">
-            <button id="btn-cerrar-modal-dir" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-lg transition-colors">
+        <div class="relative bg-white border-b border-gray-100 p-6">
+            <button id="btn-cerrar-modal-dir" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 text-lg transition-colors">
                 ✕
             </button>
             <div class="flex items-center gap-4">
-                <div id="modal-dir-foto-container" class="w-16 h-16 rounded-2xl bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl overflow-hidden shrink-0">
+                <div id="modal-dir-foto-container" class="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center text-3xl overflow-hidden shrink-0 shadow-sm cursor-zoom-in">
                     👩‍🌾
                 </div>
                 <div>
-                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 mb-1">
-                        Familia Productora ASCAMPESINA
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cian-light text-cian border border-cian/20 mb-1 uppercase tracking-wider">
+                        Familia Productora
                     </span>
-                    <h3 id="modal-dir-nombre" class="text-xl font-bold text-white leading-snug">Cargando...</h3>
-                    <p id="modal-dir-vereda" class="text-xs text-emerald-200 flex items-center gap-1 mt-0.5">
+                    <h3 id="modal-dir-nombre" class="text-xl font-black text-gray-900 leading-snug">Cargando...</h3>
+                    <p id="modal-dir-vereda" class="text-sm text-gray-500 flex items-center gap-1 mt-0.5 font-medium">
                         📍 Caldono, Cauca
                     </p>
                 </div>
@@ -198,7 +200,7 @@
 
             <!-- Descripción de la Familia -->
             <div id="modal-dir-desc-container" class="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100 text-xs text-gray-700 leading-relaxed">
-                <span class="font-extrabold text-emerald-950 block text-[11px] uppercase tracking-wider mb-1">🌿 Sobre la Familia:</span>
+                <span class="font-extrabold text-verde block text-[11px] uppercase tracking-wider mb-1">🌿 Sobre la Familia:</span>
                 <p id="modal-dir-descripcion" class="italic text-gray-600">--</p>
             </div>
 
@@ -243,7 +245,7 @@
                 document.getElementById('modal-dir-whatsapp').href = `https://wa.me/57${f.telefonoContacto.replace(/\D/g, '')}`;
 
                 if (f.fotoBase64) {
-                    document.getElementById('modal-dir-foto-container').innerHTML = `<img src="${f.fotoBase64}" class="w-full h-full object-cover"/>`;
+                    document.getElementById('modal-dir-foto-container').innerHTML = `<button onclick="window.abrirVistaPreviaImagen('${f.fotoBase64}')" title="Ampliar foto" class="block w-full h-full cursor-zoom-in hover:opacity-90 transition-opacity"><img src="${f.fotoBase64}" class="w-full h-full object-cover"/></button>`;
                 } else {
                     document.getElementById('modal-dir-foto-container').innerHTML = '👩‍🌾';
                 }
@@ -266,7 +268,7 @@
                                 </div>
                             </div>
                             <div class="text-right">
-                                <span class="font-bold text-[11px] ${s.disponible ? 'text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200' : 'text-gray-400'} inline-block">
+                                <span class="font-bold text-[11px] ${s.disponible ? 'text-verde bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200' : 'text-gray-400'} inline-block">
                                     ${s.disponible ? '✓ Cosecha Disponible' : '✕ Agotado'}
                                 </span>
                             </div>
@@ -288,5 +290,18 @@
         document.getElementById('modal-familia-dir')?.addEventListener('click', function(e) {
             if (e.target === this) cerrarModalDir();
         });
+
+        // Vista previa de fotos estilo Lightbox profesional
+        window.abrirVistaPreviaImagen = function(url) {
+            if (!url) return;
+            const div = document.createElement('div');
+            div.className = 'fixed inset-0 z-[9999] bg-gray-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in cursor-zoom-out';
+            div.onclick = () => div.remove();
+            div.innerHTML = `
+                <img src="${url}" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain" onclick="event.stopPropagation()" />
+                <button class="absolute top-6 right-6 text-white text-3xl font-bold bg-gray-800/60 hover:bg-gray-700 w-12 h-12 rounded-full flex items-center justify-center transition-colors" onclick="this.parentElement.remove()">✕</button>
+            `;
+            document.body.appendChild(div);
+        };
     </script>
 }
