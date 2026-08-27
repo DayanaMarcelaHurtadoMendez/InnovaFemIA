@@ -22,7 +22,7 @@
     <!-- Alertas -->
     @if (TempData["Exito"] != null)
     {
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+        <div class="bg-emerald-50 border border-emerald-200 text-verde px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
             <span>✅</span> <span>@TempData["Exito"]</span>
         </div>
     }
@@ -90,7 +90,7 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                                             @foreach (var op in p.Opciones)
                                             {
-                                                <div class="p-2 rounded-xl text-[11px] border @(op.EsCorrecta ? "bg-emerald-50 border-emerald-200 text-emerald-900 font-bold" : "bg-white border-gray-200 text-gray-600")">
+                                                <div class="p-2 rounded-xl text-[11px] border @(op.EsCorrecta ? "bg-emerald-50 border-emerald-200 text-verde font-bold" : "bg-white border-gray-200 text-gray-600")">
                                                     <span>@(op.EsCorrecta ? "✓" : "•") @op.TextoOpcion</span>
                                                     @if (!string.IsNullOrEmpty(op.Retroalimentacion))
                                                     {
@@ -189,7 +189,7 @@
                     <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
                         <div class="flex items-center gap-2">
                             <input type="radio" name="opcionCorrectaIndex" value="0" checked class="w-4 h-4 text-emerald-600" />
-                            <span class="text-xs font-bold text-emerald-800">Opción 1 (Correcta si está marcada)</span>
+                            <span class="text-xs font-bold text-verde">Opción 1 (Correcta si está marcada)</span>
                         </div>
                         <input type="text" name="opcionTexto" required placeholder="Texto de la opción 1..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs" />
                         <input type="text" name="opcionRetro" placeholder="Retroalimentación al seleccionar esta opción..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white" />

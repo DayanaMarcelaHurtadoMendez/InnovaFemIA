@@ -11,7 +11,24 @@ module.exports = {
     extend: {
       // ─── Paleta de colores InnovaFemIA ───────────────────────────────
       colors: {
-        // Verde primario (naturaleza, agricultura, ASCAMPESINA)
+        // Variables definidas en app.src.css
+        morado: {
+          DEFAULT: 'var(--color-morado)',
+          light: 'var(--color-morado-light)'
+        },
+        cian: {
+          DEFAULT: 'var(--color-cian)',
+          light: 'var(--color-cian-light)'
+        },
+        verde: {
+          DEFAULT: 'var(--color-verde)',
+          light: 'var(--color-verde-light)'
+        },
+        naranja: {
+          DEFAULT: 'var(--color-naranja)',
+          light: 'var(--color-naranja-light)'
+        },
+        // Verde primario (naturaleza, agricultura, ASCAMPESINA) - LEGACY
         primary: {
           50:  '#f0fdf4',
           100: '#dcfce7',
@@ -38,7 +55,7 @@ module.exports = {
           800: '#92400e',
           900: '#78350f',
         },
-        // Morado/Orquídea (identidad de marca - Proyecto Orquídeas)
+        // Morado/Orquídea (identidad de marca - Proyecto Orquídeas) - LEGACY
         brand: {
           50:  '#faf5ff',
           100: '#f3e8ff',
