@@ -7,7 +7,7 @@
             <a href="/" class="flex items-center gap-3 group" id="nav-brand">
                 <img src="~/images/general/Logo.png" alt="InnovaFemIA" class="h-[45px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
                 <div class="flex flex-col leading-tight">
-                    <span class="font-bold text-base text-gray-900">InnovaFem<span class="text-brand-600">IA</span></span>
+                    <span class="font-bold text-base text-gray-900">InnovaFem<span class="text-morado">IA</span></span>
                     <span class="text-xs text-gray-400 font-medium">Proyecto Orquídeas · ICESI</span>
                 </div>
             </a>
@@ -25,6 +25,12 @@
                    class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Precios" ? "active" : "")">
                     <span aria-hidden="true">📊</span>
                     <span>Precios DANE</span>
+                </a>
+                <a href="/mapa/lunar"
+                   id="nav-lunar"
+                   class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lunar" ? "active" : "")">
+                    <span aria-hidden="true">🌒</span>
+                    <span>Calendario Lunar</span>
                 </a>
                 <a href="/chatbot"
                    id="nav-chatbot"
@@ -44,7 +50,7 @@
             <div class="flex items-center gap-2">
                 @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Administrador") || User.IsInRole("Admin")))
                 {
-                    <a href="/admin/dashboard" id="nav-admin" class="nav-link text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold border border-emerald-200">
+                    <a href="/admin/dashboard" id="nav-admin" class="nav-link text-verde bg-emerald-50 hover:bg-emerald-100 font-bold border border-emerald-200">
                         <span aria-hidden="true">⚙️</span>
                         <span class="hidden sm:inline">Panel Admin</span>
                     </a>
@@ -74,6 +80,7 @@
             <div class="flex flex-col gap-1 pt-2 border-t border-gray-100">
                 <a href="/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Mapa de Oportunidades</a>
                 <a href="/mapa/precios" class="nav-link" id="nav-mobile-precios">📊 Precios de Mercado DANE</a>
+                <a href="/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
                 <a href="/chatbot" class="nav-link" id="nav-mobile-chatbot">🤖 Asistente Educativo</a>
                 <a href="/biocomercio" class="nav-link" id="nav-mobile-biocomercio">🌿 Biocomercio</a>
             </div>

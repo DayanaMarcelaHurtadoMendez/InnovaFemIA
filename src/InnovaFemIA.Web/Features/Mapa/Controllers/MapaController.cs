@@ -73,4 +73,12 @@ public class MapaController : Controller
 
         return RedirectToAction(nameof(Precios));
     }
+
+    /// <summary>Pantalla — Calendario Lunar Agrícola de Caldono, Cauca.</summary>
+    [HttpGet("lunar")]
+    public async Task<IActionResult> Lunar([FromQuery] int? cultivoId = null)
+    {
+        var result = await _mediator.Send(new InnovaFemIA.Web.Features.Mapa.ObtenerLunar.ObtenerInformacionLunarQuery(cultivoId));
+        return View("~/Views/Mapa/Lunar.cshtml", result.Value);
+    }
 }
