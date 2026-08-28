@@ -369,7 +369,7 @@
                 <span>🌿</span> Prácticas y Labores (<span id="count-recomendadas">0</span>)
             </button>
             <button id="tab-btn-calendario" onclick="cambiarPestanaLunar('calendario')" class="py-3 border-b-2 border-transparent text-gray-500 hover:text-gray-900 flex items-center gap-1.5 cursor-pointer">
-                <span>📅</span> Calendario del Mes
+                <span>📅</span> Fases del Mes
             </button>
         </div>
 
@@ -1120,27 +1120,73 @@
                 // Renderizar Calendario del Mes
                 const containerCal = document.getElementById('vista-lunar-calendario');
                 if (containerCal && data.calendarioMes) {
-                    containerCal.innerHTML = `
-                        <div class="space-y-2">
-                            ${data.calendarioMes.map(f => {
-                                const esActual = f.fase === data.faseEnum;
-                                return `
-                                    <div class="flex items-center justify-between p-3 rounded-2xl border transition-all ${esActual ? 'bg-purple-50 border-purple-300 text-purple-950 font-bold shadow-sm' : 'bg-gray-50/80 border-gray-200 text-gray-700'}">
-                                        <div class="flex items-center gap-3">
-                                            <span class="text-2xl">${f.icono}</span>
-                                            <div>
-                                                <span class="block text-xs font-extrabold ${esActual ? 'text-purple-900' : 'text-gray-800'}">${f.nombreFase}</span>
-                                                <span class="block text-[11px] text-gray-500 capitalize">${f.fechaFormateada}</span>
-                                            </div>
-                                        </div>
-                                        <span class="text-xs font-black px-2.5 py-1 rounded-xl ${esActual ? 'bg-purple-700 text-white' : 'bg-gray-200 text-gray-700'}">
-                                            ${f.horaFormateada}
-                                        </span>
+                    const hoyDate = new Date(data.fechaCalculoLocal || Date.now());
+                    const formatter = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: '2-digit', month: 'long' });
+                    const hoyStr = formatter.format(hoyDate);
+
+                    let html = `<div class="mb-4 px-1">
+                                    <p class="text-sm text-gray-800 mb-1"><strong>Hoy es:</strong> <span class="capitalize">${hoyStr}</span></p>
+                                    <p class="text-[11px] text-gray-500 leading-snug">Línea de tiempo de las fases lunares de este mes (UTC-5):</p>
+                                </div>
+                                <div class="relative border-l-4 border-emerald-100 ml-4 space-y-8 mt-2 py-2">`;
+                    
+                    let hoyMostrado = false;
+                    const tiempoFaltante = data.diasParaProximoCambio >= 1 
+                        ? (Math.round(data.diasParaProximoCambio * 10) / 10) + " días" 
+                        : data.horasParaProximoCambio + " horas";
+                    const textoTransicion = `Pasando de ${data.nombreFase} a ${data.nombreProximaFase} en ${tiempoFaltante}.`;
+
+                    data.calendarioMes.forEach(f => {
+                        const faseDate = new Date(f.fechaHoraLocal);
+                        const esPasado = faseDate < hoyDate;
+                        const verbo = esPasado ? "Inició" : "Inicia";
+
+                        if (!hoyMostrado && !esPasado) {
+                            html += `
+                                <div class="relative pl-8 -my-4 z-10">
+                                    <div class="absolute -left-[11px] top-1/2 -translate-y-1/2 w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-100 shadow-sm animate-pulse"></div>
+                                    <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl px-4 py-3 inline-block shadow-sm w-full max-w-sm">
+                                        <span class="text-base font-black text-emerald-800 flex items-center gap-1">📍 Hoy estamos aquí</span>
+                                        <span class="block text-sm text-emerald-700 capitalize font-medium mb-1">${hoyStr}</span>
+                                        <span class="block text-sm text-emerald-900 bg-emerald-100/50 rounded-lg p-2 font-semibold">${textoTransicion}</span>
                                     </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    `;
+                                </div>
+                            `;
+                            hoyMostrado = true;
+                        }
+
+                        const esActual = f.fase === data.faseEnum;
+                        html += `
+                            <div class="relative pl-8">
+                                <div class="absolute -left-[19px] top-0 bg-white border-4 ${esActual ? 'border-purple-400 ring-4 ring-purple-100' : 'border-gray-200'} rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-sm z-20">
+                                    ${f.icono}
+                                </div>
+                                <div class="${esActual ? 'bg-purple-50 border-purple-300' : 'bg-white border-gray-200'} border-2 rounded-2xl p-4 shadow-sm transition-all">
+                                    <h4 class="font-black text-base ${esActual ? 'text-purple-900' : 'text-gray-800'}">${f.nombreFase}</h4>
+                                    <p class="text-sm text-gray-600 mt-1.5 leading-relaxed">
+                                        ${verbo} el <strong class="text-gray-800 capitalize">${f.fechaFormateada}</strong><br/>
+                                        a las <span class="text-gray-700 font-bold">${f.horaFormateada}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    if (!hoyMostrado) {
+                        html += `
+                            <div class="relative pl-8 -my-4 z-10">
+                                <div class="absolute -left-[11px] top-1/2 -translate-y-1/2 w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-100 shadow-sm animate-pulse"></div>
+                                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl px-4 py-3 inline-block shadow-sm w-full max-w-sm">
+                                    <span class="text-base font-black text-emerald-800 flex items-center gap-1">📍 Hoy estamos aquí</span>
+                                    <span class="block text-sm text-emerald-700 capitalize font-medium mb-1">${hoyStr}</span>
+                                    <span class="block text-sm text-emerald-900 bg-emerald-100/50 rounded-lg p-2 font-semibold">${textoTransicion}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</div>`;
+                    
+                    containerCal.innerHTML = html;
                 }
 
             } catch (err) {

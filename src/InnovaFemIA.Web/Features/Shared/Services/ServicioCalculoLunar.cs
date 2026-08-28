@@ -82,30 +82,36 @@ public static class ServicioCalculoLunar
         {
             faseEnum = FaseLunar.LunaNueva;
             nombreFase = "Luna Nueva";
-            iconoFase = "🌑";
             descripcionVisual = "Savia en las raíces (fase de reposo y mantenimiento de terreno)";
         }
         else if (d < 180.0)
         {
             faseEnum = FaseLunar.CuartoCrediente;
             nombreFase = "Cuarto Creciente";
-            iconoFase = "🌒";
             descripcionVisual = "Savia en ascenso hacia tallos y hojas (fase de siembra y esquejes)";
         }
         else if (d < 270.0)
         {
             faseEnum = FaseLunar.LunaLlena;
             nombreFase = "Luna Llena";
-            iconoFase = "🌕";
             descripcionVisual = "Savia en hojas, flores y frutos (fase de cosecha de café y frutos maduros)";
         }
         else
         {
             faseEnum = FaseLunar.CuartoMenguante;
             nombreFase = "Cuarto Menguante";
-            iconoFase = "🌘";
             descripcionVisual = "Savia en descenso hacia las raíces (corte de madera, guadua y trasplantes)";
         }
+
+        // Determinar el ícono exacto según la elongación para que coincida con el % de iluminación real
+        if (d < 10.0 || d >= 350.0) iconoFase = "🌑";
+        else if (d >= 10.0 && d < 80.0) iconoFase = "🌒";
+        else if (d >= 80.0 && d < 100.0) iconoFase = "🌓";
+        else if (d >= 100.0 && d < 170.0) iconoFase = "🌔";
+        else if (d >= 170.0 && d < 190.0) iconoFase = "🌕";
+        else if (d >= 190.0 && d < 260.0) iconoFase = "🌖";
+        else if (d >= 260.0 && d < 280.0) iconoFase = "🌗";
+        else iconoFase = "🌘";
 
         // 7. Cálculo de tiempo hasta el próximo cambio de fase principal
         var (proximaFase, diasRestantes, fechaProximaUtc) = CalcularProximaFase(d, utc);
