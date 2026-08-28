@@ -174,6 +174,58 @@ namespace InnovaFemIA.Web.Migrations
                     b.ToTable("ApiKeys", (string)null);
                 });
 
+            modelBuilder.Entity("InnovaFemIA.Web.Features.Shared.Entities.BoletinSipsaInfo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AnexoExcelTitulo")
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
+
+                    b.Property<string>("AnexoExcelUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("BoletinTecnicoTitulo")
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
+
+                    b.Property<string>("BoletinTecnicoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<bool>("EsExitoso")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("FechaPublicacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("UTC_TIMESTAMP(6)");
+
+                    b.Property<DateTime>("FechaSincronizacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("UTC_TIMESTAMP(6)");
+
+                    b.Property<string>("Periodo")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<int>("TotalRegistros")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BoletinesSipsaInfo", (string)null);
+                });
+
             modelBuilder.Entity("InnovaFemIA.Web.Features.Shared.Entities.ContenidoChatbot", b =>
                 {
                     b.Property<int>("Id")
@@ -199,10 +251,16 @@ namespace InnovaFemIA.Web.Migrations
                     b.Property<int>("CultivoId")
                         .HasColumnType("int");
 
+                    b.Property<string>("EnlaceFuente")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
                         .HasDefaultValueSql("UTC_TIMESTAMP(6)");
+
+                    b.Property<string>("NombreFuente")
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Orden")
                         .HasColumnType("int");
@@ -432,6 +490,10 @@ namespace InnovaFemIA.Web.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(true);
 
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
@@ -569,6 +631,76 @@ namespace InnovaFemIA.Web.Migrations
                     b.HasIndex("PreguntaId");
 
                     b.ToTable("OpcionesPregunta", (string)null);
+                });
+
+            modelBuilder.Entity("InnovaFemIA.Web.Features.Shared.Entities.PrecioMayoristaSipsa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CultivoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("UTC_TIMESTAMP(6)");
+
+                    b.Property<DateTime>("FechaBoletin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValueSql("UTC_TIMESTAMP(6)");
+
+                    b.Property<string>("GrupoAlimento")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("MercadoMayorista")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("PeriodoBoletin")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<decimal>("PrecioMaximo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PrecioMedio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PrecioMinimo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Producto")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<string>("Tendencia")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)")
+                        .HasDefaultValue("=");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CultivoId");
+
+                    b.HasIndex("FechaBoletin");
+
+                    b.HasIndex("GrupoAlimento");
+
+                    b.HasIndex("Producto", "MercadoMayorista");
+
+                    b.ToTable("PreciosMayoristasSipsa", (string)null);
                 });
 
             modelBuilder.Entity("InnovaFemIA.Web.Features.Shared.Entities.PrecioMercado", b =>
@@ -864,6 +996,16 @@ namespace InnovaFemIA.Web.Migrations
                         .IsRequired();
 
                     b.Navigation("Pregunta");
+                });
+
+            modelBuilder.Entity("InnovaFemIA.Web.Features.Shared.Entities.PrecioMayoristaSipsa", b =>
+                {
+                    b.HasOne("InnovaFemIA.Web.Features.Shared.Entities.Cultivo", "Cultivo")
+                        .WithMany()
+                        .HasForeignKey("CultivoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Cultivo");
                 });
 
             modelBuilder.Entity("InnovaFemIA.Web.Features.Shared.Entities.PrecioMercado", b =>
