@@ -36,7 +36,9 @@ public record ContenidoChatbotItemDto(
     string? ArchivoNombre,
     string? ArchivoMimeType,
     long TamanoBytes,
-    int Orden
+    int Orden,
+    string? NombreFuente,
+    string? EnlaceFuente
 );
 
 public record ArchivoChatbotDto(
@@ -191,7 +193,9 @@ public class ChatbotQueriesHandler :
                 c.ArchivoNombre,
                 c.ArchivoMimeType,
                 c.ArchivoBytes != null ? c.ArchivoBytes.Length : 0,
-                c.Orden
+                c.Orden,
+                c.NombreFuente,
+                c.EnlaceFuente
             ))
             .ToListAsync(cancellationToken);
 
@@ -219,7 +223,9 @@ public class ChatbotQueriesHandler :
             c.ArchivoNombre,
             c.ArchivoMimeType,
             c.ArchivoBytes != null ? c.ArchivoBytes.Length : 0,
-            c.Orden
+            c.Orden,
+            c.NombreFuente,
+            c.EnlaceFuente
         );
 
         return Result<ContenidoChatbotItemDto>.Success(dto);

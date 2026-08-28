@@ -47,6 +47,9 @@ public class ContenidoChatbot
     /// </summary>
     public int Orden { get; set; } = 1;
 
+    public string? NombreFuente { get; set; }
+    public string? EnlaceFuente { get; set; }
+
     public bool Activo { get; set; } = true;
 
     public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
