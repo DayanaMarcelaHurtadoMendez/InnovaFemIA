@@ -192,57 +192,82 @@
         <form action="/admin/chatbot/contenidos/crear" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
             @Html.AntiForgeryToken()
 
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Cultivo</label>
-                        <a href="/admin/cultivos" target="_blank" class="text-[10px] text-verde font-bold hover:underline">+ Crear Cultivo</a>
+            <!-- SECCIÓN 1: Información Básica -->
+            <div class="border border-gray-200 rounded-2xl p-4 bg-gray-50/50 space-y-3">
+                <h4 class="text-[11px] font-black text-gray-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="text-amber-500">📝</span> Información Básica
+                </h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-bold text-gray-700">Cultivo Asignado</label>
+                            <a href="/admin/cultivos" target="_blank" class="text-[10px] text-verde font-bold hover:underline">+ Crear</a>
+                        </div>
+                        <select name="CultivoId" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm">
+                            @foreach (var cu in cultivos)
+                            {
+                                <option value="@cu.Id">@cu.Icono @cu.Nombre</option>
+                            }
+                        </select>
                     </div>
-                    <select name="CultivoId" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
-                        @foreach (var cu in cultivos)
-                        {
-                            <option value="@cu.Id">@cu.Icono @cu.Nombre</option>
-                        }
-                    </select>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tema del Chatbot</label>
+                        <select name="Tema" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm">
+                            <option value="Siembra">🌱 Siembra</option>
+                            <option value="Cosecha">🌾 Cosecha</option>
+                            <option value="AbonadoNutricion">🧪 Abonado - Nutrición</option>
+                            <option value="PlagasEnfermedades">🐛 Plagas y enfermedades</option>
+                            <option value="PodasManejo">✂️ Podas - Manejo</option>
+                            <option value="Riego">💧 Riego</option>
+                            <option value="PostcosechaAlmacenamiento">📦 Postcosecha - Almacenamiento</option>
+                            <option value="Comercializacion">🏷️ Comercialización</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tema del Chatbot</label>
-                    <select name="Tema" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
-                        <option value="Siembra">🌱 Siembra</option>
-                        <option value="Cosecha">🌾 Cosecha</option>
-                        <option value="AbonadoNutricion">🧪 Abonado - Nutrición</option>
-                        <option value="PlagasEnfermedades">🐛 Plagas y enfermedades</option>
-                        <option value="PodasManejo">✂️ Podas - Manejo</option>
-                        <option value="Riego">💧 Riego</option>
-                        <option value="PostcosechaAlmacenamiento">📦 Postcosecha - Almacenamiento</option>
-                        <option value="Comercializacion">🏷️ Comercialización</option>
-                    </select>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Título del Recurso</label>
+                    <input type="text" name="Titulo" required placeholder="Ej: Guía completa de nutrición y siembra de café" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm" />
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Título del Recurso</label>
-                <input type="text" name="Titulo" required placeholder="Ej: Guía completa de nutrición y siembra de café" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600" />
-            </div>
-
-            <div class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 space-y-3">
-                <span class="text-xs font-extrabold text-amber-900 block">📁 Adjuntar Archivo o Enlace Web</span>
+            <!-- SECCIÓN 2: Multimedia -->
+            <div class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 space-y-3 relative">
+                <h4 class="text-[11px] font-black text-amber-900 uppercase tracking-wider mb-1 flex items-center gap-2">
+                    <span>🎬</span> Archivo o Enlace Web <span class="normal-case text-[10px] font-medium text-amber-700">(Elige solo uno)</span>
+                </h4>
                 
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-700 mb-1">1. Cargar Archivo (Video, Infografía o PDF)</label>
-                    <input type="file" name="archivo" accept=".pdf,.png,.jpg,.jpeg,.mp4,.webm,.mkv" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white" />
-                    <span class="text-[10px] text-gray-500 block mt-1">El sistema detectará automáticamente el tipo de recurso (Video, Infografía o PDF).</span>
+                <div id="crear-file-container" class="transition-opacity duration-300">
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">1. Cargar Archivo Local (Video, Infografía o PDF)</label>
+                    <input type="file" id="crear-archivo" name="archivo" accept=".pdf,.png,.jpg,.jpeg,.mp4,.webm,.mkv" onchange="toggleMutuamenteExcluyente('crear')" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white shadow-sm" />
+                    <span id="crear-file-msg" class="text-[10px] text-gray-500 block mt-1">El sistema detectará automáticamente el tipo de recurso.</span>
                 </div>
 
-                <div class="pt-2 border-t border-amber-200/60">
-                    <label class="block text-[11px] font-bold text-gray-700 mb-1">2. O Ingresar Enlace Web (YouTube, Vimeo, Drive)</label>
-                    <input type="url" name="Url" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white" />
+                <div id="crear-url-container" class="pt-2 border-t border-amber-200/60 transition-opacity duration-300">
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">2. O Ingresar Enlace Externo (YouTube, Vimeo, Drive)</label>
+                    <input type="url" id="crear-url" name="Url" placeholder="https://www.youtube.com/watch?v=..." oninput="toggleMutuamenteExcluyente('crear')" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white shadow-sm" />
+                    <span id="crear-url-msg" class="text-[10px] text-gray-500 block mt-1 hidden"></span>
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Orden de Presentación</label>
-                <input type="number" name="Orden" value="1" min="1" required class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+            <!-- SECCIÓN 3: Atribución y Configuración -->
+            <div class="border border-gray-200 rounded-2xl p-4 bg-gray-50/50 space-y-3">
+                <h4 class="text-[11px] font-black text-gray-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="text-blue-500">📚</span> Atribución y Configuración
+                </h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Fuente (Opcional)</label>
+                        <input type="text" name="NombreFuente" placeholder="Ej: Universidad Nacional" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Enlace de Fuente (Opcional)</label>
+                        <input type="url" name="EnlaceFuente" placeholder="https://unal.edu.co" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">Orden de Presentación (1 = Primero)</label>
+                    <input type="number" name="Orden" value="1" min="1" required class="w-full sm:w-1/3 px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white shadow-sm" />
+                </div>
             </div>
 
             <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
@@ -264,66 +289,98 @@
             @Html.AntiForgeryToken()
             <input type="hidden" id="edit-id" name="id" value="" />
 
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cultivo</label>
-                    <select id="edit-cultivoId" name="cultivoId" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
-                        @foreach (var cu in cultivos)
-                        {
-                            <option value="@cu.Id">@cu.Icono @cu.Nombre</option>
-                        }
-                    </select>
+            <!-- SECCIÓN 1: Información Básica -->
+            <div class="border border-gray-200 rounded-2xl p-4 bg-gray-50/50 space-y-3">
+                <h4 class="text-[11px] font-black text-gray-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="text-amber-500">📝</span> Información Básica
+                </h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Cultivo Asignado</label>
+                        <select id="edit-cultivoId" name="cultivoId" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm">
+                            @foreach (var cu in cultivos)
+                            {
+                                <option value="@cu.Id">@cu.Icono @cu.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Tema del Chatbot</label>
+                        <select id="edit-tema" name="tema" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm">
+                            <option value="Siembra">🌱 Siembra</option>
+                            <option value="Cosecha">🌾 Cosecha</option>
+                            <option value="AbonadoNutricion">🧪 Abonado - Nutrición</option>
+                            <option value="PlagasEnfermedades">🐛 Plagas y enfermedades</option>
+                            <option value="PodasManejo">✂️ Podas - Manejo</option>
+                            <option value="Riego">💧 Riego</option>
+                            <option value="PostcosechaAlmacenamiento">📦 Postcosecha - Almacenamiento</option>
+                            <option value="Comercializacion">🏷️ Comercialización</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tema del Chatbot</label>
-                    <select id="edit-tema" name="tema" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600">
-                        <option value="Siembra">🌱 Siembra</option>
-                        <option value="Cosecha">🌾 Cosecha</option>
-                        <option value="AbonadoNutricion">🧪 Abonado - Nutrición</option>
-                        <option value="PlagasEnfermedades">🐛 Plagas y enfermedades</option>
-                        <option value="PodasManejo">✂️ Podas - Manejo</option>
-                        <option value="Riego">💧 Riego</option>
-                        <option value="PostcosechaAlmacenamiento">📦 Postcosecha - Almacenamiento</option>
-                        <option value="Comercializacion">🏷️ Comercialización</option>
-                    </select>
+                    <label class="block text-[11px] font-bold text-gray-700 mb-1">Título del Recurso</label>
+                    <input type="text" id="edit-titulo" name="titulo" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm" />
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Título del Recurso</label>
-                <input type="text" id="edit-titulo" name="titulo" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600" />
-            </div>
-
-            <!-- Indicador del Archivo o Enlace Actual Cargado -->
-            <div id="edit-info-actual" class="p-3 bg-blue-50 border border-blue-200 rounded-2xl text-xs space-y-1">
-                <span class="font-extrabold text-blue-900 block">📌 Contenido cargado actualmente:</span>
-                <div id="edit-info-actual-detalle" class="text-blue-800 font-bold truncate"></div>
-            </div>
-
-            <div class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 space-y-3">
-                <span class="text-xs font-extrabold text-amber-900 block">📁 Reemplazar Archivo o Enlace Web (Opcional)</span>
+            <!-- SECCIÓN 2: Multimedia -->
+            <div class="border border-gray-200 rounded-2xl p-4 bg-gray-50/50 space-y-3">
+                <h4 class="text-[11px] font-black text-gray-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="text-blue-500">🎬</span> Archivo o Enlace Web
+                </h4>
                 
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-700 mb-1">1. Subir Nuevo Archivo (Dejar vacío para conservar el actual)</label>
-                    <input type="file" name="archivo" accept=".pdf,.png,.jpg,.jpeg,.mp4,.webm,.mkv" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white" />
+                <!-- Indicador del Archivo o Enlace Actual Cargado -->
+                <div id="edit-info-actual" class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-1">
+                    <span class="font-extrabold text-blue-900 block">📌 Recurso Guardado Actualmente:</span>
+                    <div id="edit-info-actual-detalle" class="text-blue-800 font-bold truncate"></div>
                 </div>
 
-                <div class="pt-2 border-t border-amber-200/60">
-                    <label class="block text-[11px] font-bold text-gray-700 mb-1">2. O Actualizar Enlace Web</label>
-                    <input type="url" id="edit-url" name="url" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white" />
+                <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-3 relative">
+                    <span class="text-[10px] font-extrabold text-gray-500 block uppercase tracking-wider">Reemplazar Recurso (Elige solo uno)</span>
+                    
+                    <div id="editar-file-container" class="transition-opacity duration-300">
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">1. Cargar Nuevo Archivo Local</label>
+                        <input type="file" id="editar-archivo" name="archivo" accept=".pdf,.png,.jpg,.jpeg,.mp4,.webm,.mkv" onchange="toggleMutuamenteExcluyente('editar')" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-gray-50 shadow-inner" />
+                        <span id="editar-file-msg" class="text-[10px] text-gray-500 block mt-1">Si subes un archivo, el enlace web será ignorado y el actual descartado.</span>
+                    </div>
+
+                    <div id="editar-url-container" class="pt-2 border-t border-gray-100 transition-opacity duration-300">
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">2. O Actualizar Enlace Externo</label>
+                        <input type="url" id="editar-url" name="url" placeholder="https://www.youtube.com/watch?v=..." oninput="toggleMutuamenteExcluyente('editar')" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-gray-50 shadow-inner" />
+                        <span id="editar-url-msg" class="text-[10px] text-gray-500 block mt-1 hidden"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 items-center">
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Orden</label>
-                    <input type="number" id="edit-orden" name="orden" min="1" required class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+            <!-- SECCIÓN 3: Atribución y Configuración -->
+            <div class="border border-gray-200 rounded-2xl p-4 bg-gray-50/50 space-y-3">
+                <h4 class="text-[11px] font-black text-gray-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="text-emerald-500">⚙️</span> Atribución y Configuración
+                </h4>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Fuente (Opcional)</label>
+                        <input type="text" id="edit-nombrefuente" name="nombreFuente" placeholder="Ej: Universidad Nacional" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Enlace de Fuente (Opcional)</label>
+                        <input type="url" id="edit-enlacefuente" name="enlaceFuente" placeholder="https://unal.edu.co" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm" />
+                    </div>
                 </div>
-                <div class="pt-4">
-                    <label class="inline-flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
-                        <input type="checkbox" id="edit-activo" name="activo" value="true" class="rounded text-amber-600 focus:ring-amber-500" />
-                        <span>Recurso Activo</span>
-                    </label>
+
+                <div class="grid grid-cols-2 gap-3 items-center pt-2 border-t border-gray-200/60 mt-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Orden de Presentación</label>
+                        <input type="number" id="edit-orden" name="orden" min="1" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white shadow-sm" />
+                    </div>
+                    <div class="pt-4 flex justify-end">
+                        <label class="inline-flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
+                            <input type="checkbox" id="edit-activo" name="activo" value="true" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4" />
+                            <span>Recurso Activo</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -356,10 +413,53 @@
 
 <script>
     function abrirModalCrearContenido() {
+        document.getElementById('crear-archivo').value = '';
+        document.getElementById('crear-url').value = '';
+        toggleMutuamenteExcluyente('crear');
         document.getElementById('modal-contenido-form').classList.remove('hidden');
     }
     function cerrarModalContenidoForm() {
         document.getElementById('modal-contenido-form').classList.add('hidden');
+    }
+
+    function toggleMutuamenteExcluyente(prefix) {
+        const fileInput = document.getElementById(`${prefix}-archivo`);
+        const urlInput = document.getElementById(`${prefix}-url`);
+        const fileContainer = document.getElementById(`${prefix}-file-container`);
+        const urlContainer = document.getElementById(`${prefix}-url-container`);
+        const urlMsg = document.getElementById(`${prefix}-url-msg`);
+        const fileMsg = document.getElementById(`${prefix}-file-msg`);
+
+        // Si hay archivo cargado
+        if (fileInput.files.length > 0) {
+            urlInput.disabled = true;
+            urlContainer.classList.add('opacity-40');
+            urlMsg.classList.remove('hidden');
+            urlMsg.innerText = "Deshabilitado porque has seleccionado subir un archivo. Borra el archivo si quieres usar un enlace.";
+            urlMsg.classList.add('text-rose-500', 'font-bold');
+        } else {
+            urlInput.disabled = false;
+            urlContainer.classList.remove('opacity-40');
+            urlMsg.classList.add('hidden');
+            urlMsg.classList.remove('text-rose-500', 'font-bold');
+        }
+
+        // Si hay URL escrita (y no hay archivo que ya haya bloqueado la URL)
+        if (urlInput.value.trim().length > 0 && fileInput.files.length === 0) {
+            fileInput.disabled = true;
+            fileContainer.classList.add('opacity-40');
+            fileMsg.innerText = "Deshabilitado porque has ingresado un enlace web. Borra el enlace si quieres subir un archivo.";
+            fileMsg.classList.add('text-rose-500', 'font-bold');
+        } else {
+            fileInput.disabled = false;
+            fileContainer.classList.remove('opacity-40');
+            if (prefix === 'crear') {
+                fileMsg.innerText = "El sistema detectará automáticamente el tipo de recurso.";
+            } else {
+                fileMsg.innerText = "Si subes un archivo, el enlace web será ignorado.";
+            }
+            fileMsg.classList.remove('text-rose-500', 'font-bold');
+        }
     }
 
     function abrirModalEditarContenido(recurso) {
@@ -380,9 +480,14 @@
         document.getElementById('edit-tema').value = temaVal;
 
         document.getElementById('edit-titulo').value = recurso.Titulo || '';
-        document.getElementById('edit-url').value = recurso.Url || '';
+        document.getElementById('editar-url').value = recurso.Url || '';
         document.getElementById('edit-orden').value = recurso.Orden || 1;
         document.getElementById('edit-activo').checked = recurso.Activo;
+        document.getElementById('edit-nombrefuente').value = recurso.NombreFuente || '';
+        document.getElementById('edit-enlacefuente').value = recurso.EnlaceFuente || '';
+
+        document.getElementById('editar-archivo').value = '';
+        toggleMutuamenteExcluyente('editar');
 
         // Mostrar información del contenido actual
         const detalleEl = document.getElementById('edit-info-actual-detalle');

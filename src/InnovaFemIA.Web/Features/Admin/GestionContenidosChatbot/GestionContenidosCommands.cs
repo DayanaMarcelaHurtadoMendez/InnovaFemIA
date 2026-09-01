@@ -20,6 +20,8 @@ public record ContenidoChatbotAdminDto(
     long TamanoBytes,
     bool TieneArchivoEnBd,
     int Orden,
+    string? NombreFuente,
+    string? EnlaceFuente,
     bool Activo,
     DateTime FechaCreacion
 );
@@ -43,7 +45,9 @@ public record CrearContenidoChatbotCommand(
     int Orden,
     byte[]? ArchivoBytes,
     string? ArchivoMimeType,
-    string? ArchivoNombre
+    string? ArchivoNombre,
+    string? NombreFuente,
+    string? EnlaceFuente
 ) : IRequest<Result<int>>;
 
 public record EditarContenidoChatbotCommand(
@@ -56,7 +60,9 @@ public record EditarContenidoChatbotCommand(
     bool Activo,
     byte[]? ArchivoBytes = null,
     string? ArchivoMimeType = null,
-    string? ArchivoNombre = null
+    string? ArchivoNombre = null,
+    string? NombreFuente = null,
+    string? EnlaceFuente = null
 ) : IRequest<Result<bool>>;
 
 public record EliminarContenidoChatbotCommand(int Id) : IRequest<Result<bool>>;
@@ -141,6 +147,8 @@ public class GestionContenidosChatbotHandler :
                 c.ArchivoBytes != null ? c.ArchivoBytes.Length : 0,
                 c.ArchivoBytes != null && c.ArchivoBytes.Length > 0,
                 c.Orden,
+                c.NombreFuente,
+                c.EnlaceFuente,
                 c.Activo,
                 c.FechaCreacion
             ))
@@ -193,6 +201,8 @@ public class GestionContenidosChatbotHandler :
             ArchivoMimeType = request.ArchivoMimeType,
             ArchivoNombre = request.ArchivoNombre,
             Orden = request.Orden <= 0 ? 1 : request.Orden,
+            NombreFuente = request.NombreFuente?.Trim(),
+            EnlaceFuente = request.EnlaceFuente?.Trim(),
             Activo = true,
             FechaCreacion = DateTime.UtcNow
         };
@@ -215,6 +225,8 @@ public class GestionContenidosChatbotHandler :
         contenido.Titulo = request.Titulo.Trim();
         contenido.Url = request.Url?.Trim();
         contenido.Orden = request.Orden;
+        contenido.NombreFuente = request.NombreFuente?.Trim();
+        contenido.EnlaceFuente = request.EnlaceFuente?.Trim();
         contenido.Activo = request.Activo;
 
         if (request.ArchivoBytes != null && request.ArchivoBytes.Length > 0)
