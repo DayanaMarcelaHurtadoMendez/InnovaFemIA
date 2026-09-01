@@ -362,6 +362,8 @@
         const rArchivoMimeType = (r.archivoMimeType || r.ArchivoMimeType || '').toLowerCase();
         const rUrl = r.url || r.Url || '';
         const rTamano = r.tamanoBytes || r.TamanoBytes || 0;
+        const rNombreFuente = r.nombreFuente || r.NombreFuente || '';
+        const rEnlaceFuente = r.enlaceFuente || r.EnlaceFuente || '';
 
         let mediaRenderHtml = '';
         let fileUrl = '';
@@ -457,6 +459,16 @@
             </div>
 
             ${mediaRenderHtml}
+
+            ${rNombreFuente ? `
+                <div class="mt-3 flex items-center gap-1.5 text-[11px] text-gray-500 font-medium bg-gray-50 p-2 rounded-lg border border-gray-100">
+                    <span>📚 Fuente:</span>
+                    ${rEnlaceFuente ? 
+                        `<a href="${rEnlaceFuente}" target="_blank" class="text-blue-600 hover:underline font-bold truncate block max-w-xs">${rNombreFuente}</a>` 
+                        : `<span class="font-bold text-gray-700">${rNombreFuente}</span>`
+                    }
+                </div>
+            ` : ''}
 
             <!-- Encuesta de satisfacción rápida -->
             <div class="pt-3 border-t border-gray-100">

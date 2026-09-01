@@ -306,7 +306,7 @@ public class AdminDashboardController : Controller
     [ValidateAntiForgeryToken]
     [RequestSizeLimit(500 * 1024 * 1024)] // 500 MB max HTTP request size
     [RequestFormLimits(MultipartBodyLengthLimit = 500 * 1024 * 1024)]
-    public async Task<IActionResult> CrearContenidoChatbot([FromForm] int cultivoId, [FromForm] TemaContenido tema, [FromForm] string titulo, [FromForm] string? url, [FromForm] int orden, IFormFile? archivo)
+    public async Task<IActionResult> CrearContenidoChatbot([FromForm] int cultivoId, [FromForm] TemaContenido tema, [FromForm] string titulo, [FromForm] string? url, [FromForm] int orden, [FromForm] string? nombreFuente, [FromForm] string? enlaceFuente, IFormFile? archivo)
     {
         try
         {
@@ -335,7 +335,7 @@ public class AdminDashboardController : Controller
                 }
             }
 
-            var command = new CrearContenidoChatbotCommand(cultivoId, tema, titulo, finalUrl, orden, archivoBytes, mimeType, archivoNombre);
+            var command = new CrearContenidoChatbotCommand(cultivoId, tema, titulo, finalUrl, orden, archivoBytes, mimeType, archivoNombre, nombreFuente, enlaceFuente);
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
@@ -377,6 +377,8 @@ public class AdminDashboardController : Controller
         [FromForm] string? url,
         [FromForm] int orden,
         [FromForm] bool activo,
+        [FromForm] string? nombreFuente,
+        [FromForm] string? enlaceFuente,
         IFormFile? archivo)
     {
         try
@@ -384,6 +386,7 @@ public class AdminDashboardController : Controller
             byte[]? archivoBytes = null;
             string? mimeType = null;
             string? archivoNombre = null;
+            string? finalUrl = url?.Trim();
 
             if (archivo != null && archivo.Length > 0)
             {
@@ -401,7 +404,7 @@ public class AdminDashboardController : Controller
             }
 
             var command = new EditarContenidoChatbotCommand(
-                id, cultivoId, tema, titulo, url, orden, activo, archivoBytes, mimeType, archivoNombre);
+                id, cultivoId, tema, titulo, finalUrl, orden, activo, archivoBytes, mimeType, archivoNombre, nombreFuente, enlaceFuente);
 
             var result = await _mediator.Send(command);
             if (!result.IsSuccess)
