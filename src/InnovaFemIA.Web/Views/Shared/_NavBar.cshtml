@@ -54,6 +54,9 @@
                         <span aria-hidden="true">⚙️</span>
                         <span class="hidden sm:inline">Panel Admin</span>
                     </a>
+                    <a href="/admin/logout" class="btn-secondary text-xs px-3 py-2 hidden sm:inline-flex items-center gap-1">
+                        Salir
+                    </a>
                 }
                 else if (User.Identity?.IsAuthenticated == true)
                 {
@@ -83,6 +86,14 @@
                 <a href="/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
                 <a href="/chatbot" class="nav-link" id="nav-mobile-chatbot">🤖 Asistente Educativo</a>
                 <a href="/biocomercio" class="nav-link" id="nav-mobile-biocomercio">🌿 Biocomercio</a>
+                @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Administrador") || User.IsInRole("Admin")))
+                {
+                    <a href="/admin/logout" class="nav-link text-rose-600 font-bold mt-2">🚪 Cerrar Sesión</a>
+                }
+                else if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/biocomercio/logout" class="nav-link text-rose-600 font-bold mt-2">🚪 Cerrar Sesión</a>
+                }
             </div>
         </div>
     </div>

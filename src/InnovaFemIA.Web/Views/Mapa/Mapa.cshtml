@@ -138,12 +138,12 @@
             z-index: 10000 !important;
         }
 
-        /* Cuando está alejado (zoom < 15.5), las tarjetas permanentes se ocultan para mantener el mapa limpio */
+        /* Cuando está alejado (zoom < 14.5), las tarjetas permanentes se ocultan para mantener el mapa limpio */
         #mapa-caldono.zoom-lejano .leaflet-tooltip.gm-preview-card {
             display: none !important;
         }
 
-        /* En zoom muy cercano (zoom >= 15.5), se muestran todas las tarjetas automáticamente para ver la información desde arriba sin dar clicks */
+        /* En zoom muy cercano (zoom >= 14.5), se muestran todas las tarjetas automáticamente para ver la información desde arriba sin dar clicks */
         #mapa-caldono:not(.zoom-lejano) .leaflet-tooltip.gm-preview-card {
             display: flex !important;
             opacity: 1 !important;
@@ -299,23 +299,24 @@
         </div>
 
         <!-- Div principal donde Leaflet renderiza el mapa -->
-        <div id="mapa-caldono" class="w-full h-full min-h-[550px]"></div>
+        <div id="mapa-caldono" class="w-full h-full min-h-[550px] relative z-0"></div>
+
+        <!-- ── Botón Flotante de Lunita (🌒) Fases Lunares de Caldono ────────────────── -->
+        <!-- NOTA: Movido dentro del main y con position absolute para que no sobreponga el footer en móviles -->
+        <button id="btn-flotante-lunar"
+                onclick="abrirPanelLunar()"
+                title="Consultar Calendario Lunar y Prácticas Agrícolas de Caldono"
+                class="absolute bottom-6 right-6 z-[1000] group flex items-center gap-3 px-4 sm:px-5 py-3 rounded-full bg-white/95 text-purple-950 border-2 border-purple-200 shadow-xl hover:border-purple-400 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 backdrop-blur-md cursor-pointer">
+            <span id="icono-lunar-btn" class="text-2xl sm:text-3xl animate-bounce">🌒</span>
+            <div class="text-left">
+                <span class="block text-[9px] font-black text-purple-600 uppercase tracking-widest leading-none">Fase Lunar · Caldono</span>
+                <span id="nombre-lunar-btn" class="block text-xs font-black text-purple-950 leading-tight">Cargando luna...</span>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full bg-purple-500 animate-ping hidden sm:inline-block"></span>
+        </button>
     </main>
 
 </div>
-
-<!-- ── Botón Flotante de Lunita (🌒) Fases Lunares de Caldono ────────────────── -->
-<button id="btn-flotante-lunar"
-        onclick="abrirPanelLunar()"
-        title="Consultar Calendario Lunar y Prácticas Agrícolas de Caldono"
-        class="fixed bottom-6 right-6 z-[1000] group flex items-center gap-3 px-4 sm:px-5 py-3 rounded-full bg-white/95 text-purple-950 border-2 border-purple-200 shadow-xl hover:border-purple-400 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 backdrop-blur-md cursor-pointer">
-    <span id="icono-lunar-btn" class="text-2xl sm:text-3xl animate-bounce">🌒</span>
-    <div class="text-left">
-        <span class="block text-[9px] font-black text-purple-600 uppercase tracking-widest leading-none">Fase Lunar · Caldono</span>
-        <span id="nombre-lunar-btn" class="block text-xs font-black text-purple-950 leading-tight">Cargando luna...</span>
-    </div>
-    <span class="w-2.5 h-2.5 rounded-full bg-purple-500 animate-ping hidden sm:inline-block"></span>
-</button>
 
 <!-- ── Panel Modal Interactivo del Módulo Lunar de Caldono ──────────────────── -->
 <div id="modal-lunar" class="fixed inset-0 z-[99999] hidden bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
@@ -500,8 +501,8 @@
 
             function actualizarZoomClase() {
                 const el = document.getElementById('mapa-caldono');
-                // Nivel de zoom muy cercano (>= 15.5) para que las tarjetas de texto salgan solo al estar muy muy cerca
-                if (map.getZoom() >= 15.5) {
+                // Nivel de zoom muy cercano (>= 14.5) para que las tarjetas de texto salgan
+                if (map.getZoom() >= 14.5) {
                     el.classList.remove('zoom-lejano');
                 } else {
                     el.classList.add('zoom-lejano');
@@ -525,11 +526,8 @@
                 className: 'caldono-glow'
             }).addTo(map);
 
-            caldonoPolygon.bindTooltip("<b>🏛️ Municipio de Caldono, Cauca</b><br><span style='font-size: 11px; color: #047857;'>Territorio Agroecológico ASCAMPESINA</span>", {
-                permanent: false,
-                direction: "center",
-                className: "bg-white text-xs text-verde font-bold p-2.5 rounded-2xl shadow-lg border border-emerald-200"
-            });
+            // El usuario solicitó eliminar el tooltip del polígono ("Municipio de Caldono, Cauca...")
+
 
             // Grupos de Capas para Filtros
             const layerFamilias = L.layerGroup().addTo(map);
@@ -675,37 +673,12 @@
                                 ? `<button onclick="abrirVistaPreviaImagen('${f.fotoFam}')" title="Ampliar foto" class="block w-full h-full cursor-zoom-in hover:opacity-90 transition-opacity"><img src="${f.fotoFam}" class="w-full h-full object-cover"/></button>` 
                                 : '👩‍🌾';
 
-                            const popupHtml = `
-                                <div class="w-96 bg-white rounded-2xl overflow-hidden font-sans border border-gray-200">
-                                    <div class="bg-white border-b border-gray-100 p-5 flex items-center gap-4">
-                                        <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-2xl shrink-0 overflow-hidden text-gray-700 font-bold border border-gray-200 shadow-sm">
-                                            ${fotoClickable}
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <h3 class="font-extrabold text-base leading-tight text-gray-900 truncate">${f.nombreFam}</h3>
-                                            <p class="text-sm text-gray-500 truncate mt-1">📍 Vereda ${f.veredaFam}, Caldono</p>
-                                        </div>
-                                    </div>
-                                    <div class="p-5 space-y-4 bg-gray-50/50">
-                                        ${descFamilia ? `<p class="text-sm text-gray-600 italic line-clamp-2 leading-relaxed">"${descFamilia}"</p>` : ''}
-                                        <div class="flex flex-wrap gap-2">
-                                            ${f.cultivosFam.map(c => `<span class="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-gray-700 border border-gray-200 shadow-sm">${c.icono || c.Icono} ${c.nombreCultivo || c.NombreCultivo}</span>`).join('')}
-                                        </div>
-                                        <div class="pt-4 border-t border-gray-200 flex items-center justify-between gap-3 mt-3">
-                                            <a href="https://wa.me/57${f.telFam.replace(/\D/g,'')}" target="_blank" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-verde text-sm font-bold rounded-xl border border-emerald-200 flex items-center gap-2 shrink-0 transition-colors">
-                                                📱 Contactar
-                                            </a>
-                                            <button onclick="window.mapaLeaflet?.closePopup(); abrirModalFamilia(${f.idFam});" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-bold rounded-xl shadow-sm transition-colors shrink-0">
-                                                Ficha →
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
+                            // Eliminamos popupHtml porque el usuario pidió estandarizar la acción:
+                            // Hacer clic en el pin y en la tarjeta flotante debe abrir siempre el Modal de Familia.
 
                             // 2. Tarjeta flotante de vista previa (Google Maps Style)
                             const tooltipHtml = `
-                                <div style="font-family: inherit; line-height: 1.35;" class="flex items-center gap-3" onclick="window.mapaLeaflet?.closePopup(); abrirModalFamilia(${f.idFam});">
+                                <div style="font-family: inherit; line-height: 1.35;" class="flex items-center gap-3" onclick="window.mapaLeaflet?.closePopup(); window.abrirModalFamilia(${f.idFam});">
                                     <div style="width: 40px; height: 40px; border-radius: 9999px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border: 2px solid #d1d5db; flex-shrink: 0;">
                                         ${f.fotoFam ? `<img src="${f.fotoFam}" style="width: 100%; height: 100%; object-fit: cover;" />` : '👩‍🌾'}
                                     </div>
@@ -718,13 +691,17 @@
                             `;
 
                             const marker = L.marker([posLat, posLng], { icon })
-                                .bindPopup(popupHtml)
                                 .bindTooltip(tooltipHtml, {
                                     permanent: true,
                                     direction: dir,
                                     offset: offset,
                                     className: 'gm-preview-card'
                                 });
+                                
+                            // Estandarizar: Hacer clic en el marcador abre el modal de familia
+                            marker.on('click', function() {
+                                window.abrirModalFamilia(f.idFam);
+                            });
 
                             marker.on('mouseover', function () {
                                 this.getTooltip()?.getElement()?.style.setProperty('display', 'flex', 'important');
