@@ -25,11 +25,6 @@
                     Sesión Activa
                 </span>
             </div>
-            <a href="/admin/logout" 
-               class="px-4 py-2 bg-white text-rose-600 hover:bg-rose-50 hover:text-rose-700 text-xs font-bold rounded-xl transition-all border border-rose-200 shadow-sm flex items-center gap-1.5 group shrink-0">
-                <span class="text-xs group-hover:-translate-x-0.5 transition-transform">🚪</span>
-                <span>Cerrar Sesión</span>
-            </a>
         </div>
     </div>
 
@@ -48,33 +43,33 @@
     }
 
     <!-- Métricas y Estadísticas Principales -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <a href="/admin/familias" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+    <div class="flex flex-wrap justify-center gap-4">
+        <a href="/admin/familias" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
             <span class="text-2xl block mb-1">👩‍🌾</span>
             <span class="text-2xl font-black text-gray-900 group-hover:text-verde">@Model.TotalFamilias</span>
             <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Familias</span>
         </a>
-        <a href="/admin/actores?tipo=Asociacion" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+        <a href="/admin/actores?tipo=Asociacion" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
             <span class="text-2xl block mb-1">🏛️</span>
             <span class="text-2xl font-black text-gray-900 group-hover:text-amber-700">@Model.TotalAsociaciones</span>
             <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Asociaciones</span>
         </a>
-        <a href="/admin/actores?tipo=PuntoCompra" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+        <a href="/admin/actores?tipo=PuntoCompra" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
             <span class="text-2xl block mb-1">🏬</span>
             <span class="text-2xl font-black text-gray-900 group-hover:text-blue-700">@Model.TotalPuntosCompra</span>
             <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Puntos Acopio</span>
         </a>
-        <a href="/admin/reglas-lunares" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+        <a href="/admin/reglas-lunares" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
             <span class="text-2xl block mb-1">🌘</span>
             <span class="text-2xl font-black text-gray-900 group-hover:text-purple-700">@Model.TotalReglasLunares</span>
             <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Reglas Lunares</span>
         </a>
-        <a href="/admin/cuentas-familias" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+        <a href="/admin/cuentas-familias" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
             <span class="text-2xl block mb-1">🔑</span>
             <span class="text-2xl font-black text-gray-900 group-hover:text-verde">@Model.TotalCuentasFamilias</span>
             <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Cuentas Biocom</span>
         </a>
-        <a href="/admin/registros" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+        <a href="/admin/registros" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
             <span class="text-2xl block mb-1">📋</span>
             <span class="text-2xl font-black text-gray-900 group-hover:text-rose-700">@Model.TotalErroresLog</span>
             <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Logs Errores</span>
