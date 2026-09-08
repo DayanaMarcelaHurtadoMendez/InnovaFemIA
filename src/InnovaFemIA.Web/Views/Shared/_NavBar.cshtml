@@ -8,7 +8,7 @@
                 <img src="~/images/general/Logo.png" alt="InnovaFemIA" class="h-[45px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
                 <div class="flex flex-col leading-tight">
                     <span class="font-bold text-base text-gray-900">InnovaFem<span class="text-morado">IA</span></span>
-                    <span class="text-xs text-gray-400 font-medium">Proyecto Orquídeas · ICESI</span>
+                    <span class="text-xs text-gray-400 font-medium">Orquídeas mujeres en la ciencia · ICESI</span>
                 </div>
             </a>
 
@@ -16,15 +16,17 @@
             <div class="hidden md:flex items-center gap-1" role="navigation" aria-label="Módulos principales">
                 <a href="/mapa"
                    id="nav-mapa"
+                   title="Cartografía productiva del territorio"
                    class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Mapa" && ViewContext.RouteData.Values["action"]?.ToString() != "Precios" ? "active" : "")">
                     <span aria-hidden="true">🗺️</span>
-                    <span>Mapa</span>
+                    <span>Cartografía productiva</span>
                 </a>
                 <a href="/mapa/precios"
                    id="nav-precios"
+                   title="Indicadores socioeconómicos DANE (Departamento Administrativo Nacional de Estadística)"
                    class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Precios" ? "active" : "")">
                     <span aria-hidden="true">📊</span>
-                    <span>Precios DANE</span>
+                    <span>Indicadores DANE</span>
                 </a>
                 <a href="/mapa/lunar"
                    id="nav-lunar"
@@ -81,8 +83,8 @@
         <!-- Menú mobile desplegable -->
         <div id="nav-mobile-menu" class="md:hidden hidden pb-4 animate-fade-in">
             <div class="flex flex-col gap-1 pt-2 border-t border-gray-100">
-                <a href="/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Mapa de Oportunidades</a>
-                <a href="/mapa/precios" class="nav-link" id="nav-mobile-precios">📊 Precios de Mercado DANE</a>
+                <a href="/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Cartografía productiva del territorio</a>
+                <a href="/mapa/precios" class="nav-link" id="nav-mobile-precios">📊 Indicadores socioeconómicos DANE (Departamento Administrativo Nacional de Estadística)</a>
                 <a href="/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
                 <a href="/chatbot" class="nav-link" id="nav-mobile-chatbot">🤖 Asistente Educativo</a>
                 <a href="/biocomercio" class="nav-link" id="nav-mobile-biocomercio">🌿 Biocomercio</a>
