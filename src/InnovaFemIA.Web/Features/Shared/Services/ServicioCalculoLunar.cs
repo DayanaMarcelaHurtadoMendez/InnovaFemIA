@@ -18,7 +18,7 @@ public static class ServicioCalculoLunar
     public const string Municipio = "Caldono";
     public const string Departamento = "Cauca";
     public const string Pais = "Colombia";
-    public const string ZonaHoraria = "America/Bogota (UTC-5)";
+    public const string ZonaHoraria = "America/Bogota - UTC-5";
     private static readonly TimeSpan OffsetColombia = TimeSpan.FromHours(-5);
 
     // Duración media del mes sinódico lunar en días (29 días, 12 horas, 44 minutos, 2.9 segundos)
@@ -301,5 +301,5 @@ public class UbicacionObservacion
     public double Latitud { get; set; } = 2.7978;
     public double Longitud { get; set; } = -76.4828;
     public int AltitudMsnm { get; set; } = 1800;
-    public string ZonaHoraria { get; set; } = "UTC-5 (America/Bogota)";
+    public string ZonaHoraria { get; set; } = "America/Bogota - UTC-5";
 }
