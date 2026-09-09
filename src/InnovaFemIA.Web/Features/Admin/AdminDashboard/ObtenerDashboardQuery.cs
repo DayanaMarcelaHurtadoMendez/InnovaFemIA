@@ -37,10 +37,10 @@ public class ObtenerDashboardHandler : IRequestHandler<ObtenerDashboardQuery, Re
         var totalCultivos = await _db.Cultivos.CountAsync(cancellationToken);
         var totalCuentas = await _db.UsuariosFamilias.CountAsync(cancellationToken);
         var totalReglasLunares = await _db.ReglasLunares.CountAsync(cancellationToken);
-        var totalErrores = await _db.RegistrosSistema.CountAsync(r => r.TipoEvento == "Error", cancellationToken);
+        var totalErrores = await _db.RegistrosSistema.CountAsync(r => r.TipoEvento.Contains("Error"), cancellationToken);
 
         var ultimosErrores = await _db.RegistrosSistema
-            .Where(r => r.TipoEvento == "Error")
+            .Where(r => r.TipoEvento.Contains("Error"))
             .OrderByDescending(r => r.FechaHoraUtc)
             .Take(5)
             .Select(r => new UltimoLogErrorDto(r.Id, r.Modulo, r.TipoEvento, r.Descripcion, r.FechaHoraUtc))
