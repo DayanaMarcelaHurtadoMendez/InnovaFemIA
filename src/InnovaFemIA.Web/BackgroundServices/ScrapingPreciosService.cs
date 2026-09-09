@@ -121,13 +121,22 @@ public class ScrapingPreciosService : BackgroundService
                     anexoXlsxTitulo = nodoXlsx.GetAttributeValue("title", "") ?? nodoXlsx.InnerText.Trim();
                 }
 
-                // Extraer periodo si está disponible en el título
-                if (!string.IsNullOrEmpty(boletinPdfTitulo))
+                // Extraer periodo si está disponible en el título del Anexo, que suele ser más preciso
+                if (!string.IsNullOrEmpty(anexoXlsxTitulo))
                 {
-                    var matchPeriodo = Regex.Match(boletinPdfTitulo, @"(\d{1,2}\s+de\s+[a-zA-Z]+\s+al\s+\d{1,2}\s+de\s+[a-zA-Z]+\s+de\s+\d{4})", RegexOptions.IgnoreCase);
+                    var matchPeriodo = Regex.Match(anexoXlsxTitulo, @"(\d{1,2}\s+de\s+[a-zA-Z]+\s+al\s+\d{1,2}\s+de\s+[a-zA-Z]+\s+de\s+\d{4})", RegexOptions.IgnoreCase);
                     if (matchPeriodo.Success)
                     {
-                        periodoDetectado = matchPeriodo.Groups[1].Value;
+                        periodoDetectado = matchPeriodo.Groups[1].Value.ToLower();
+                    }
+                    else if (!string.IsNullOrEmpty(boletinPdfTitulo))
+                    {
+                        // Fallback al título del PDF si el anexo no lo tiene
+                        matchPeriodo = Regex.Match(boletinPdfTitulo, @"(\d{1,2}\s+de\s+[a-zA-Z]+\s+al\s+\d{1,2}\s+de\s+[a-zA-Z]+\s+de\s+\d{4})", RegexOptions.IgnoreCase);
+                        if (matchPeriodo.Success)
+                        {
+                            periodoDetectado = matchPeriodo.Groups[1].Value.ToLower();
+                        }
                     }
                 }
             }
@@ -278,6 +287,10 @@ public class ScrapingPreciosService : BackgroundService
         var lista = new List<PrecioMayoristaSipsa>();
 
         using var stream = new MemoryStream(excelBytes);
+        
+        // Registrar el proveedor de codificación para soportar Windows-1252 requerido por ExcelDataReader
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        
         using var reader = ExcelReaderFactory.CreateReader(stream);
 
         var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration
@@ -400,7 +413,7 @@ public class ScrapingPreciosService : BackgroundService
     {
         if (string.IsNullOrWhiteSpace(mercado)) return false;
         var m = mercado.ToLowerInvariant();
-        if (m.Contains("popayán") || m.Contains("popayan")) return true;
+        if (m.Contains("popay") || m.Contains("popayán") || m.Contains("popayan")) return true;
         if (m.Contains("cali") || m.Contains("cavasa") || m.Contains("santa elena") || m.Contains("alameda") || m.Contains("palmira"))
         {
             if (!m.Contains("buenaventura") && !m.Contains("nariño") && !m.Contains("narino") && !m.Contains("ipiales") && !m.Contains("pasto"))
