@@ -87,6 +87,54 @@ public class ChatbotController : Controller
         return Json(result.Value);
     }
 
+    public record CompletarLeccionInput(int Aciertos, int TotalPreguntas, int Precision);
+
+    /// <summary>
+    /// Registra la finalización de una lección para la familia autenticada.
+    /// </summary>
+    [HttpPost("api/lecciones/{id:int}/completar")]
+    public async Task<IActionResult> ApiCompletarLeccion(int id, [FromBody] CompletarLeccionInput? input)
+    {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var familiaIdStr = User.FindFirst("FamiliaId")?.Value;
+            var nombre = User.Identity.Name ?? "Usuario";
+
+            if (int.TryParse(familiaIdStr, out var familiaId))
+            {
+                var aciertos = input?.Aciertos ?? 0;
+                var total = input?.TotalPreguntas ?? 0;
+                var precision = input?.Precision ?? 100;
+
+                await _mediator.Send(new RegistrarProgresoLeccionFamiliaCommand(
+                    familiaId, nombre, id, aciertos, total, precision));
+
+                return Json(new { success = true, guardadoEnServidor = true, familiaId, leccionId = id });
+            }
+        }
+
+        return Json(new { success = true, guardadoEnServidor = false, mensaje = "Progreso registrado localmente en el navegador." });
+    }
+
+    /// <summary>
+    /// Retorna la lista de lecciones completadas por la familia autenticada en el servidor.
+    /// </summary>
+    [HttpGet("api/lecciones/progreso")]
+    public async Task<IActionResult> ApiObtenerProgresoLecciones()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var familiaIdStr = User.FindFirst("FamiliaId")?.Value;
+            if (int.TryParse(familiaIdStr, out var familiaId))
+            {
+                var result = await _mediator.Send(new ObtenerProgresoLeccionesFamiliaQuery(familiaId));
+                return Json(new { isAuthenticated = true, familiaId, completadas = result.IsSuccess ? result.Value : [] });
+            }
+        }
+
+        return Json(new { isAuthenticated = false, completadas = Array.Empty<int>() });
+    }
+
     // ─── Servir Archivos e Imágenes con Streaming por Rangos HTTP ──────────
 
     [HttpGet("recursos/{id:int}/archivo")]
