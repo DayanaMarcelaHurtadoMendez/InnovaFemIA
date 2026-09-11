@@ -140,19 +140,19 @@
             `;
         }
 
-        // Renderizar opciones de respuesta (3 a 4 opciones)
+        // Renderizar opciones de respuesta
         const opcionesHtml = p.Opciones.map((op, idx) => `
             <button id="opcion-btn-${op.Id}" 
                     type="button" 
                     onclick="seleccionarOpcion(${op.Id})" 
-                    class="opcion-card w-full p-4 bg-white hover:bg-emerald-50/40 border-2 border-gray-200 hover:border-emerald-400 rounded-2xl font-bold text-xs text-gray-800 text-left transition-all flex items-center justify-between gap-3 shadow-xs">
+                    class="opcion-card w-full p-4 bg-white hover:bg-emerald-50/40 border-2 border-gray-200 hover:border-emerald-400 rounded-2xl font-bold text-xs text-gray-800 text-left transition-all flex items-center justify-between gap-3 shadow-xs cursor-pointer">
                 <div class="flex items-center gap-3">
-                    <span class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 font-extrabold text-[10px] flex items-center justify-center shrink-0">
+                    <span id="opcion-letter-${op.Id}" class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 font-extrabold text-[10px] flex items-center justify-center shrink-0 transition-colors">
                         ${String.fromCharCode(65 + idx)}
                     </span>
                     <span class="leading-snug">${op.TextoOpcion}</span>
                 </div>
-                <div id="opcion-indicator-${op.Id}" class="w-4 h-4 rounded-full border-2 border-gray-300 shrink-0"></div>
+                <div id="opcion-indicator-${op.Id}" class="w-6 h-6 rounded-full border-2 border-gray-300 text-transparent flex items-center justify-center text-xs font-black transition-all shrink-0"></div>
             </button>
         `).join('');
 
@@ -183,11 +183,31 @@
             c.classList.add('border-gray-200', 'bg-white');
         });
 
+        // Resetear todos los indicadores circulares y letras
+        document.querySelectorAll('[id^="opcion-indicator-"]').forEach(ind => {
+            ind.className = 'w-6 h-6 rounded-full border-2 border-gray-300 text-transparent flex items-center justify-center text-xs font-black transition-all shrink-0';
+            ind.innerHTML = '';
+        });
+        document.querySelectorAll('[id^="opcion-letter-"]').forEach(letSpan => {
+            letSpan.className = 'w-6 h-6 rounded-full bg-gray-100 text-gray-600 font-extrabold text-[10px] flex items-center justify-center shrink-0 transition-colors';
+        });
+
         // Marcar la opción activa
         const selectedBtn = document.getElementById(`opcion-btn-${opcionId}`);
         if (selectedBtn) {
             selectedBtn.classList.remove('border-gray-200', 'bg-white');
             selectedBtn.classList.add('border-emerald-600', 'bg-emerald-50', 'shadow-md');
+        }
+
+        const selectedIndicator = document.getElementById(`opcion-indicator-${opcionId}`);
+        if (selectedIndicator) {
+            selectedIndicator.className = 'w-6 h-6 rounded-full border-2 border-emerald-600 bg-emerald-600 text-white flex items-center justify-center text-xs font-black transition-all shadow-xs shrink-0';
+            selectedIndicator.innerHTML = '✓';
+        }
+
+        const selectedLetter = document.getElementById(`opcion-letter-${opcionId}`);
+        if (selectedLetter) {
+            selectedLetter.className = 'w-6 h-6 rounded-full bg-emerald-200 text-emerald-900 font-extrabold text-[10px] flex items-center justify-center shrink-0 transition-colors';
         }
 
         // Habilitar botón comprobar
@@ -208,13 +228,35 @@
         const esAcierto = opcionElegida && opcionElegida.EsCorrecta;
         if (esAcierto) totalAciertos++;
 
-        // Resaltar visualmente las opciones con verde/rojo
+        // Resaltar visualmente las opciones con verde/rojo y sus checks/cruces
         p.Opciones.forEach(op => {
             const btnEl = document.getElementById(`opcion-btn-${op.Id}`);
+            const indEl = document.getElementById(`opcion-indicator-${op.Id}`);
+            const letEl = document.getElementById(`opcion-letter-${op.Id}`);
+
             if (op.EsCorrecta) {
                 btnEl.className = 'opcion-card w-full p-4 bg-emerald-100 border-2 border-emerald-500 rounded-2xl font-bold text-xs text-verde text-left flex items-center justify-between gap-3 shadow-md';
+                if (indEl) {
+                    indEl.className = 'w-6 h-6 rounded-full bg-emerald-600 border-2 border-emerald-600 text-white flex items-center justify-center text-xs font-black shadow-xs shrink-0';
+                    indEl.innerHTML = '✓';
+                }
+                if (letEl) {
+                    letEl.className = 'w-6 h-6 rounded-full bg-emerald-300 text-emerald-950 font-extrabold text-[10px] flex items-center justify-center shrink-0';
+                }
             } else if (op.Id === opcionSeleccionada && !op.EsCorrecta) {
                 btnEl.className = 'opcion-card w-full p-4 bg-rose-100 border-2 border-rose-500 rounded-2xl font-bold text-xs text-rose-950 text-left flex items-center justify-between gap-3 shadow-md';
+                if (indEl) {
+                    indEl.className = 'w-6 h-6 rounded-full bg-rose-600 border-2 border-rose-600 text-white flex items-center justify-center text-xs font-black shadow-xs shrink-0';
+                    indEl.innerHTML = '✕';
+                }
+                if (letEl) {
+                    letEl.className = 'w-6 h-6 rounded-full bg-rose-200 text-rose-950 font-extrabold text-[10px] flex items-center justify-center shrink-0';
+                }
+            } else {
+                if (indEl) {
+                    indEl.className = 'w-6 h-6 rounded-full border-2 border-gray-200 text-transparent flex items-center justify-center text-xs font-black shrink-0 opacity-40';
+                    indEl.innerHTML = '';
+                }
             }
         });
 
@@ -267,8 +309,9 @@
         document.getElementById('resumen-aciertos').innerText = `${totalAciertos} / ${totalPreguntas}`;
         document.getElementById('resumen-precision').innerText = `${precision}%`;
 
-        // Guardar progreso en localStorage
+        // Guardar progreso en localStorage y notificar al servidor
         guardarProgresoEnLocalStorage(LECCION_DATA.Id);
+        notificarProgresoAlServidor(LECCION_DATA.Id, totalAciertos, totalPreguntas, precision);
     }
 
     function guardarProgresoEnLocalStorage(leccionId) {
@@ -287,5 +330,20 @@
 
         progreso.ultimaFecha = new Date().toISOString();
         localStorage.setItem(key, JSON.stringify(progreso));
+    }
+
+    function notificarProgresoAlServidor(leccionId, aciertos, total, precision) {
+        try {
+            fetch(`/chatbot/api/lecciones/${leccionId}/completar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ aciertos: aciertos, totalPreguntas: total, precision: precision })
+            }).then(r => r.json()).then(data => {
+                if (data && data.guardadoEnServidor) {
+                    console.log('Progreso de lección sincronizado exitosamente con la cuenta de la familia.');
+                }
+            }).catch(() => {});
+        } catch (e) {}
     }
 </script>

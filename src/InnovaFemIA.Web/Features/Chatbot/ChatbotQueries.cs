@@ -101,6 +101,17 @@ public record ObtenerImagenLeccionQuery(int LeccionId) : IRequest<Result<Archivo
 
 public record ObtenerImagenPreguntaQuery(int PreguntaId) : IRequest<Result<ArchivoChatbotDto>>;
 
+public record RegistrarProgresoLeccionFamiliaCommand(
+    int FamiliaId,
+    string NombreUsuario,
+    int LeccionId,
+    int Aciertos,
+    int TotalPreguntas,
+    int Precision
+) : IRequest<Result<bool>>;
+
+public record ObtenerProgresoLeccionesFamiliaQuery(int FamiliaId) : IRequest<Result<List<int>>>;
+
 // ─── Handlers ───────────────────────────────────────────────────────────────
 
 public class ChatbotQueriesHandler :
@@ -112,7 +123,9 @@ public class ChatbotQueriesHandler :
     IRequestHandler<ObtenerLeccionesEducativasQuery, Result<List<LeccionResumenDto>>>,
     IRequestHandler<ObtenerDetalleLeccionQuery, Result<LeccionDetalleDto>>,
     IRequestHandler<ObtenerImagenLeccionQuery, Result<ArchivoChatbotDto>>,
-    IRequestHandler<ObtenerImagenPreguntaQuery, Result<ArchivoChatbotDto>>
+    IRequestHandler<ObtenerImagenPreguntaQuery, Result<ArchivoChatbotDto>>,
+    IRequestHandler<RegistrarProgresoLeccionFamiliaCommand, Result<bool>>,
+    IRequestHandler<ObtenerProgresoLeccionesFamiliaQuery, Result<List<int>>>
 {
     private readonly AppDbContext _db;
 
@@ -329,5 +342,49 @@ public class ChatbotQueriesHandler :
 
         var mime = string.IsNullOrWhiteSpace(p.ImagenExplicativaMimeType) ? "image/jpeg" : p.ImagenExplicativaMimeType;
         return Result<ArchivoChatbotDto>.Success(new ArchivoChatbotDto(p.ImagenExplicativaBytes, mime, $"pregunta_{request.PreguntaId}.jpg"));
+    }
+
+    public async Task<Result<bool>> Handle(RegistrarProgresoLeccionFamiliaCommand request, CancellationToken cancellationToken)
+    {
+        var leccion = await _db.LeccionesChatbot.FirstOrDefaultAsync(l => l.Id == request.LeccionId, cancellationToken);
+        var titulo = leccion?.Titulo ?? $"Lección #{request.LeccionId}";
+        var numero = leccion?.NumeroLeccion ?? request.LeccionId;
+
+        var registro = new RegistroSistema
+        {
+            Modulo = "Chatbot",
+            TipoEvento = "LeccionCompletada",
+            Descripcion = $"Familia '{request.NombreUsuario}' (ID {request.FamiliaId}) completó con éxito la Lección #{numero}: '{titulo}' con {request.Aciertos}/{request.TotalPreguntas} aciertos ({request.Precision}% precisión).",
+            IpOrigen = $"Familia:{request.FamiliaId}:Leccion:{request.LeccionId}",
+            StackTrace = $"Aciertos={request.Aciertos};Total={request.TotalPreguntas};Precision={request.Precision}",
+            FechaHoraUtc = DateTime.UtcNow
+        };
+
+        _db.RegistrosSistema.Add(registro);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<List<int>>> Handle(ObtenerProgresoLeccionesFamiliaQuery request, CancellationToken cancellationToken)
+    {
+        var prefijo = $"Familia:{request.FamiliaId}:Leccion:";
+        var registros = await _db.RegistrosSistema
+            .Where(r => r.Modulo == "Chatbot" && r.TipoEvento == "LeccionCompletada" && r.IpOrigen != null && r.IpOrigen.StartsWith(prefijo))
+            .Select(r => r.IpOrigen)
+            .ToListAsync(cancellationToken);
+
+        var completadas = new HashSet<int>();
+        foreach (var ip in registros)
+        {
+            if (string.IsNullOrEmpty(ip)) continue;
+            var partes = ip.Split(':');
+            if (partes.Length >= 4 && int.TryParse(partes[3], out var leccionId))
+            {
+                completadas.Add(leccionId);
+            }
+        }
+
+        return Result<List<int>>.Success(completadas.OrderBy(x => x).ToList());
     }
 }

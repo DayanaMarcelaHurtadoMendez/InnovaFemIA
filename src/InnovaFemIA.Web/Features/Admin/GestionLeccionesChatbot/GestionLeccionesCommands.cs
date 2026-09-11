@@ -44,11 +44,28 @@ public record OpcionPreguntaInput(string TextoOpcion, bool EsCorrecta, string? R
 public record EliminarLeccionCommand(int Id) : IRequest<Result<bool>>;
 public record EliminarPreguntaCommand(int Id) : IRequest<Result<bool>>;
 
+public record EditarLeccionCommand(
+    int Id,
+    int NumeroLeccion,
+    string Titulo,
+    string? Descripcion
+) : IRequest<Result<bool>>;
+
+public record EditarPreguntaLeccionCommand(
+    int Id,
+    string TextoPregunta,
+    string? ContenidoExplicativo,
+    int Orden,
+    List<OpcionPreguntaInput> Opciones
+) : IRequest<Result<bool>>;
+
 // Handlers
 public class GestionLeccionesHandler :
     IRequestHandler<ObtenerLeccionesAdminQuery, Result<List<LeccionChatbotAdminDto>>>,
     IRequestHandler<CrearLeccionCommand, Result<int>>,
+    IRequestHandler<EditarLeccionCommand, Result<bool>>,
     IRequestHandler<AgregarPreguntaLeccionCommand, Result<int>>,
+    IRequestHandler<EditarPreguntaLeccionCommand, Result<bool>>,
     IRequestHandler<EliminarLeccionCommand, Result<bool>>,
     IRequestHandler<EliminarPreguntaCommand, Result<bool>>
 {
@@ -114,15 +131,20 @@ public class GestionLeccionesHandler :
         if (string.IsNullOrWhiteSpace(request.TextoPregunta))
             return Result<int>.BadRequest("El texto de la pregunta es obligatorio.");
 
-        // Regla Sección 9.8: Cada pregunta requiere entre 3 y 4 opciones y exactamente una marcada como correcta
-        if (request.Opciones == null || request.Opciones.Count < 3 || request.Opciones.Count > 4)
+        // Cada pregunta requiere al menos 2 opciones y exactamente una marcada como correcta
+        if (request.Opciones == null || request.Opciones.Count < 2)
         {
-            return Result<int>.BadRequest("Cada pregunta debe tener entre 3 y 4 opciones de respuesta.");
+            return Result<int>.BadRequest("Cada pregunta debe tener al menos 2 opciones de respuesta.");
+        }
+
+        if (request.Opciones.Any(o => string.IsNullOrWhiteSpace(o.TextoOpcion)))
+        {
+            return Result<int>.BadRequest("Todas las opciones agregadas deben tener un texto válido.");
         }
 
         if (request.Opciones.Count(o => o.EsCorrecta) != 1)
         {
-            return Result<int>.BadRequest("Debe haber exactamente una opción marcada como correcta.");
+            return Result<int>.BadRequest("Debe haber exactamente una opción marcada como respuesta correcta.");
         }
 
         var pregunta = new PreguntaLeccion
@@ -153,32 +175,174 @@ public class GestionLeccionesHandler :
 
     public async Task<Result<bool>> Handle(EliminarLeccionCommand request, CancellationToken cancellationToken)
     {
-        // Regla Sección 9.8: Al eliminar una lección, eliminar también sus preguntas y opciones asociadas en cascada dentro de 1 sola transacción
-        using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            var leccion = await _db.LeccionesChatbot.FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
-            if (leccion == null) return Result<bool>.NotFound("Lección no encontrada.");
+            var strategy = _db.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                var leccion = await _db.LeccionesChatbot.FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
+                if (leccion == null) return Result<bool>.NotFound("Lección no encontrada.");
 
-            _db.LeccionesChatbot.Remove(leccion);
-            await _db.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return Result<bool>.Success(true);
+                var opciones = await _db.OpcionesPregunta
+                    .Where(o => o.Pregunta.LeccionId == request.Id)
+                    .ToListAsync(cancellationToken);
+
+                if (opciones.Any())
+                {
+                    _db.OpcionesPregunta.RemoveRange(opciones);
+                }
+
+                var preguntas = await _db.PreguntasLecciones
+                    .Where(p => p.LeccionId == request.Id)
+                    .ToListAsync(cancellationToken);
+
+                if (preguntas.Any())
+                {
+                    _db.PreguntasLecciones.RemoveRange(preguntas);
+                }
+
+                _db.LeccionesChatbot.Remove(leccion);
+                await _db.SaveChangesAsync(cancellationToken);
+
+                return Result<bool>.Success(true);
+            });
         }
-        catch
+        catch (Exception ex)
         {
-            await transaction.RollbackAsync(cancellationToken);
-            throw;
+            return Result<bool>.BadRequest($"Error al eliminar la lección: {ex.Message}");
         }
     }
 
     public async Task<Result<bool>> Handle(EliminarPreguntaCommand request, CancellationToken cancellationToken)
     {
-        var pregunta = await _db.PreguntasLecciones.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
-        if (pregunta == null) return Result<bool>.NotFound("Pregunta no encontrada.");
+        try
+        {
+            var strategy = _db.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                var pregunta = await _db.PreguntasLecciones.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+                if (pregunta == null) return Result<bool>.NotFound("Pregunta no encontrada.");
 
-        _db.PreguntasLecciones.Remove(pregunta);
-        await _db.SaveChangesAsync(cancellationToken);
-        return Result<bool>.Success(true);
+                var opciones = await _db.OpcionesPregunta
+                    .Where(o => o.PreguntaId == request.Id)
+                    .ToListAsync(cancellationToken);
+
+                if (opciones.Any())
+                {
+                    _db.OpcionesPregunta.RemoveRange(opciones);
+                }
+
+                _db.PreguntasLecciones.Remove(pregunta);
+                await _db.SaveChangesAsync(cancellationToken);
+
+                return Result<bool>.Success(true);
+            });
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.BadRequest($"Error al eliminar la pregunta: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<bool>> Handle(EditarLeccionCommand request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Titulo))
+            return Result<bool>.BadRequest("El título de la lección es obligatorio.");
+
+        try
+        {
+            var strategy = _db.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                var leccion = await _db.LeccionesChatbot.FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
+                if (leccion == null) return Result<bool>.NotFound("Lección no encontrada.");
+
+                if (leccion.NumeroLeccion != request.NumeroLeccion)
+                {
+                    if (await _db.LeccionesChatbot.AnyAsync(l => l.Id != request.Id && l.NumeroLeccion == request.NumeroLeccion, cancellationToken))
+                    {
+                        return Result<bool>.BadRequest($"Ya existe otra Lección con el número {request.NumeroLeccion}. Elige otro número.");
+                    }
+                }
+
+                leccion.NumeroLeccion = request.NumeroLeccion;
+                leccion.Titulo = request.Titulo.Trim();
+                leccion.Descripcion = request.Descripcion?.Trim() ?? string.Empty;
+
+                await _db.SaveChangesAsync(cancellationToken);
+                return Result<bool>.Success(true);
+            });
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.BadRequest($"Error al actualizar la lección: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<bool>> Handle(EditarPreguntaLeccionCommand request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.TextoPregunta))
+            return Result<bool>.BadRequest("El texto de la pregunta es obligatorio.");
+
+        if (request.Opciones == null || request.Opciones.Count < 2)
+        {
+            return Result<bool>.BadRequest("Cada pregunta debe tener al menos 2 opciones de respuesta.");
+        }
+
+        if (request.Opciones.Any(o => string.IsNullOrWhiteSpace(o.TextoOpcion)))
+        {
+            return Result<bool>.BadRequest("Todas las opciones agregadas deben tener un texto válido.");
+        }
+
+        if (request.Opciones.Count(o => o.EsCorrecta) != 1)
+        {
+            return Result<bool>.BadRequest("Debe haber exactamente una opción marcada como respuesta correcta.");
+        }
+
+        try
+        {
+            var strategy = _db.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                var pregunta = await _db.PreguntasLecciones
+                    .Include(p => p.Opciones)
+                    .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+
+                if (pregunta == null) return Result<bool>.NotFound("Pregunta no encontrada.");
+
+                pregunta.TextoPregunta = request.TextoPregunta.Trim();
+                pregunta.ContenidoExplicativo = request.ContenidoExplicativo?.Trim();
+                pregunta.Orden = request.Orden <= 0 ? 1 : request.Orden;
+
+                // Remover opciones anteriores
+                var opcionesAntiguas = await _db.OpcionesPregunta
+                    .Where(o => o.PreguntaId == request.Id)
+                    .ToListAsync(cancellationToken);
+
+                if (opcionesAntiguas.Any())
+                {
+                    _db.OpcionesPregunta.RemoveRange(opcionesAntiguas);
+                }
+
+                // Insertar nuevas opciones
+                foreach (var op in request.Opciones)
+                {
+                    _db.OpcionesPregunta.Add(new OpcionPregunta
+                    {
+                        PreguntaId = pregunta.Id,
+                        TextoOpcion = op.TextoOpcion.Trim(),
+                        EsCorrecta = op.EsCorrecta,
+                        Retroalimentacion = op.Retroalimentacion?.Trim()
+                    });
+                }
+
+                await _db.SaveChangesAsync(cancellationToken);
+                return Result<bool>.Success(true);
+            });
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.BadRequest($"Error al actualizar la pregunta: {ex.Message}");
+        }
     }
 }

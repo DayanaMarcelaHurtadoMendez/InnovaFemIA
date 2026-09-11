@@ -1,103 +1,203 @@
 @model IEnumerable<InnovaFemIA.Web.Features.Admin.GestionLeccionesChatbot.LeccionChatbotAdminDto>
 @{
-    ViewData["Title"] = "Gestión de Lecciones Duolingo — Admin";
+    ViewData["Title"] = "Gestión de Modo Lección — Admin";
+    var leccionesList = Model?.ToList() ?? new List<InnovaFemIA.Web.Features.Admin.GestionLeccionesChatbot.LeccionChatbotAdminDto>();
+    var totalLecciones = leccionesList.Count;
+    var totalPreguntas = leccionesList.Sum(l => l.TotalPreguntas);
+    var siguienteNumero = leccionesList.Any() ? leccionesList.Max(l => l.NumeroLeccion) + 1 : 1;
 }
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-    <!-- Header y botón de creación -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-        <div>
-            <a href="/admin/dashboard" class="text-xs text-amber-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
-            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
-                <span>🎓</span> Modo Lección
+    <!-- Header y Estadísticas -->
+    <div class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-1">
+            <a href="/admin/dashboard" class="text-xs text-amber-800 font-bold hover:underline flex items-center gap-1 mb-1">
+                <span>←</span> Volver al Dashboard
+            </a>
+            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl shrink-0">🎓</span>
+                Escuela Agroecológica de Saberes
             </h1>
-            <p class="text-xs text-gray-500 mt-0.5">Módulo 2 · Secuencia de lecciones interactivas con preguntas de selección múltiple</p>
+            <p class="text-xs sm:text-sm text-gray-500 max-w-2xl">
+                Administra las lecciones formativas y sus preguntas interactivas de selección múltiple con retroalimentación en tiempo real.
+            </p>
         </div>
-        <button onclick="abrirModalCrearLeccion()" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-2xl shadow-md transition-all shrink-0">
-            + Crear Nueva Lección
-        </button>
+
+        <div class="flex flex-wrap items-center gap-3 shrink-0">
+            <div class="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-gray-200/80">
+                <div class="text-center">
+                    <span class="text-sm font-black text-gray-900 block leading-none">@totalLecciones</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Lecciones</span>
+                </div>
+                <div class="h-6 w-[1px] bg-gray-200"></div>
+                <div class="text-center">
+                    <span class="text-sm font-black text-amber-700 block leading-none">@totalPreguntas</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Preguntas</span>
+                </div>
+            </div>
+
+            <button onclick="abrirModalCrearLeccion(@siguienteNumero)" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                <span>+</span>
+                <span>Crear Nueva Lección</span>
+            </button>
+        </div>
     </div>
 
-    <!-- Alertas -->
+    <!-- Alertas del Sistema -->
     @if (TempData["Exito"] != null)
     {
-        <div class="bg-emerald-50 border border-emerald-200 text-verde px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
-            <span>✅</span> <span>@TempData["Exito"]</span>
+        <div class="bg-emerald-50 border border-emerald-200 text-verde px-5 py-3.5 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-sm animate-fade-in">
+            <span class="text-base">✅</span>
+            <span>@TempData["Exito"]</span>
         </div>
     }
     @if (TempData["Error"] != null)
     {
-        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
-            <span>⚠️</span> <span>@TempData["Error"]</span>
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-5 py-3.5 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-sm animate-fade-in">
+            <span class="text-base">⚠️</span>
+            <span>@TempData["Error"]</span>
         </div>
     }
 
-    <!-- Lista de Lecciones y sus Preguntas -->
-    <div class="space-y-6">
-        @if (Model != null && Model.Any())
+    <!-- Listado Modular de Lecciones -->
+    <div class="space-y-5">
+        @if (leccionesList.Any())
         {
-            foreach (var lec in Model)
+            @foreach (var lec in leccionesList)
             {
-                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-4">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center font-black text-sm">
+                <div id="leccion-card-@lec.Id" class="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                    
+                    <!-- Cabecera de la Lección -->
+                    <div class="p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-gradient-to-r from-white via-white to-amber-50/20">
+                        <div class="flex items-start gap-4 flex-1 min-w-0">
+                            <span class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 border border-amber-200/60 flex items-center justify-center font-black text-base shrink-0 shadow-inner">
                                 #@lec.NumeroLeccion
                             </span>
-                            <div>
-                                <h3 class="font-extrabold text-base text-gray-900">@lec.Titulo</h3>
-                                <p class="text-xs text-gray-500">@lec.Descripcion</p>
+
+                            <div class="space-y-1 min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-200">
+                                        Lección Secuencial
+                                    </span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold @(lec.TotalPreguntas > 0 ? "bg-emerald-100 text-verde border border-emerald-200" : "bg-gray-100 text-gray-500 border border-gray-200")">
+                                        @(lec.TotalPreguntas == 1 ? "1 pregunta configurada" : $"{lec.TotalPreguntas} preguntas configuradas")
+                                    </span>
+                                </div>
+                                <h2 class="text-base sm:text-lg font-black text-gray-900 truncate">@lec.Titulo</h2>
+                                @if (!string.IsNullOrWhiteSpace(lec.Descripcion))
+                                {
+                                    <p class="text-xs text-gray-500 line-clamp-2">@lec.Descripcion</p>
+                                }
                             </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="abrirModalAgregarPregunta(@lec.Id, '@lec.Titulo')" class="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-200">
-                                + Agregar Pregunta
+
+                        <!-- Acciones de la Lección -->
+                        <div class="flex items-center gap-2 self-end lg:self-center shrink-0">
+                            <button onclick="abrirModalAgregarPregunta(@lec.Id, '@lec.Titulo.Replace("'", "\\'")'.replace(/&quot;/g, '&quot;'), @(lec.TotalPreguntas + 1))" 
+                                    class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-verde border border-emerald-200/80 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm"
+                                    title="Agregar Pregunta a esta lección">
+                                <span>➕</span>
+                                <span class="hidden sm:inline">Agregar Pregunta</span>
                             </button>
-                            <button onclick="confirmarEliminarLeccion(@lec.Id, '@lec.Titulo')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl">
-                                Eliminar Lección
+
+                            <button onclick="abrirModalEditarLeccion(@lec.Id, @lec.NumeroLeccion, '@lec.Titulo.Replace("'", "\\'").Replace("\"", "&quot;")', '@(lec.Descripcion?.Replace("'", "\\'").Replace("\"", "&quot;").Replace("\r\n", "\\n").Replace("\n", "\\n") ?? "")')" 
+                                    class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+                                    title="Editar Título y Descripción de la Lección">
+                                <span>✏️</span>
+                                <span class="hidden sm:inline">Editar</span>
+                            </button>
+
+                            <button onclick="togglePreguntas(@lec.Id)" id="btn-toggle-@lec.Id"
+                                    class="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200/80 rounded-xl text-xs font-bold transition-all flex items-center gap-1">
+                                <span id="toggle-icon-@lec.Id">▼</span>
+                                <span class="hidden sm:inline">Ver preguntas</span>
+                            </button>
+
+                            <button onclick="confirmarEliminarLeccion(@lec.Id, '@lec.Titulo.Replace("'", "\\'")')" 
+                                    class="p-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all" 
+                                    title="Eliminar Lección Completa">
+                                <span>🗑️</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Preguntas asociadas -->
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                            Preguntas de la Lección (@lec.TotalPreguntas)
-                        </h4>
+                    <!-- Acordeón Desplegable con las Preguntas -->
+                    <div id="preguntas-container-@lec.Id" class="border-t border-gray-100 p-6 bg-gray-50/40 space-y-4">
                         @if (lec.Preguntas != null && lec.Preguntas.Any())
                         {
-                            <div class="space-y-3">
+                            <div class="grid grid-cols-1 gap-4">
                                 @foreach (var p in lec.Preguntas)
                                 {
-                                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-2">
-                                        <div class="flex items-center justify-between">
-                                            <span class="font-bold text-xs text-gray-900">
-                                                Pregunta #@p.Orden: @p.TextoPregunta
-                                            </span>
-                                            <form action="/admin/chatbot/lecciones/eliminar-pregunta" method="POST" class="inline">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@p.Id" />
-                                                <button type="submit" class="text-[11px] text-rose-600 font-bold hover:underline">Eliminar Pregunta</button>
-                                            </form>
+                                    <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm space-y-3">
+                                        <!-- Header de la Pregunta -->
+                                        <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-3">
+                                            <div class="flex items-start gap-2.5 flex-1 min-w-0">
+                                                <span class="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-800 text-[11px] font-black shrink-0">
+                                                    Pregunta #@p.Orden
+                                                </span>
+                                                <h4 class="font-extrabold text-sm text-gray-900 leading-snug">
+                                                    @p.TextoPregunta
+                                                </h4>
+                                            </div>
+
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <button type="button" 
+                                                        onclick="cargarYEditarPregunta(@p.Id)"
+                                                        id="btn-data-pregunta-@p.Id"
+                                                        data-pregunta='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(p))'
+                                                        class="text-[11px] font-bold text-amber-700 hover:text-amber-900 hover:bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 transition-colors flex items-center gap-1">
+                                                    <span>✏️</span>
+                                                    <span>Editar</span>
+                                                </button>
+
+                                                <button onclick="confirmarEliminarPregunta(@p.Id, '@p.TextoPregunta.Replace("'", "\\'")')" 
+                                                        class="text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 transition-colors">
+                                                    🗑️ Eliminar
+                                                </button>
+                                            </div>
                                         </div>
-                                        @if (!string.IsNullOrEmpty(p.ContenidoExplicativo))
+
+                                        <!-- Contenido Explicativo si existe -->
+                                        @if (!string.IsNullOrWhiteSpace(p.ContenidoExplicativo))
                                         {
-                                            <p class="text-[11px] text-gray-500 italic bg-white p-2.5 rounded-xl border border-gray-100">
-                                                📖 Explicación: @p.ContenidoExplicativo
-                                            </p>
-                                        }
-                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                                            @foreach (var op in p.Opciones)
-                                            {
-                                                <div class="p-2 rounded-xl text-[11px] border @(op.EsCorrecta ? "bg-emerald-50 border-emerald-200 text-verde font-bold" : "bg-white border-gray-200 text-gray-600")">
-                                                    <span>@(op.EsCorrecta ? "✓" : "•") @op.TextoOpcion</span>
-                                                    @if (!string.IsNullOrEmpty(op.Retroalimentacion))
-                                                    {
-                                                        <span class="block text-[10px] text-gray-400 font-normal mt-0.5">💬 @op.Retroalimentacion</span>
-                                                    }
+                                            <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 text-xs text-amber-950 flex items-start gap-2">
+                                                <span class="text-base shrink-0">📖</span>
+                                                <div class="space-y-0.5">
+                                                    <span class="font-black text-[10px] text-amber-800 uppercase tracking-wider block">Explicación Didáctica</span>
+                                                    <p class="text-gray-700 leading-relaxed">@p.ContenidoExplicativo</p>
                                                 </div>
-                                            }
+                                            </div>
+                                        }
+
+                                        <!-- Opciones de Respuesta -->
+                                        <div>
+                                            <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block mb-1.5">
+                                                Opciones de Respuesta (@p.Opciones.Count)
+                                            </span>
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                                @foreach (var op in p.Opciones)
+                                                {
+                                                    <div class="p-3 rounded-2xl text-xs border transition-all @(op.EsCorrecta ? "bg-emerald-50/90 border-emerald-300 text-emerald-950 shadow-sm ring-1 ring-emerald-400/30" : "bg-white border-gray-200 text-gray-700")">
+                                                        <div class="flex items-center justify-between gap-1 mb-1">
+                                                            <span class="font-black text-xs flex items-center gap-1.5 @(op.EsCorrecta ? "text-verde" : "text-gray-900")">
+                                                                <span>@(op.EsCorrecta ? "✅" : "⚪")</span>
+                                                                <span>@op.TextoOpcion</span>
+                                                            </span>
+                                                            @if (op.EsCorrecta)
+                                                            {
+                                                                <span class="px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded-md text-[9px] font-black uppercase">Correcta</span>
+                                                            }
+                                                        </div>
+                                                        @if (!string.IsNullOrWhiteSpace(op.Retroalimentacion))
+                                                        {
+                                                            <div class="text-[11px] @(op.EsCorrecta ? "text-emerald-800" : "text-gray-500") italic pt-1 border-t @(op.EsCorrecta ? "border-emerald-200/80" : "border-gray-100")">
+                                                                💬 @op.Retroalimentacion
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
                                         </div>
                                     </div>
                                 }
@@ -105,157 +205,347 @@
                         }
                         else
                         {
-                            <p class="text-xs text-gray-400 italic bg-gray-50 p-4 rounded-2xl text-center">
-                                Esta lección aún no tiene preguntas configuradas. Presiona "+ Agregar Pregunta" para crearlas.
-                            </p>
+                            <div class="p-8 bg-white rounded-2xl border border-dashed border-gray-300 text-center space-y-2">
+                                <span class="text-3xl block">💡</span>
+                                <h4 class="font-bold text-xs text-gray-700">Esta lección aún no tiene preguntas</h4>
+                                <p class="text-[11px] text-gray-400 max-w-sm mx-auto">Agrega preguntas prácticas con múltiples opciones de respuesta para que las usuarias puedan resolver la lección.</p>
+                                <button onclick="abrirModalAgregarPregunta(@lec.Id, '@lec.Titulo.Replace("'", "\\'")'.replace(/&quot;/g, '&quot;'), 1)" 
+                                        class="inline-block mt-2 px-4 py-2 bg-emerald-600 hover:bg-verde text-white font-bold text-xs rounded-xl shadow-sm transition-all">
+                                    + Crear Primera Pregunta
+                                </button>
+                            </div>
                         }
                     </div>
+
                 </div>
             }
         }
         else
         {
-            <div class="bg-white rounded-3xl border border-gray-100 p-8 text-center text-gray-400 italic">
-                No hay lecciones registradas en el sistema.
+            <div class="bg-white rounded-3xl border border-gray-100 p-12 text-center space-y-3">
+                <span class="text-5xl block">🌱</span>
+                <h3 class="text-base font-black text-gray-900">No hay lecciones registradas en el sistema</h3>
+                <p class="text-xs text-gray-500 max-w-md mx-auto">
+                    Crea la primera lección formativa con sus preguntas de opción múltiple para activar la Escuela Agroecológica.
+                </p>
+                <button onclick="abrirModalCrearLeccion(1)" class="inline-block mt-2 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-2xl shadow-md transition-all">
+                    + Crear Lección #1
+                </button>
             </div>
         }
     </div>
+
 </div>
 
-<!-- Modal Crear Lección -->
-<div id="modal-crear-leccion" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100">
+<!-- Modal 1: Crear Nueva Lección -->
+<div id="modal-crear-leccion" class="fixed inset-0 z-50 hidden bg-gray-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100 animate-scale-in">
         <div class="bg-amber-600 text-white p-5 flex items-center justify-between">
-            <h3 class="font-extrabold text-sm text-white">Crear Nueva Lección</h3>
-            <button onclick="cerrarModalCrearLeccion()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
+            <div class="flex items-center gap-2.5">
+                <span class="text-xl">🎓</span>
+                <h3 class="font-black text-sm text-white">Nueva Lección Formativa</h3>
+            </div>
+            <button onclick="cerrarModalCrearLeccion()" class="text-white hover:text-gray-200 font-bold text-xl px-2">✕</button>
         </div>
+
         <form action="/admin/chatbot/lecciones/crear" method="POST" class="p-6 space-y-4">
             @Html.AntiForgeryToken()
 
             <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Número de Lección (Secuencia)</label>
-                <input type="number" name="NumeroLeccion" min="1" required value="1" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Número Secuencial de Lección <span class="text-amber-600">*</span>
+                </label>
+                <input type="number" id="input-numero-leccion" name="NumeroLeccion" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
+                <span class="text-[10px] text-gray-400 mt-1 block">Determina el orden de aparición en el catálogo.</span>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Título de la Lección</label>
-                <input type="text" name="Titulo" required placeholder="Ej: Fundamentos del Cultivo de Café" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Título de la Lección <span class="text-amber-600">*</span>
+                </label>
+                <input type="text" name="Titulo" required placeholder="Ej: Fundamentos del Cultivo de Café" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Descripción Breve</label>
-                <textarea name="Descripcion" rows="2" placeholder="Aprende sobre las etapas de siembra y cuidado del café..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs"></textarea>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Descripción Breve
+                </label>
+                <textarea name="Descripcion" rows="3" placeholder="Aprende sobre las etapas de siembra, cuidado agroecológico y recolección..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"></textarea>
             </div>
 
-            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                <button type="button" onclick="cerrarModalCrearLeccion()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
-                <button type="submit" class="px-5 py-2 bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md">Crear Lección</button>
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-2.5">
+                <button type="button" onclick="cerrarModalCrearLeccion()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all">Cancelar</button>
+                <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all">Crear Lección</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Modal Agregar Pregunta -->
-<div id="modal-agregar-pregunta" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-gray-100">
-        <div class="bg-gray-900 text-white p-5 flex items-center justify-between">
-            <h3 class="font-extrabold text-sm text-white">Agregar Pregunta a la Lección</h3>
-            <button onclick="cerrarModalAgregarPregunta()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
+<!-- Modal 2: Editar Lección Existente -->
+<div id="modal-editar-leccion" class="fixed inset-0 z-50 hidden bg-gray-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100 animate-scale-in">
+        <div class="bg-amber-700 text-white p-5 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <span class="text-xl">✏️</span>
+                <h3 class="font-black text-sm text-white">Editar Lección</h3>
+            </div>
+            <button onclick="cerrarModalEditarLeccion()" class="text-white hover:text-gray-200 font-bold text-xl px-2">✕</button>
         </div>
-        <form action="/admin/chatbot/lecciones/agregar-pregunta" method="POST" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+
+        <form action="/admin/chatbot/lecciones/editar" method="POST" class="p-6 space-y-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="edit-leccion-id" name="Id" value="" />
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Número Secuencial de Lección <span class="text-amber-600">*</span>
+                </label>
+                <input type="number" id="edit-leccion-numero" name="NumeroLeccion" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
+                <span class="text-[10px] text-gray-400 mt-1 block">Determina el orden de aparición en el catálogo.</span>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Título de la Lección <span class="text-amber-600">*</span>
+                </label>
+                <input type="text" id="edit-leccion-titulo" name="Titulo" required placeholder="Ej: Fundamentos del Cultivo de Café" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Descripción Breve
+                </label>
+                <textarea id="edit-leccion-descripcion" name="Descripcion" rows="3" placeholder="Aprende sobre las etapas de siembra..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"></textarea>
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-2.5">
+                <button type="button" onclick="cerrarModalEditarLeccion()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all">Cancelar</button>
+                <button type="submit" class="px-5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-black text-xs rounded-xl shadow-md transition-all">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 3: Agregar Pregunta con Opciones Dinámicas Ilimitadas -->
+<div id="modal-agregar-pregunta" class="fixed inset-0 z-50 hidden bg-gray-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-gray-100 my-8 flex flex-col max-h-[90vh] animate-scale-in">
+        
+        <div class="bg-gray-900 text-white p-5 flex items-center justify-between shrink-0">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">❓</span>
+                    <h3 class="font-black text-sm text-white">Agregar Pregunta</h3>
+                </div>
+                <p id="label-leccion-destino" class="text-xs text-amber-300 font-bold truncate mt-0.5"></p>
+            </div>
+            <button onclick="cerrarModalAgregarPregunta()" class="text-white hover:text-gray-300 font-bold text-xl px-2">✕</button>
+        </div>
+
+        <form id="form-agregar-pregunta" action="/admin/chatbot/lecciones/agregar-pregunta" method="POST" onsubmit="return validarFormularioPregunta(event)" class="p-6 space-y-5 overflow-y-auto flex-1">
             @Html.AntiForgeryToken()
             <input type="hidden" id="pregunta-leccion-id" name="leccionId" value="" />
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Texto de la Pregunta</label>
-                <input type="text" name="textoPregunta" required placeholder="Ej: ¿Cuántos meses tarda el café en germinar?" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs" />
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Contenido Explicativo (Se muestra antes de la pregunta)</label>
-                <textarea name="contenidoExplicativo" rows="2" placeholder="El café es una planta perenne de montaña..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs"></textarea>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Orden de la Pregunta</label>
-                <input type="number" name="orden" value="1" min="1" required class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-xs" />
-            </div>
-
-            <!-- Opciones (3 opciones según especificación Sección 9.8) -->
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Opciones de Respuesta (Marca cuál es la correcta)</label>
-                
-                <div class="space-y-3">
-                    <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
-                        <div class="flex items-center gap-2">
-                            <input type="radio" name="opcionCorrectaIndex" value="0" checked class="w-4 h-4 text-emerald-600" />
-                            <span class="text-xs font-bold text-verde">Opción 1 (Correcta si está marcada)</span>
-                        </div>
-                        <input type="text" name="opcionTexto" required placeholder="Texto de la opción 1..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs" />
-                        <input type="text" name="opcionRetro" placeholder="Retroalimentación al seleccionar esta opción..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white" />
-                    </div>
-
-                    <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
-                        <div class="flex items-center gap-2">
-                            <input type="radio" name="opcionCorrectaIndex" value="1" class="w-4 h-4 text-emerald-600" />
-                            <span class="text-xs font-bold text-gray-700">Opción 2</span>
-                        </div>
-                        <input type="text" name="opcionTexto" required placeholder="Texto de la opción 2..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs" />
-                        <input type="text" name="opcionRetro" placeholder="Retroalimentación al seleccionar esta opción..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white" />
-                    </div>
-
-                    <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
-                        <div class="flex items-center gap-2">
-                            <input type="radio" name="opcionCorrectaIndex" value="2" class="w-4 h-4 text-emerald-600" />
-                            <span class="text-xs font-bold text-gray-700">Opción 3</span>
-                        </div>
-                        <input type="text" name="opcionTexto" required placeholder="Texto de la opción 3..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs" />
-                        <input type="text" name="opcionRetro" placeholder="Retroalimentación al seleccionar esta opción..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white" />
-                    </div>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div class="sm:col-span-3">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Enunciado de la Pregunta <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="text" id="input-texto-pregunta" name="textoPregunta" required placeholder="Ej: ¿Cuál es la distancia recomendada para siembra de café?" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Orden # <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="number" id="input-orden-pregunta" name="orden" value="1" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none text-center" />
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                <button type="button" onclick="cerrarModalAgregarPregunta()" class="px-4 py-2 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl">Cancelar</button>
-                <button type="submit" class="px-5 py-2 bg-gray-900 text-white font-bold text-xs rounded-xl shadow-md">Guardar Pregunta</button>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Contenido Explicativo Didáctico <span class="text-gray-400 font-normal">(Opcional, se muestra como ayuda pedagógica)</span>
+                </label>
+                <textarea name="contenidoExplicativo" rows="2" placeholder="El marco de plantación adecuado permite optimizar el paso de luz y nutrientes en la parcela..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+            </div>
+
+            <!-- Sección Dinámica de Opciones de Respuesta -->
+            <div class="space-y-3 pt-2 border-t border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label class="block text-xs font-black text-gray-900 uppercase tracking-wider">
+                            Opciones de Respuesta
+                        </label>
+                        <span class="text-[10px] text-gray-500">Agrega las opciones que desees y marca el botón redondo de la que sea correcta.</span>
+                    </div>
+
+                    <button type="button" onclick="agregarNuevaOpcionUI('', false, '')" class="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-verde border border-emerald-300 rounded-xl text-xs font-black transition-all flex items-center gap-1 shadow-sm">
+                        <span>➕</span>
+                        <span>Agregar Opción</span>
+                    </button>
+                </div>
+
+                <div id="contenedor-opciones-dinamicas" class="space-y-3">
+                    <!-- Se llena con JavaScript dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Banner de error JS -->
+            <div id="banner-error-pregunta" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-bold"></div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-2.5 shrink-0">
+                <button type="button" onclick="cerrarModalAgregarPregunta()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all">Cancelar</button>
+                <button type="submit" class="px-6 py-2.5 bg-gray-900 hover:bg-black text-white font-black text-xs rounded-xl shadow-md transition-all">Guardar Pregunta</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Modal Eliminar Lección -->
-<div id="modal-eliminar-leccion" class="fixed inset-0 z-50 hidden bg-gray-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+<!-- Modal 4: Editar Pregunta con Opciones Dinámicas Ilimitadas -->
+<div id="modal-editar-pregunta" class="fixed inset-0 z-50 hidden bg-gray-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-gray-100 my-8 flex flex-col max-h-[90vh] animate-scale-in">
+        
+        <div class="bg-gray-900 text-white p-5 flex items-center justify-between shrink-0">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">✏️</span>
+                    <h3 class="font-black text-sm text-white">Editar Pregunta</h3>
+                </div>
+                <p class="text-xs text-amber-300 font-bold truncate mt-0.5">Modifica el texto, explicación y opciones de respuesta</p>
+            </div>
+            <button onclick="cerrarModalEditarPregunta()" class="text-white hover:text-gray-300 font-bold text-xl px-2">✕</button>
+        </div>
+
+        <form id="form-editar-pregunta" action="/admin/chatbot/lecciones/editar-pregunta" method="POST" onsubmit="return validarFormularioPreguntaEdit(event)" class="p-6 space-y-5 overflow-y-auto flex-1">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="edit-pregunta-id" name="id" value="" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div class="sm:col-span-3">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Enunciado de la Pregunta <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="text" id="edit-pregunta-texto" name="textoPregunta" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Orden # <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="number" id="edit-pregunta-orden" name="orden" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none text-center" />
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Contenido Explicativo Didáctico <span class="text-gray-400 font-normal">(Opcional, ayuda pedagógica)</span>
+                </label>
+                <textarea id="edit-pregunta-explicacion" name="contenidoExplicativo" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+            </div>
+
+            <!-- Sección Dinámica de Opciones de Respuesta en Edición -->
+            <div class="space-y-3 pt-2 border-t border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label class="block text-xs font-black text-gray-900 uppercase tracking-wider">
+                            Opciones de Respuesta
+                        </label>
+                        <span class="text-[10px] text-gray-500">Modifica, agrega o elimina opciones. Marca la que sea correcta.</span>
+                    </div>
+
+                    <button type="button" onclick="agregarNuevaOpcionEditUI('', false, '')" class="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-verde border border-emerald-300 rounded-xl text-xs font-black transition-all flex items-center gap-1 shadow-sm">
+                        <span>➕</span>
+                        <span>Agregar Opción</span>
+                    </button>
+                </div>
+
+                <div id="contenedor-opciones-dinamicas-edit" class="space-y-3">
+                    <!-- Se llena con JavaScript dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Banner de error JS -->
+            <div id="banner-error-pregunta-edit" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-bold"></div>
+
+            <div class="pt-4 border-t border-gray-100 flex justify-end gap-2.5 shrink-0">
+                <button type="button" onclick="cerrarModalEditarPregunta()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all">Cancelar</button>
+                <button type="submit" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 5: Confirmar Eliminación de Lección -->
+<div id="modal-eliminar-leccion" class="fixed inset-0 z-50 hidden bg-gray-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-scale-in">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border border-gray-100 space-y-4">
-        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto font-bold">
+        <div class="w-14 h-14 rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto font-black shadow-inner">
             🗑️
         </div>
-        <h3 class="font-black text-lg text-gray-900">¿Confirmar Eliminación?</h3>
-        <p class="text-xs text-gray-500">
-            ¿Estás seguro de eliminar la lección <strong id="leccion-nombre-eliminar" class="text-gray-800"></strong> y todas sus preguntas asociadas?
-        </p>
+        <div class="space-y-1">
+            <h3 class="font-black text-lg text-gray-900">¿Eliminar Lección Completa?</h3>
+            <p class="text-xs text-gray-500">
+                Se eliminará permanentemente la lección <strong id="leccion-nombre-eliminar" class="text-gray-900 font-black"></strong> junto con todas sus preguntas y opciones de respuesta en cascada.
+            </p>
+        </div>
         <form action="/admin/chatbot/lecciones/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
             @Html.AntiForgeryToken()
             <input type="hidden" id="leccion-id-eliminar" name="id" value="" />
-            <button type="button" onclick="cerrarModalEliminarLeccion()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
-            <button type="submit" class="px-5 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-rose-700">Sí, Eliminar Todo</button>
+            <button type="button" onclick="cerrarModalEliminarLeccion()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all">Cancelar</button>
+            <button type="submit" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl shadow-md transition-all">Sí, Eliminar Lección</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 6: Confirmar Eliminación de Pregunta -->
+<div id="modal-eliminar-pregunta" class="fixed inset-0 z-50 hidden bg-gray-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-scale-in">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border border-gray-100 space-y-4">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto font-black shadow-inner">
+            🗑️
+        </div>
+        <div class="space-y-1">
+            <h3 class="font-black text-base text-gray-900">¿Eliminar Pregunta?</h3>
+            <p class="text-xs text-gray-500">
+                ¿Estás seguro de eliminar la pregunta: <strong id="pregunta-nombre-eliminar" class="text-gray-900 font-bold"></strong>?
+            </p>
+        </div>
+        <form action="/admin/chatbot/lecciones/eliminar-pregunta" method="POST" class="pt-2 flex justify-center gap-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="pregunta-id-eliminar" name="id" value="" />
+            <button type="button" onclick="cerrarModalEliminarPregunta()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
+            <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl shadow-md">Eliminar Pregunta</button>
         </form>
     </div>
 </div>
 
 <script>
-    function abrirModalCrearLeccion() {
+    // ─── Despliegue de Acordeón ──────────────────────────────────────────────
+    function togglePreguntas(leccionId) {
+        const container = document.getElementById(`preguntas-container-${leccionId}`);
+        const icon = document.getElementById(`toggle-icon-${leccionId}`);
+        if (container.classList.contains('hidden')) {
+            container.classList.remove('hidden');
+            icon.innerText = '▲';
+        } else {
+            container.classList.add('hidden');
+            icon.innerText = '▼';
+        }
+    }
+
+    // ─── Modales de Crear / Editar Lección ───────────────────────────────────
+    function abrirModalCrearLeccion(siguienteNumero) {
+        document.getElementById('input-numero-leccion').value = siguienteNumero || 1;
         document.getElementById('modal-crear-leccion').classList.remove('hidden');
     }
     function cerrarModalCrearLeccion() {
         document.getElementById('modal-crear-leccion').classList.add('hidden');
     }
 
-    function abrirModalAgregarPregunta(leccionId, titulo) {
-        document.getElementById('pregunta-leccion-id').value = leccionId;
-        document.getElementById('modal-agregar-pregunta').classList.remove('hidden');
+    function abrirModalEditarLeccion(id, numeroLeccion, titulo, descripcion) {
+        document.getElementById('edit-leccion-id').value = id;
+        document.getElementById('edit-leccion-numero').value = numeroLeccion;
+        document.getElementById('edit-leccion-titulo').value = titulo;
+        document.getElementById('edit-leccion-descripcion').value = descripcion || '';
+        document.getElementById('modal-editar-leccion').classList.remove('hidden');
     }
-    function cerrarModalAgregarPregunta() {
-        document.getElementById('modal-agregar-pregunta').classList.add('hidden');
+    function cerrarModalEditarLeccion() {
+        document.getElementById('modal-editar-leccion').classList.add('hidden');
     }
 
     function confirmarEliminarLeccion(id, titulo) {
@@ -265,5 +555,380 @@
     }
     function cerrarModalEliminarLeccion() {
         document.getElementById('modal-eliminar-leccion').classList.add('hidden');
+    }
+
+    function confirmarEliminarPregunta(id, texto) {
+        document.getElementById('pregunta-id-eliminar').value = id;
+        document.getElementById('pregunta-nombre-eliminar').innerText = texto;
+        document.getElementById('modal-eliminar-pregunta').classList.remove('hidden');
+    }
+    function cerrarModalEliminarPregunta() {
+        document.getElementById('modal-eliminar-pregunta').classList.add('hidden');
+    }
+
+    // ─── Generador Dinámico de Opciones: AGREGAR PREGUNTA ───────────────────
+    let contadorOpciones = 0;
+
+    function abrirModalAgregarPregunta(leccionId, tituloLeccion, ordenSugerido) {
+        document.getElementById('pregunta-leccion-id').value = leccionId;
+        document.getElementById('label-leccion-destino').innerText = `Lección: ${tituloLeccion}`;
+        document.getElementById('input-orden-pregunta').value = ordenSugerido || 1;
+        document.getElementById('input-texto-pregunta').value = '';
+        document.getElementById('banner-error-pregunta').classList.add('hidden');
+
+        // Limpiar y crear 3 opciones por defecto
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas');
+        contenedor.innerHTML = '';
+        contadorOpciones = 0;
+
+        agregarNuevaOpcionUI('', true, '');  // Opción 1 (correcta por defecto)
+        agregarNuevaOpcionUI('', false, ''); // Opción 2
+        agregarNuevaOpcionUI('', false, ''); // Opción 3
+
+        document.getElementById('modal-agregar-pregunta').classList.remove('hidden');
+    }
+
+    function cerrarModalAgregarPregunta() {
+        document.getElementById('modal-agregar-pregunta').classList.add('hidden');
+    }
+
+    function agregarNuevaOpcionUI(texto = '', esCorrecta = false, retro = '') {
+        contadorOpciones++;
+        const index = contadorOpciones - 1;
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas');
+
+        const card = document.createElement('div');
+        card.id = `opcion-card-dinamica-${index}`;
+        card.className = `p-4 rounded-2xl border transition-all space-y-2 ${esCorrecta ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/40' : 'bg-gray-50 border-gray-200'}`;
+
+        card.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="opcionCorrectaIndex" value="${index}" ${esCorrecta ? 'checked' : ''} onchange="actualizarEstiloOpcionCorrecta()" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+                    <span class="text-xs font-black ${esCorrecta ? 'text-verde' : 'text-gray-700'}">Opción #${contadorOpciones} ${esCorrecta ? '(Respuesta Correcta ✓)' : ''}</span>
+                </label>
+                <button type="button" onclick="eliminarOpcionUI(${index})" class="text-[11px] text-rose-600 hover:text-rose-800 font-bold px-2 py-0.5 rounded-lg hover:bg-rose-50 transition-colors">
+                    ✕ Quitar
+                </button>
+            </div>
+            <input type="text" name="opcionTexto" required value="${escaparHtml(texto)}" placeholder="Texto de la opción #${contadorOpciones}..." class="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none" />
+            <input type="text" name="opcionRetro" value="${escaparHtml(retro)}" placeholder="Retroalimentación didáctica al seleccionar esta opción (ej: ¡Excelente! o Recuerda que...)..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-[11px] text-gray-600 focus:ring-2 focus:ring-emerald-500 outline-none" />
+        `;
+
+        contenedor.appendChild(card);
+        actualizarEstiloOpcionCorrecta();
+    }
+
+    function eliminarOpcionUI(index) {
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas');
+        const cards = contenedor.children;
+
+        if (cards.length <= 2) {
+            alert('Cada pregunta debe tener al menos 2 opciones de respuesta.');
+            return;
+        }
+
+        const el = document.getElementById(`opcion-card-dinamica-${index}`);
+        if (el) el.remove();
+        renumerarOpciones();
+    }
+
+    function renumerarOpciones() {
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas');
+        const cards = contenedor.children;
+        contadorOpciones = 0;
+        let huboChecked = false;
+
+        Array.from(cards).forEach((card, idx) => {
+            contadorOpciones = idx + 1;
+            card.id = `opcion-card-dinamica-${idx}`;
+
+            const radio = card.querySelector('input[type="radio"]');
+            const labelSpan = card.querySelector('label span');
+            const deleteBtn = card.querySelector('button');
+
+            radio.value = idx;
+            deleteBtn.setAttribute('onclick', `eliminarOpcionUI(${idx})`);
+
+            if (radio.checked) {
+                huboChecked = true;
+                labelSpan.innerText = `Opción #${contadorOpciones} (Respuesta Correcta ✓)`;
+                labelSpan.className = 'text-xs font-black text-verde';
+                card.className = 'p-4 rounded-2xl border transition-all space-y-2 bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/40';
+            } else {
+                labelSpan.innerText = `Opción #${contadorOpciones}`;
+                labelSpan.className = 'text-xs font-black text-gray-700';
+                card.className = 'p-4 rounded-2xl border transition-all space-y-2 bg-gray-50 border-gray-200';
+            }
+        });
+
+        if (!huboChecked && cards.length > 0) {
+            const firstRadio = cards[0].querySelector('input[type="radio"]');
+            if (firstRadio) {
+                firstRadio.checked = true;
+                actualizarEstiloOpcionCorrecta();
+            }
+        }
+    }
+
+    function actualizarEstiloOpcionCorrecta() {
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas');
+        const cards = contenedor.children;
+
+        Array.from(cards).forEach((card, idx) => {
+            const radio = card.querySelector('input[type="radio"]');
+            const labelSpan = card.querySelector('label span');
+            const num = idx + 1;
+
+            if (radio && radio.checked) {
+                labelSpan.innerText = `Opción #${num} (Respuesta Correcta ✓)`;
+                labelSpan.className = 'text-xs font-black text-verde';
+                card.className = 'p-4 rounded-2xl border transition-all space-y-2 bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/40';
+            } else if (labelSpan) {
+                labelSpan.innerText = `Opción #${num}`;
+                labelSpan.className = 'text-xs font-black text-gray-700';
+                card.className = 'p-4 rounded-2xl border transition-all space-y-2 bg-gray-50 border-gray-200';
+            }
+        });
+    }
+
+    function validarFormularioPregunta(e) {
+        const banner = document.getElementById('banner-error-pregunta');
+        banner.classList.add('hidden');
+
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas');
+        const cards = contenedor.children;
+
+        if (cards.length < 2) {
+            e.preventDefault();
+            banner.innerText = 'Debes agregar al menos 2 opciones de respuesta.';
+            banner.classList.remove('hidden');
+            return false;
+        }
+
+        let radioChecked = false;
+        let opcionesVacias = false;
+
+        Array.from(cards).forEach(card => {
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio && radio.checked) radioChecked = true;
+
+            const textInput = card.querySelector('input[name="opcionTexto"]');
+            if (!textInput || !textInput.value.trim()) opcionesVacias = true;
+        });
+
+        if (!radioChecked) {
+            e.preventDefault();
+            banner.innerText = 'Debes marcar una opción como respuesta correcta.';
+            banner.classList.remove('hidden');
+            return false;
+        }
+
+        if (opcionesVacias) {
+            e.preventDefault();
+            banner.innerText = 'Todas las opciones agregadas deben tener texto.';
+            banner.classList.remove('hidden');
+            return false;
+        }
+
+        return true;
+    }
+
+    // ─── Generador Dinámico de Opciones: EDITAR PREGUNTA ────────────────────
+    let contadorOpcionesEdit = 0;
+
+    function cargarYEditarPregunta(preguntaId) {
+        const btn = document.getElementById(`btn-data-pregunta-${preguntaId}`);
+        if (!btn) return;
+        try {
+            const data = JSON.parse(btn.dataset.pregunta);
+            abrirModalEditarPregunta(data);
+        } catch (err) {
+            console.error('Error al parsear datos de pregunta', err);
+        }
+    }
+
+    function abrirModalEditarPregunta(p) {
+        document.getElementById('edit-pregunta-id').value = p.Id || p.id;
+        document.getElementById('edit-pregunta-texto').value = p.TextoPregunta || p.textoPregunta || '';
+        document.getElementById('edit-pregunta-orden').value = p.Orden || p.orden || 1;
+        document.getElementById('edit-pregunta-explicacion').value = p.ContenidoExplicativo || p.contenidoExplicativo || '';
+        document.getElementById('banner-error-pregunta-edit').classList.add('hidden');
+
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas-edit');
+        contenedor.innerHTML = '';
+        contadorOpcionesEdit = 0;
+
+        const opciones = p.Opciones || p.opciones || [];
+        if (opciones.length > 0) {
+            opciones.forEach(op => {
+                const txt = op.TextoOpcion || op.textoOpcion || '';
+                const esCorr = (op.EsCorrecta !== undefined) ? op.EsCorrecta : (op.esCorrecta || false);
+                const retro = op.Retroalimentacion || op.retroalimentacion || '';
+                agregarNuevaOpcionEditUI(txt, esCorr, retro);
+            });
+        } else {
+            agregarNuevaOpcionEditUI('', true, '');
+            agregarNuevaOpcionEditUI('', false, '');
+        }
+
+        document.getElementById('modal-editar-pregunta').classList.remove('hidden');
+    }
+
+    function cerrarModalEditarPregunta() {
+        document.getElementById('modal-editar-pregunta').classList.add('hidden');
+    }
+
+    function agregarNuevaOpcionEditUI(texto = '', esCorrecta = false, retro = '') {
+        contadorOpcionesEdit++;
+        const index = contadorOpcionesEdit - 1;
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas-edit');
+
+        const card = document.createElement('div');
+        card.id = `opcion-card-dinamica-edit-${index}`;
+        card.className = `p-4 rounded-2xl border transition-all space-y-2 ${esCorrecta ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/40' : 'bg-gray-50 border-gray-200'}`;
+
+        card.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="opcionCorrectaIndex" value="${index}" ${esCorrecta ? 'checked' : ''} onchange="actualizarEstiloOpcionCorrectaEdit()" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+                    <span class="text-xs font-black ${esCorrecta ? 'text-verde' : 'text-gray-700'}">Opción #${contadorOpcionesEdit} ${esCorrecta ? '(Respuesta Correcta ✓)' : ''}</span>
+                </label>
+                <button type="button" onclick="eliminarOpcionEditUI(${index})" class="text-[11px] text-rose-600 hover:text-rose-800 font-bold px-2 py-0.5 rounded-lg hover:bg-rose-50 transition-colors">
+                    ✕ Quitar
+                </button>
+            </div>
+            <input type="text" name="opcionTexto" required value="${escaparHtml(texto)}" placeholder="Texto de la opción #${contadorOpcionesEdit}..." class="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none" />
+            <input type="text" name="opcionRetro" value="${escaparHtml(retro)}" placeholder="Retroalimentación didáctica al seleccionar esta opción..." class="w-full px-3 py-1.5 rounded-xl border border-gray-200 bg-white text-[11px] text-gray-600 focus:ring-2 focus:ring-amber-500 outline-none" />
+        `;
+
+        contenedor.appendChild(card);
+        actualizarEstiloOpcionCorrectaEdit();
+    }
+
+    function eliminarOpcionEditUI(index) {
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas-edit');
+        const cards = contenedor.children;
+
+        if (cards.length <= 2) {
+            alert('Cada pregunta debe tener al menos 2 opciones de respuesta.');
+            return;
+        }
+
+        const el = document.getElementById(`opcion-card-dinamica-edit-${index}`);
+        if (el) el.remove();
+        renumerarOpcionesEdit();
+    }
+
+    function renumerarOpcionesEdit() {
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas-edit');
+        const cards = contenedor.children;
+        contadorOpcionesEdit = 0;
+        let huboChecked = false;
+
+        Array.from(cards).forEach((card, idx) => {
+            contadorOpcionesEdit = idx + 1;
+            card.id = `opcion-card-dinamica-edit-${idx}`;
+
+            const radio = card.querySelector('input[type="radio"]');
+            const labelSpan = card.querySelector('label span');
+            const deleteBtn = card.querySelector('button');
+
+            radio.value = idx;
+            deleteBtn.setAttribute('onclick', `eliminarOpcionEditUI(${idx})`);
+
+            if (radio.checked) {
+                huboChecked = true;
+                labelSpan.innerText = `Opción #${contadorOpcionesEdit} (Respuesta Correcta ✓)`;
+                labelSpan.className = 'text-xs font-black text-verde';
+                card.className = 'p-4 rounded-2xl border transition-all space-y-2 bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/40';
+            } else {
+                labelSpan.innerText = `Opción #${contadorOpcionesEdit}`;
+                labelSpan.className = 'text-xs font-black text-gray-700';
+                card.className = 'p-4 rounded-2xl border transition-all space-y-2 bg-gray-50 border-gray-200';
+            }
+        });
+
+        if (!huboChecked && cards.length > 0) {
+            const firstRadio = cards[0].querySelector('input[type="radio"]');
+            if (firstRadio) {
+                firstRadio.checked = true;
+                actualizarEstiloOpcionCorrectaEdit();
+            }
+        }
+    }
+
+    function actualizarEstiloOpcionCorrectaEdit() {
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas-edit');
+        const cards = contenedor.children;
+
+        Array.from(cards).forEach((card, idx) => {
+            const radio = card.querySelector('input[type="radio"]');
+            const labelSpan = card.querySelector('label span');
+            const num = idx + 1;
+
+            if (radio && radio.checked) {
+                labelSpan.innerText = `Opción #${num} (Respuesta Correcta ✓)`;
+                labelSpan.className = 'text-xs font-black text-verde';
+                card.className = 'p-4 rounded-2xl border transition-all space-y-2 bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/40';
+            } else if (labelSpan) {
+                labelSpan.innerText = `Opción #${num}`;
+                labelSpan.className = 'text-xs font-black text-gray-700';
+                card.className = 'p-4 rounded-2xl border transition-all space-y-2 bg-gray-50 border-gray-200';
+            }
+        });
+    }
+
+    function validarFormularioPreguntaEdit(e) {
+        const banner = document.getElementById('banner-error-pregunta-edit');
+        banner.classList.add('hidden');
+
+        const contenedor = document.getElementById('contenedor-opciones-dinamicas-edit');
+        const cards = contenedor.children;
+
+        if (cards.length < 2) {
+            e.preventDefault();
+            banner.innerText = 'Debes agregar al menos 2 opciones de respuesta.';
+            banner.classList.remove('hidden');
+            return false;
+        }
+
+        let radioChecked = false;
+        let opcionesVacias = false;
+
+        Array.from(cards).forEach(card => {
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio && radio.checked) radioChecked = true;
+
+            const textInput = card.querySelector('input[name="opcionTexto"]');
+            if (!textInput || !textInput.value.trim()) opcionesVacias = true;
+        });
+
+        if (!radioChecked) {
+            e.preventDefault();
+            banner.innerText = 'Debes marcar una opción como respuesta correcta.';
+            banner.classList.remove('hidden');
+            return false;
+        }
+
+        if (opcionesVacias) {
+            e.preventDefault();
+            banner.innerText = 'Todas las opciones agregadas deben tener texto.';
+            banner.classList.remove('hidden');
+            return false;
+        }
+
+        return true;
+    }
+
+    // ─── Utilidad para sanitizar strings en inputs ──────────────────────────
+    function escaparHtml(texto) {
+        if (!texto) return '';
+        return String(texto)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     }
 </script>
