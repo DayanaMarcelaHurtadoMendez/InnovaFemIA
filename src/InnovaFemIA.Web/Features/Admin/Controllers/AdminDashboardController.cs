@@ -469,25 +469,81 @@ public class AdminDashboardController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AgregarPreguntaLeccion([FromForm] int leccionId, [FromForm] string textoPregunta, [FromForm] string? contenidoExplicativo, [FromForm] int orden, [FromForm] List<string> opcionTexto, [FromForm] int opcionCorrectaIndex, [FromForm] List<string> opcionRetro)
     {
-        var opciones = new List<OpcionPreguntaInput>();
-        for (int i = 0; i < opcionTexto.Count; i++)
+        try
         {
-            if (!string.IsNullOrWhiteSpace(opcionTexto[i]))
+            var opciones = new List<OpcionPreguntaInput>();
+            for (int i = 0; i < opcionTexto.Count; i++)
             {
-                opciones.Add(new OpcionPreguntaInput(
-                    opcionTexto[i].Trim(),
-                    i == opcionCorrectaIndex,
-                    i < opcionRetro.Count ? opcionRetro[i]?.Trim() : null
-                ));
+                if (!string.IsNullOrWhiteSpace(opcionTexto[i]))
+                {
+                    opciones.Add(new OpcionPreguntaInput(
+                        opcionTexto[i].Trim(),
+                        i == opcionCorrectaIndex,
+                        i < opcionRetro.Count ? opcionRetro[i]?.Trim() : null
+                    ));
+                }
             }
+
+            var command = new AgregarPreguntaLeccionCommand(leccionId, textoPregunta, contenidoExplicativo, orden, opciones);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess) TempData["Error"] = result.Error;
+            else TempData["Exito"] = "Pregunta agregada a la lección exitosamente.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Ocurrió un error al agregar la pregunta: {ex.Message}";
         }
 
-        var command = new AgregarPreguntaLeccionCommand(leccionId, textoPregunta, contenidoExplicativo, orden, opciones);
-        var result = await _mediator.Send(command);
+        return RedirectToAction("ChatbotLecciones");
+    }
 
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Pregunta agregada a la lección exitosamente.";
+    [HttpPost("chatbot/lecciones/editar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditarLeccion([FromForm] EditarLeccionCommand command)
+    {
+        try
+        {
+            var result = await _mediator.Send(command);
+            if (!result.IsSuccess) TempData["Error"] = result.Error;
+            else TempData["Exito"] = "Lección actualizada exitosamente.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Ocurrió un error al actualizar la lección: {ex.Message}";
+        }
+        return RedirectToAction("ChatbotLecciones");
+    }
 
+    [HttpPost("chatbot/lecciones/editar-pregunta")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditarPregunta([FromForm] int id, [FromForm] string textoPregunta, [FromForm] string? contenidoExplicativo, [FromForm] int orden, [FromForm] List<string> opcionTexto, [FromForm] int opcionCorrectaIndex, [FromForm] List<string> opcionRetro)
+    {
+        try
+        {
+            var opciones = new List<OpcionPreguntaInput>();
+            for (int i = 0; i < opcionTexto.Count; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(opcionTexto[i]))
+                {
+                    opciones.Add(new OpcionPreguntaInput(
+                        opcionTexto[i].Trim(),
+                        i == opcionCorrectaIndex,
+                        i < opcionRetro.Count ? opcionRetro[i]?.Trim() : null
+                    ));
+                }
+            }
+
+            var command = new EditarPreguntaLeccionCommand(id, textoPregunta, contenidoExplicativo, orden, opciones);
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess) TempData["Error"] = result.Error;
+            else TempData["Exito"] = "Pregunta y sus opciones actualizadas exitosamente.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Ocurrió un error al actualizar la pregunta: {ex.Message}";
+        }
         return RedirectToAction("ChatbotLecciones");
     }
 
@@ -495,9 +551,16 @@ public class AdminDashboardController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarLeccion([FromForm] int id)
     {
-        var result = await _mediator.Send(new EliminarLeccionCommand(id));
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Lección y sus preguntas eliminadas exitosamente en cascada.";
+        try
+        {
+            var result = await _mediator.Send(new EliminarLeccionCommand(id));
+            if (!result.IsSuccess) TempData["Error"] = result.Error;
+            else TempData["Exito"] = "Lección y sus preguntas eliminadas exitosamente en cascada.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Ocurrió un error al eliminar la lección: {ex.Message}";
+        }
         return RedirectToAction("ChatbotLecciones");
     }
 
@@ -505,9 +568,16 @@ public class AdminDashboardController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarPregunta([FromForm] int id)
     {
-        var result = await _mediator.Send(new EliminarPreguntaCommand(id));
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Pregunta eliminada exitosamente.";
+        try
+        {
+            var result = await _mediator.Send(new EliminarPreguntaCommand(id));
+            if (!result.IsSuccess) TempData["Error"] = result.Error;
+            else TempData["Exito"] = "Pregunta eliminada exitosamente.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Ocurrió un error al eliminar la pregunta: {ex.Message}";
+        }
         return RedirectToAction("ChatbotLecciones");
     }
 
