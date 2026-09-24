@@ -45,7 +45,7 @@ public class ObtenerPreciosHandler : IRequestHandler<ObtenerPreciosQuery, Result
         var existenPrecios = await _db.PreciosMayoristasSipsa.AnyAsync(cancellationToken);
         if (!existenPrecios)
         {
-            var periodo = "15 al 21 de agosto de 2026";
+            var periodo = "5 al 11 de septiembre de 2026";
             var datos = BackgroundServices.ScrapingPreciosService.GenerarDatosContingenciaSipsa(periodo);
             var cultivosSeed = await _db.Cultivos.Where(c => c.Activo).ToListAsync(cancellationToken);
 
@@ -64,10 +64,10 @@ public class ObtenerPreciosHandler : IRequestHandler<ObtenerPreciosQuery, Result
                 boletinInicial = new Features.Shared.Entities.BoletinSipsaInfo
                 {
                     Periodo = periodo,
-                    BoletinTecnicoUrl = "https://www.dane.gov.co/files/operaciones/SIPSA/bol-SIPSASemanal-15ago21agos-2026.pdf",
-                    BoletinTecnicoTitulo = "Boletín del 15 de agosto al 21 de agosto de 2026 formato pdf",
-                    AnexoExcelUrl = "https://www.dane.gov.co/files/operaciones/SIPSA/anex-SIPSASemanal-15ago21ago-2026.xlsx",
-                    AnexoExcelTitulo = "Anexo del 15 de agosto al 21 de agosto de 2026 formato excel",
+                    BoletinTecnicoUrl = "https://www.dane.gov.co/files/operaciones/SIPSA/bol-SIPSASemanal-05sep11sep-2026.pdf",
+                    BoletinTecnicoTitulo = "Boletín semanal del 5 al 11 de septiembre de 2026 formato pdf",
+                    AnexoExcelUrl = "https://www.dane.gov.co/files/operaciones/SIPSA/anex-SIPSASemanal-05sep11sep-2026.xlsx",
+                    AnexoExcelTitulo = "Anexo semanal del 5 al 11 de septiembre de 2026 formato excel",
                     FechaPublicacion = DateTime.UtcNow,
                     FechaSincronizacion = DateTime.UtcNow,
                     TotalRegistros = datos.Count,
@@ -138,7 +138,18 @@ public class ObtenerPreciosHandler : IRequestHandler<ObtenerPreciosQuery, Result
 
         // 2. Obtener cotizaciones de referencia de cultivos de Caldono ÚNICAMENTE de Popayán y Cali
         var cultivos = await _db.Cultivos.Where(c => c.Activo).OrderBy(c => c.Nombre).ToListAsync(cancellationToken);
-        var todasCotizacionesSipsa = await _db.PreciosMayoristasSipsa.AsNoTracking().ToListAsync(cancellationToken);
+        
+        var queryBasePrecios = _db.PreciosMayoristasSipsa.AsNoTracking();
+        if (boletinDb != null && !string.IsNullOrEmpty(boletinDb.Periodo))
+        {
+            var hayPreciosPeriodo = await _db.PreciosMayoristasSipsa.AnyAsync(p => p.PeriodoBoletin == boletinDb.Periodo, cancellationToken);
+            if (hayPreciosPeriodo)
+            {
+                queryBasePrecios = queryBasePrecios.Where(p => p.PeriodoBoletin == boletinDb.Periodo);
+            }
+        }
+
+        var todasCotizacionesSipsa = await queryBasePrecios.ToListAsync(cancellationToken);
 
         var preciosCultivosDtos = new List<PrecioMercadoDto>();
         foreach (var c in cultivos)
@@ -200,8 +211,7 @@ public class ObtenerPreciosHandler : IRequestHandler<ObtenerPreciosQuery, Result
         }
 
         // 3. Consultar cotizaciones mayoristas SIPSA con filtros opcionales (Filtrado EXCLUSIVAMENTE para Popayán y Cali)
-        var querySipsa = _db.PreciosMayoristasSipsa
-            .AsNoTracking()
+        var querySipsa = queryBasePrecios
             .Where(p =>
                 (p.MercadoMayorista.Contains("Popayán") || p.MercadoMayorista.Contains("Popayan") ||
                  p.MercadoMayorista.Contains("Cali") || p.MercadoMayorista.Contains("Cavasa") ||
@@ -255,8 +265,7 @@ public class ObtenerPreciosHandler : IRequestHandler<ObtenerPreciosQuery, Result
         }).ToList();
 
         // 4. Obtener listas de filtros únicos exclusivamente locales
-        var gruposDisponibles = await _db.PreciosMayoristasSipsa
-            .AsNoTracking()
+        var gruposDisponibles = await queryBasePrecios
             .Where(p =>
                 (p.MercadoMayorista.Contains("Popayán") || p.MercadoMayorista.Contains("Popayan") ||
                  p.MercadoMayorista.Contains("Cali") || p.MercadoMayorista.Contains("Cavasa") ||
@@ -272,8 +281,7 @@ public class ObtenerPreciosHandler : IRequestHandler<ObtenerPreciosQuery, Result
             .OrderBy(g => g)
             .ToListAsync(cancellationToken);
 
-        var mercadosDisponibles = await _db.PreciosMayoristasSipsa
-            .AsNoTracking()
+        var mercadosDisponibles = await queryBasePrecios
             .Where(p =>
                 (p.MercadoMayorista.Contains("Popayán") || p.MercadoMayorista.Contains("Popayan") ||
                  p.MercadoMayorista.Contains("Cali") || p.MercadoMayorista.Contains("Cavasa") ||
