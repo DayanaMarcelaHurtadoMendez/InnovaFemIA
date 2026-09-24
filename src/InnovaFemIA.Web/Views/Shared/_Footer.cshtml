@@ -23,23 +23,46 @@
             <div>
                 <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Módulos</h3>
                 <ul class="space-y-2 text-sm">
-                    <li>
-                        <a href="/mapa" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
-                            <span>🗺️</span> Cartografía productiva del territorio
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/chatbot" class="text-morado-light hover:text-naranja transition-colors duration-200 flex items-center gap-2">
-                            <span>🤖</span> Asistente Amalia
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/biocomercio" class="text-morado-light hover:text-verde transition-colors duration-200 flex items-center gap-2">
-                            <span>🌿</span> Biocomercio
-                        </a>
-                    </li>
+                    @inject Microsoft.Extensions.Configuration.IConfiguration FooterConfig
+                    @if (FooterConfig.GetValue<bool>("ModoMapaSolo", false))
+                    {
+                        <li>
+                            <a href="/mapa/mapa" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>🗺️</span> Mapa interactivo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/mapa/directorio" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>📋</span> Directorio de Familias
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/mapa/lunar" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>🌒</span> Calendario Lunar
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a href="/mapa" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>🗺️</span> Cartografía productiva del territorio
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/chatbot" class="text-morado-light hover:text-naranja transition-colors duration-200 flex items-center gap-2">
+                                <span>🤖</span> Asistente Asalia
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/biocomercio" class="text-morado-light hover:text-verde transition-colors duration-200 flex items-center gap-2">
+                                <span>🌿</span> Biocomercio
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
+
 
             <!-- Columna 3: Institucional -->
             <div class="md:col-span-2">
