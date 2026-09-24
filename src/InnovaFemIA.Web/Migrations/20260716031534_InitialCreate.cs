@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -37,7 +37,7 @@ namespace InnovaFemIA.Web.Migrations
                     LogoMimeType = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Activo = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)")
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)")
                 },
                 constraints: table =>
                 {
@@ -60,7 +60,7 @@ namespace InnovaFemIA.Web.Migrations
                     Email = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Activo = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)"),
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)"),
                     UltimoLogin = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
@@ -82,7 +82,7 @@ namespace InnovaFemIA.Web.Migrations
                     Descripcion = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Activo = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)"),
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)"),
                     UltimoUso = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UltimaIpUso = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
@@ -135,7 +135,7 @@ namespace InnovaFemIA.Web.Migrations
                     FotoMimeType = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Activo = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)")
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)")
                 },
                 constraints: table =>
                 {
@@ -158,7 +158,7 @@ namespace InnovaFemIA.Web.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     NumeroLeccion = table.Column<int>(type: "int", nullable: false),
                     Activo = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)")
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)")
                 },
                 constraints: table =>
                 {
@@ -182,7 +182,7 @@ namespace InnovaFemIA.Web.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     IpOrigen = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    FechaHoraUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)")
+                    FechaHoraUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)")
                 },
                 constraints: table =>
                 {
@@ -212,7 +212,7 @@ namespace InnovaFemIA.Web.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Orden = table.Column<int>(type: "int", nullable: false),
                     Activo = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)")
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)")
                 },
                 constraints: table =>
                 {
@@ -262,7 +262,7 @@ namespace InnovaFemIA.Web.Migrations
                     CultivoId = table.Column<int>(type: "int", nullable: false),
                     Precio = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PrecioAnterior = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    FechaActualizacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)"),
+                    FechaActualizacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)"),
                     Fuente = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false, defaultValue: "DANE")
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     EsActualizado = table.Column<bool>(type: "tinyint(1)", nullable: false)
@@ -341,7 +341,7 @@ namespace InnovaFemIA.Web.Migrations
                     FamiliaId = table.Column<int>(type: "int", nullable: false),
                     CultivoId = table.Column<int>(type: "int", nullable: false),
                     Disponible = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    UltimaActualizacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)"),
+                    UltimaActualizacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)"),
                     Notas = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -378,7 +378,7 @@ namespace InnovaFemIA.Web.Migrations
                     BloqueadoHasta = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     UltimoLogin = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Activo = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "UTC_TIMESTAMP(6)")
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP(6)")
                 },
                 constraints: table =>
                 {
