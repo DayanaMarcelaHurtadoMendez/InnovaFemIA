@@ -1,0 +1,102 @@
+# ==============================================================================
+# InnovaFemIA - Orquestación de Contenedores de Producción (Docker Compose)
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. SERVICIO DE BASE DE DATOS: MySQL 8.0 Oficial
+  # ----------------------------------------------------------------------------
+  innovafemia-db:
+    image: mysql:8.0
+    container_name: innovafemia-db
+    restart: unless-stopped
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-allowed-packet=536870912
+      --wait-timeout=28800
+      --interactive-timeout=28800
+      --innodb-buffer-pool-size=536870912
+      --sql-mode=STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-InnovaFemIA}
+      MYSQL_USER: ${DB_USER:-innovafemia_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-InnovaFemIA_Pass_2026!}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-InnovaFemIA_Root_2026!}
+      TZ: America/Bogota
+    ports:
+      # Puerto de la base de datos (configurable en .env)
+      - "${DB_PORT:-127.0.0.1:3306}:3306"
+    volumes:
+      # Volumen persistente: GARANTIZA que los datos NUNCA se borren al recrear contenedores
+      - innovafemia_mysql_data:/var/lib/mysql
+      # Configuración personalizada de MySQL (paquetes 512MB, UTF-8, buffers)
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+    networks:
+      - innovafemia_net
+
+  # ----------------------------------------------------------------------------
+  # 2. SERVICIO WEB: InnovaFemIA (.NET 9 ASP.NET Core + TailwindCSS)
+  # ----------------------------------------------------------------------------
+  innovafemia-web:
+    container_name: innovafemia-web
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      # Cadena de conexión interna al contenedor de base de datos
+      ConnectionStrings__DefaultConnection: >-
+        Server=innovafemia-db;Port=3306;Database=${DB_DATABASE:-InnovaFemIA};User=${DB_USER:-innovafemia_user};Password=${DB_PASSWORD:-InnovaFemIA_Pass_2026!};Allow User Variables=true;SslMode=None;
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      DOTNET_RUNNING_IN_CONTAINER: "true"
+      # Configuración de Admin Seed
+      Admin__UsuarioPorDefecto: ${ADMIN_USER:-admin}
+      Admin__ContrasenaPorDefecto: ${ADMIN_PASSWORD:-CambiarEstaContrasena123!}
+      Admin__EmailPorDefecto: ${ADMIN_EMAIL:-admin@innovafemia.local}
+    ports:
+      # Puerto público de la aplicación web (configurable en .env)
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      # Volumen persistente para caché local de videos, audios y PDFs de alta velocidad
+      - innovafemia_media_cache:/app/wwwroot/media_cache
+    depends_on:
+      innovafemia-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - innovafemia_net
+
+# ------------------------------------------------------------------------------
+# VOLÚMENES PERSISTENTES
+# ------------------------------------------------------------------------------
+volumes:
+  # Almacena los archivos físicos de la base de datos MySQL (tablas, datos, usuarios, índices)
+  # Este volumen preserva la información intacta frente a actualizaciones, migraciones y reinicios.
+  innovafemia_mysql_data:
+    name: innovafemia_mysql_data
+
+  # Almacena archivos descargados o pre-renderizados en streaming (videos de lecciones, imágenes)
+  innovafemia_media_cache:
+    name: innovafemia_media_cache
+
+# ------------------------------------------------------------------------------
+# RED AISLADA
+# ------------------------------------------------------------------------------
+networks:
+  innovafemia_net:
+    name: innovafemia_net
+    driver: bridge

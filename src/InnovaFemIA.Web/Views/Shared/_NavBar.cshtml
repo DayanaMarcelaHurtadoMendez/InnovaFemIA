@@ -1,3 +1,8 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    bool soloMapa = Configuration.GetValue<bool>("ModoMapaSolo", false);
+    bool esAdmin = User.Identity?.IsAuthenticated == true && (User.IsInRole("Administrador") || User.IsInRole("Admin"));
+}
 @* Navbar principal de InnovaFemIA — visible en toda la plataforma *@
 <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,57 +19,93 @@
 
             <!-- Módulos de navegación — desktop -->
             <div class="hidden md:flex items-center gap-1" role="navigation" aria-label="Módulos principales">
-                <a href="/mapa"
-                   id="nav-mapa"
-                   title="Cartografía productiva del territorio"
-                   class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Mapa" && ViewContext.RouteData.Values["action"]?.ToString() != "Precios" ? "active" : "")">
-                    <span aria-hidden="true">🗺️</span>
-                    <span>Cartografía productiva</span>
-                </a>
-                <a href="/mapa/precios"
-                   id="nav-precios"
-                   title="Indicadores socioeconómicos DANE (Departamento Administrativo Nacional de Estadística)"
-                   class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Precios" ? "active" : "")">
-                    <span aria-hidden="true">📊</span>
-                    <span>Indicadores DANE</span>
-                </a>
-                <a href="/mapa/lunar"
-                   id="nav-lunar"
-                   class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lunar" ? "active" : "")">
-                    <span aria-hidden="true">🌒</span>
-                    <span>Calendario Lunar</span>
-                </a>
-                <a href="/chatbot"
-                   id="nav-chatbot"
-                   class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chatbot" ? "active" : "")">
-                    <span aria-hidden="true">🤖</span>
-                    <span>Asistente</span>
-                </a>
-                <a href="/biocomercio"
-                   id="nav-biocomercio"
-                   class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Biocomercio" ? "active" : "")">
-                    <span aria-hidden="true">🌿</span>
-                    <span>Biocomercio</span>
-                </a>
+                @if (soloMapa)
+                {
+                    <a href="/mapa/mapa"
+                       id="nav-mapa"
+                       title="Mapa interactivo de Caldono, Cauca"
+                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Mapa" ? "active" : "")">
+                        <span aria-hidden="true">🗺️</span>
+                        <span>Mapa interactivo</span>
+                    </a>
+                    <a href="/mapa/directorio"
+                       id="nav-directorio"
+                       title="Directorio de Familias y Organizaciones"
+                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                        <span aria-hidden="true">📋</span>
+                        <span>Directorio</span>
+                    </a>
+                    <a href="/mapa/lunar"
+                       id="nav-lunar"
+                       title="Calendario Lunar Agrícola"
+                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lunar" ? "active" : "")">
+                        <span aria-hidden="true">🌒</span>
+                        <span>Calendario Lunar</span>
+                    </a>
+                }
+                else
+                {
+                    <a href="/mapa"
+                       id="nav-mapa"
+                       title="Cartografía productiva del territorio"
+                       class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Mapa" && ViewContext.RouteData.Values["action"]?.ToString() != "Precios" ? "active" : "")">
+                        <span aria-hidden="true">🗺️</span>
+                        <span>Cartografía productiva</span>
+                    </a>
+                    <a href="/mapa/precios"
+                       id="nav-precios"
+                       title="Indicadores socioeconómicos DANE (Departamento Administrativo Nacional de Estadística)"
+                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Precios" ? "active" : "")">
+                        <span aria-hidden="true">📊</span>
+                        <span>Indicadores DANE</span>
+                    </a>
+                    <a href="/mapa/lunar"
+                       id="nav-lunar"
+                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lunar" ? "active" : "")">
+                        <span aria-hidden="true">🌒</span>
+                        <span>Calendario Lunar</span>
+                    </a>
+                    <a href="/chatbot"
+                       id="nav-chatbot"
+                       class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chatbot" ? "active" : "")">
+                        <span aria-hidden="true">🤖</span>
+                        <span>Asistente</span>
+                    </a>
+                    <a href="/biocomercio"
+                       id="nav-biocomercio"
+                       class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Biocomercio" ? "active" : "")">
+                        <span aria-hidden="true">🌿</span>
+                        <span>Biocomercio</span>
+                    </a>
+                }
             </div>
 
             <!-- Acciones derecha -->
-            <div class="flex items-center gap-2">
-                @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Administrador") || User.IsInRole("Admin")))
+            <div class="flex items-center gap-2 sm:gap-3">
+                @if (esAdmin)
                 {
-                    <a href="/admin/dashboard" id="nav-admin" class="nav-link text-verde bg-emerald-50 hover:bg-emerald-100 font-bold border border-emerald-200">
+                    <a href="/admin/dashboard" id="nav-admin" class="nav-link text-verde bg-emerald-50 hover:bg-emerald-100 font-bold border border-emerald-200 text-xs sm:text-sm">
                         <span aria-hidden="true">⚙️</span>
                         <span class="hidden sm:inline">Panel Admin</span>
                     </a>
-                    <a href="/admin/logout" class="btn-secondary text-xs px-3 py-2 hidden sm:inline-flex items-center gap-1">
-                        Salir
+                    <a href="/admin/logout" id="nav-admin-logout"
+                       title="Cerrar sesión de administrador"
+                       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-sm shadow-rose-200 hover:shadow-md transition-all active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" /></svg>
+                        <span>Cerrar Sesión</span>
                     </a>
                 }
                 else if (User.Identity?.IsAuthenticated == true)
                 {
-                    <span class="text-sm font-medium text-gray-600 px-3">👩‍🌾 Mi perfil</span>
-                    <a href="/biocomercio/logout" id="nav-logout" class="btn-secondary text-xs px-3 py-2">
-                        Salir
+                    <span class="hidden sm:inline-flex items-center gap-1.5 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700">
+                        <span>👩‍🌾</span>
+                        <span>@(User.Identity.Name ?? "Mi Perfil")</span>
+                    </span>
+                    <a href="/biocomercio/logout" id="nav-logout"
+                       title="Cerrar sesión de familia campesina"
+                       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-sm shadow-rose-200 hover:shadow-md transition-all active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" /></svg>
+                        <span>Cerrar Sesión</span>
                     </a>
                 }
 
@@ -83,23 +124,41 @@
         <!-- Menú mobile desplegable -->
         <div id="nav-mobile-menu" class="md:hidden hidden pb-4 animate-fade-in">
             <div class="flex flex-col gap-1 pt-2 border-t border-gray-100">
-                <a href="/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Cartografía productiva del territorio</a>
-                <a href="/mapa/precios" class="nav-link" id="nav-mobile-precios">📊 Indicadores socioeconómicos DANE (Departamento Administrativo Nacional de Estadística)</a>
-                <a href="/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
-                <a href="/chatbot" class="nav-link" id="nav-mobile-chatbot">🤖 Asistente Educativo</a>
-                <a href="/biocomercio" class="nav-link" id="nav-mobile-biocomercio">🌿 Biocomercio</a>
-                @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Administrador") || User.IsInRole("Admin")))
+                @if (soloMapa)
                 {
-                    <a href="/admin/logout" class="nav-link text-rose-600 font-bold mt-2">🚪 Cerrar Sesión</a>
+                    <a href="/mapa/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Mapa interactivo</a>
+                    <a href="/mapa/directorio" class="nav-link" id="nav-mobile-directorio">📋 Directorio de Familias</a>
+                    <a href="/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
+                }
+                else
+                {
+                    <a href="/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Cartografía productiva del territorio</a>
+                    <a href="/mapa/precios" class="nav-link" id="nav-mobile-precios">📊 Indicadores socioeconómicos DANE</a>
+                    <a href="/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
+                    <a href="/chatbot" class="nav-link" id="nav-mobile-chatbot">🤖 Asistente Educativo</a>
+                    <a href="/biocomercio" class="nav-link" id="nav-mobile-biocomercio">🌿 Biocomercio</a>
+                }
+
+                @if (esAdmin)
+                {
+                    <a href="/admin/dashboard" class="nav-link text-verde font-bold mt-2">⚙️ Panel Admin</a>
+                    <a href="/admin/logout" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-sm mt-3 transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" /></svg>
+                        <span>Cerrar Sesión (Admin)</span>
+                    </a>
                 }
                 else if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a href="/biocomercio/logout" class="nav-link text-rose-600 font-bold mt-2">🚪 Cerrar Sesión</a>
+                    <a href="/biocomercio/logout" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-sm mt-3 transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" /></svg>
+                        <span>Cerrar Sesión (Familia)</span>
+                    </a>
                 }
             </div>
         </div>
     </div>
 </nav>
+
 
 <script>
     // Toggle mobile menu

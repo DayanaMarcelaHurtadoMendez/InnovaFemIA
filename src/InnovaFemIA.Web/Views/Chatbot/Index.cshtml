@@ -1,6 +1,6 @@
 @using InnovaFemIA.Web.Features.Shared.Entities
 @{
-    ViewData["Title"] = "Amalia — Asistente Educativo Chatbot";
+    ViewData["Title"] = "Asalia — Asistente Educativo Chatbot";
     var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Chatbot.CultivoChatbotDto> ?? [];
     var lecciones = ViewBag.Lecciones as IEnumerable<InnovaFemIA.Web.Features.Chatbot.LeccionResumenDto> ?? [];
 }
@@ -19,7 +19,7 @@
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h1 class="font-black text-base sm:text-lg tracking-tight text-gray-900">Amalia</h1>
+                        <h1 class="font-black text-base sm:text-lg tracking-tight"><span class="text-verde">Asal</span><span class="text-morado">ia</span></h1>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-naranja-light border border-naranja/20 text-naranja">
                             Asistente Educativo
                         </span>
@@ -158,7 +158,7 @@
 
         const welcomeHtml = `
             <div>
-                <p class="font-extrabold text-verde text-sm mb-1">${saludo} Soy <strong>Amalia</strong>, tu asistente educativa de InnovaFemIA.</p>
+                <p class="font-extrabold text-sm mb-1">${saludo} Soy <strong class="text-verde">Asal</strong><strong class="text-morado">ia</strong>, tu asistente educativa de InnovaFemIA.</p>
                 <p class="text-gray-600">Estoy aquí para acompañarte y compartir conocimientos prácticos sobre los procesos agroproductivos desarrollados en Caldono y zonas aledañas, departamento del Cauca.</p>
             </div>
             <div class="pt-2 border-t border-gray-100">

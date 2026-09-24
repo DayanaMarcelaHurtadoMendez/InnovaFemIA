@@ -21,7 +21,7 @@ public class ChatbotController : Controller
         _mediaCacheService = mediaCacheService;
     }
 
-    /// <summary>Pantalla 1 — Interfaz principal del Chatbot Educativo Amalia.</summary>
+    /// <summary>Pantalla 1 — Interfaz principal del Chatbot Educativo Asalia.</summary>
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
