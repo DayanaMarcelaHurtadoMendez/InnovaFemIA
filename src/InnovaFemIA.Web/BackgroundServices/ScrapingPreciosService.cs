@@ -57,6 +57,75 @@ public class ScrapingPreciosService : BackgroundService
         }
     }
 
+    private static readonly Dictionary<string, string> MesesAbreviados = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "ene", "enero" }, { "feb", "febrero" }, { "mar", "marzo" }, { "abr", "abril" },
+        { "may", "mayo" }, { "jun", "junio" }, { "jul", "julio" }, { "ago", "agosto" },
+        { "sep", "septiembre" }, { "oct", "octubre" }, { "nov", "noviembre" }, { "dic", "diciembre" }
+    };
+
+    /// <summary>
+    /// Extrae de forma robusta el rango de fechas del periodo del boletín desde textos de títulos,
+    /// filas HTML o el nombre de archivo en la URL.
+    /// </summary>
+    public static string ExtraerPeriodoTexto(string? texto, string? url = null)
+    {
+        if (!string.IsNullOrWhiteSpace(texto))
+        {
+            // Caso 1: "del 5 al 11 de septiembre de 2026", "5 al 11 de septiembre de 2026"
+            var m1 = Regex.Match(texto, @"(?:del\s+)?(\d{1,2})\s+al\s+(\d{1,2})\s+de\s+([a-záéíóúñ]+)\s+de\s+(\d{4})", RegexOptions.IgnoreCase);
+            if (m1.Success)
+            {
+                return $"{int.Parse(m1.Groups[1].Value)} al {int.Parse(m1.Groups[2].Value)} de {m1.Groups[3].Value.ToLowerInvariant()} de {m1.Groups[4].Value}";
+            }
+
+            // Caso 2: "del 29 de agosto al 4 de septiembre de 2026" (semanas que cruzan meses)
+            var m2 = Regex.Match(texto, @"(?:del\s+)?(\d{1,2})\s+de\s+([a-záéíóúñ]+)\s+al\s+(\d{1,2})\s+de\s+([a-záéíóúñ]+)\s+de\s+(\d{4})", RegexOptions.IgnoreCase);
+            if (m2.Success)
+            {
+                return $"{int.Parse(m2.Groups[1].Value)} de {m2.Groups[2].Value.ToLowerInvariant()} al {int.Parse(m2.Groups[3].Value)} de {m2.Groups[4].Value.ToLowerInvariant()} de {m2.Groups[5].Value}";
+            }
+
+            // Caso 3: "5 de septiembre de 2026 - 11 de septiembre de 2026" (texto en tablas con guion)
+            var m3 = Regex.Match(texto, @"(\d{1,2})\s+de\s+([a-záéíóúñ]+)(?:\s+de\s+\d{4})?\s*[-–—]\s*(\d{1,2})\s+de\s+([a-záéíóúñ]+)\s+de\s+(\d{4})", RegexOptions.IgnoreCase);
+            if (m3.Success)
+            {
+                var mes1 = m3.Groups[2].Value.ToLowerInvariant();
+                var mes2 = m3.Groups[4].Value.ToLowerInvariant();
+                if (mes1 == mes2)
+                {
+                    return $"{int.Parse(m3.Groups[1].Value)} al {int.Parse(m3.Groups[3].Value)} de {mes2} de {m3.Groups[5].Value}";
+                }
+                return $"{int.Parse(m3.Groups[1].Value)} de {mes1} al {int.Parse(m3.Groups[3].Value)} de {mes2} de {m3.Groups[5].Value}";
+            }
+        }
+
+        // Fallback: extraer desde el nombre del archivo en la URL (ej: anex-SIPSASemanal-05sep11sep-2026.xlsx)
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            var mUrl = Regex.Match(url, @"(\d{2})([a-z]{3})(\d{2})([a-z]{3})-(\d{4})", RegexOptions.IgnoreCase);
+            if (mUrl.Success)
+            {
+                var d1 = int.Parse(mUrl.Groups[1].Value);
+                var abrv1 = mUrl.Groups[2].Value.ToLowerInvariant();
+                var d2 = int.Parse(mUrl.Groups[3].Value);
+                var abrv2 = mUrl.Groups[4].Value.ToLowerInvariant();
+                var y = mUrl.Groups[5].Value;
+
+                var mes1 = MesesAbreviados.TryGetValue(abrv1, out var mName1) ? mName1 : abrv1;
+                var mes2 = MesesAbreviados.TryGetValue(abrv2, out var mName2) ? mName2 : abrv2;
+
+                if (mes1 == mes2)
+                {
+                    return $"{d1} al {d2} de {mes1} de {y}";
+                }
+                return $"{d1} de {mes1} al {d2} de {mes2} de {y}";
+            }
+        }
+
+        return "5 al 11 de septiembre de 2026";
+    }
+
     /// <summary>
     /// Ejecuta el proceso de scraping y procesamiento del boletín DANE SIPSA.
     /// </summary>
@@ -69,9 +138,18 @@ public class ScrapingPreciosService : BackgroundService
         {
             _logger.LogInformation("Iniciando web scraping del DANE SIPSA Mayoristas...");
 
-            var urlDane = _configuration.GetValue<string>(
-                "Scraping:UrlDane",
-                "https://www.dane.gov.co/index.php/estadisticas-por-tema/agropecuario/sistema-de-informacion-de-precios-sipsa/mayoristas-boletin-semanal-1");
+            var urlsToTry = new List<string>();
+            var configuredUrl = _configuration.GetValue<string>("Scraping:UrlDane");
+            if (!string.IsNullOrWhiteSpace(configuredUrl))
+            {
+                urlsToTry.Add(configuredUrl);
+            }
+
+            var urlAnual2026 = "https://www.dane.gov.co/index.php/estadisticas-por-tema/agropecuario/sistema-de-informacion-de-precios-sipsa/mayoristas-boletin-semanal-1/boletin-mayorista-semanal-2026";
+            var urlPrincipal = "https://www.dane.gov.co/index.php/estadisticas-por-tema/agropecuario/sistema-de-informacion-de-precios-sipsa/mayoristas-boletin-semanal-1";
+
+            if (!urlsToTry.Contains(urlAnual2026)) urlsToTry.Add(urlAnual2026);
+            if (!urlsToTry.Contains(urlPrincipal)) urlsToTry.Add(urlPrincipal);
 
             using var httpClient = new HttpClient();
             httpClient.Timeout = TimeSpan.FromSeconds(35);
@@ -79,20 +157,30 @@ public class ScrapingPreciosService : BackgroundService
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 InnovaFemIA-Bot/1.0");
 
             string? html = null;
-            try
+            foreach (var u in urlsToTry)
             {
-                html = await httpClient.GetStringAsync(urlDane, cancellationToken);
-            }
-            catch (Exception exHttp)
-            {
-                _logger.LogWarning("No se pudo conectar al sitio web del DANE en vivo: {Msg}. Se usará contingencia.", exHttp.Message);
+                try
+                {
+                    _logger.LogInformation("Intentando conectar con DANE en: {Url}", u);
+                    var resp = await httpClient.GetStringAsync(u, cancellationToken);
+                    if (!string.IsNullOrEmpty(resp) && resp.Contains("SIPSA", StringComparison.OrdinalIgnoreCase))
+                    {
+                        html = resp;
+                        _logger.LogInformation("Conexión exitosa con DANE en: {Url} (HTML {Length} caracteres)", u, resp.Length);
+                        break;
+                    }
+                }
+                catch (Exception exHttp)
+                {
+                    _logger.LogWarning("No se pudo conectar a {Url}: {Msg}", u, exHttp.Message);
+                }
             }
 
             string? boletinPdfUrl = null;
             string? boletinPdfTitulo = null;
             string? anexoXlsxUrl = null;
             string? anexoXlsxTitulo = null;
-            string periodoDetectado = "15 al 21 de agosto de 2026";
+            string periodoDetectado = "5 al 11 de septiembre de 2026";
 
             if (!string.IsNullOrEmpty(html))
             {
@@ -121,35 +209,38 @@ public class ScrapingPreciosService : BackgroundService
                     anexoXlsxTitulo = nodoXlsx.GetAttributeValue("title", "") ?? nodoXlsx.InnerText.Trim();
                 }
 
-                // Extraer periodo si está disponible en el título del Anexo, que suele ser más preciso
-                if (!string.IsNullOrEmpty(anexoXlsxTitulo))
+                // 3. Extraer periodo desde el título del Anexo, la fila contenedora (<tr>), el PDF o la URL
+                var parentRowText = nodoXlsx?.Ancestors("tr")?.FirstOrDefault()?.InnerText?.Trim()
+                    ?? nodoPdf?.Ancestors("tr")?.FirstOrDefault()?.InnerText?.Trim();
+
+                if (!string.IsNullOrWhiteSpace(anexoXlsxTitulo))
                 {
-                    var matchPeriodo = Regex.Match(anexoXlsxTitulo, @"(\d{1,2}\s+de\s+[a-zA-Z]+\s+al\s+\d{1,2}\s+de\s+[a-zA-Z]+\s+de\s+\d{4})", RegexOptions.IgnoreCase);
-                    if (matchPeriodo.Success)
-                    {
-                        periodoDetectado = matchPeriodo.Groups[1].Value.ToLower();
-                    }
-                    else if (!string.IsNullOrEmpty(boletinPdfTitulo))
-                    {
-                        // Fallback al título del PDF si el anexo no lo tiene
-                        matchPeriodo = Regex.Match(boletinPdfTitulo, @"(\d{1,2}\s+de\s+[a-zA-Z]+\s+al\s+\d{1,2}\s+de\s+[a-zA-Z]+\s+de\s+\d{4})", RegexOptions.IgnoreCase);
-                        if (matchPeriodo.Success)
-                        {
-                            periodoDetectado = matchPeriodo.Groups[1].Value.ToLower();
-                        }
-                    }
+                    periodoDetectado = ExtraerPeriodoTexto(anexoXlsxTitulo, anexoXlsxUrl);
+                }
+                else if (!string.IsNullOrWhiteSpace(parentRowText))
+                {
+                    periodoDetectado = ExtraerPeriodoTexto(parentRowText, anexoXlsxUrl);
+                }
+                else if (!string.IsNullOrWhiteSpace(boletinPdfTitulo))
+                {
+                    periodoDetectado = ExtraerPeriodoTexto(boletinPdfTitulo, boletinPdfUrl);
+                }
+                else if (!string.IsNullOrWhiteSpace(anexoXlsxUrl))
+                {
+                    periodoDetectado = ExtraerPeriodoTexto(null, anexoXlsxUrl);
                 }
             }
 
             // Valores por defecto seguros si el DANE no respondió
-            boletinPdfUrl ??= "https://www.dane.gov.co/files/operaciones/SIPSA/bol-SIPSASemanal-15ago21agos-2026.pdf";
-            boletinPdfTitulo ??= "Boletín del 15 de agosto al 21 de agosto de 2026 formato pdf";
-            anexoXlsxUrl ??= "https://www.dane.gov.co/files/operaciones/SIPSA/anex-SIPSASemanal-15ago21ago-2026.xlsx";
-            anexoXlsxTitulo ??= "Anexo del 15 de agosto al 21 de agosto de 2026 formato excel";
+            boletinPdfUrl ??= "https://www.dane.gov.co/files/operaciones/SIPSA/bol-SIPSASemanal-05sep11sep-2026.pdf";
+            boletinPdfTitulo ??= $"Boletín semanal del {periodoDetectado} formato pdf";
+            anexoXlsxUrl ??= "https://www.dane.gov.co/files/operaciones/SIPSA/anex-SIPSASemanal-05sep11sep-2026.xlsx";
+            anexoXlsxTitulo ??= $"Anexo semanal del {periodoDetectado} formato excel";
 
             List<PrecioMayoristaSipsa> preciosExtraidos = new();
+            bool esContingencia = false;
 
-            // 3. Descargar y parsear archivo Excel si se obtuvo URL válida
+            // 4. Descargar y parsear archivo Excel si se obtuvo URL válida
             if (!string.IsNullOrEmpty(anexoXlsxUrl))
             {
                 try
@@ -157,8 +248,13 @@ public class ScrapingPreciosService : BackgroundService
                     var responseBytes = await httpClient.GetByteArrayAsync(anexoXlsxUrl, cancellationToken);
                     if (responseBytes.Length > 0)
                     {
-                        preciosExtraidos = ProcesarArchivoExcelSipsa(responseBytes, periodoDetectado);
-                        _logger.LogInformation("Archivo Excel procesado. Se obtuvieron {Count} cotizaciones mayoristas.", preciosExtraidos.Count);
+                        var (precios, periodoExcel) = ProcesarArchivoExcelSipsa(responseBytes, periodoDetectado);
+                        if (!string.IsNullOrWhiteSpace(periodoExcel))
+                        {
+                            periodoDetectado = periodoExcel;
+                        }
+                        preciosExtraidos = precios;
+                        _logger.LogInformation("Archivo Excel procesado. Se obtuvieron {Count} cotizaciones mayoristas para el periodo '{Periodo}'.", preciosExtraidos.Count, periodoDetectado);
                     }
                 }
                 catch (Exception exExcel)
@@ -170,16 +266,17 @@ public class ScrapingPreciosService : BackgroundService
             // Si no se extrajeron cotizaciones del archivo en vivo, generar el dataset oficial de contingencia
             if (!preciosExtraidos.Any())
             {
+                esContingencia = true;
                 preciosExtraidos = GenerarDatosContingenciaSipsa(periodoDetectado);
                 _logger.LogInformation("Cargado dataset de contingencia SIPSA con {Count} cotizaciones oficiales.", preciosExtraidos.Count);
             }
 
-            // 4. Guardar metadatos en BoletinSipsaInfo
+            // 5. Guardar metadatos en BoletinSipsaInfo
             var boletinInfo = await db.BoletinesSipsaInfo
                 .OrderByDescending(b => b.FechaSincronizacion)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (boletinInfo == null || boletinInfo.Periodo != periodoDetectado)
+            if (boletinInfo == null)
             {
                 boletinInfo = new BoletinSipsaInfo
                 {
@@ -197,6 +294,7 @@ public class ScrapingPreciosService : BackgroundService
             }
             else
             {
+                boletinInfo.Periodo = periodoDetectado;
                 boletinInfo.BoletinTecnicoUrl = boletinPdfUrl;
                 boletinInfo.BoletinTecnicoTitulo = boletinPdfTitulo;
                 boletinInfo.AnexoExcelUrl = anexoXlsxUrl;
@@ -206,14 +304,11 @@ public class ScrapingPreciosService : BackgroundService
                 boletinInfo.EsExitoso = true;
             }
 
-            // 5. Vincular y persistir cotizaciones en PreciosMayoristasSipsa
+            // 6. Vincular y persistir cotizaciones en PreciosMayoristasSipsa
             var cultivos = await db.Cultivos.Where(c => c.Activo).ToListAsync(cancellationToken);
 
-            // Reemplazo atómico de los precios del periodo para evitar duplicación
-            var preciosExistentes = await db.PreciosMayoristasSipsa
-                .Where(p => p.PeriodoBoletin == periodoDetectado)
-                .ToListAsync(cancellationToken);
-
+            // Reemplazo atómico de los precios para evitar registros desactualizados o duplicación
+            var preciosExistentes = await db.PreciosMayoristasSipsa.ToListAsync(cancellationToken);
             if (preciosExistentes.Any())
             {
                 db.PreciosMayoristasSipsa.RemoveRange(preciosExistentes);
@@ -221,6 +316,7 @@ public class ScrapingPreciosService : BackgroundService
 
             foreach (var p in preciosExtraidos)
             {
+                p.PeriodoBoletin = periodoDetectado;
                 // Asociar con un cultivo del sistema si el nombre coincide parcialmente
                 var cultivoMatch = cultivos.FirstOrDefault(c =>
                     p.Producto.Contains(c.Nombre, StringComparison.OrdinalIgnoreCase) ||
@@ -230,7 +326,7 @@ public class ScrapingPreciosService : BackgroundService
                 db.PreciosMayoristasSipsa.Add(p);
             }
 
-            // 6. Actualizar tabla PreciosMercado para los cultivos de Caldono
+            // 7. Actualizar tabla PreciosMercado para los cultivos de Caldono
             foreach (var c in cultivos)
             {
                 var cotizacionesCultivo = preciosExtraidos
@@ -268,23 +364,59 @@ public class ScrapingPreciosService : BackgroundService
                 }
             }
 
+            // 8. Auditoría en RegistrosSistema
+            db.RegistrosSistema.Add(new RegistroSistema
+            {
+                Modulo = "Scraping",
+                TipoEvento = esContingencia ? "Warning" : "Info",
+                Descripcion = esContingencia
+                    ? $"Scraping DANE en contingencia. Periodo: {periodoDetectado}. Se activaron {preciosExtraidos.Count} cotizaciones oficiales de respaldo para Popayán y Cali."
+                    : $"Sincronización SIPSA exitosa. Periodo: {periodoDetectado}. Se procesó el boletín oficial obteniendo {preciosExtraidos.Count} cotizaciones para Popayán y Cali.",
+                IpOrigen = "127.0.0.1",
+                FechaHoraUtc = DateTime.UtcNow
+            });
+
             await db.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("Sincronización SIPSA completada exitosamente. Total cotizaciones: {Count}", preciosExtraidos.Count);
+            _logger.LogInformation("Sincronización SIPSA completada exitosamente. Periodo: {Periodo}. Total cotizaciones: {Count}", periodoDetectado, preciosExtraidos.Count);
             return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error general en ScrapingPreciosService.");
+
+            // Guardar registro de error en la base de datos para auditoría en /admin/registros
+            try
+            {
+                using var errorScope = _services.CreateScope();
+                var errorDb = errorScope.ServiceProvider.GetRequiredService<AppDbContext>();
+                errorDb.RegistrosSistema.Add(new RegistroSistema
+                {
+                    Modulo = "Scraping",
+                    TipoEvento = "Error",
+                    Descripcion = $"Error en scraping DANE: {ex.Message}",
+                    StackTrace = ex.StackTrace,
+                    IpOrigen = "127.0.0.1",
+                    FechaHoraUtc = DateTime.UtcNow
+                });
+                await errorDb.SaveChangesAsync(CancellationToken.None);
+            }
+            catch (Exception exLog)
+            {
+                _logger.LogError(exLog, "No se pudo registrar la excepción en RegistrosSistema.");
+            }
+
             return false;
         }
     }
 
     /// <summary>
     /// Procesa el flujo binario de un archivo Excel de cotizaciones del DANE SIPSA.
+    /// Extrae las cotizaciones para Popayán y Cali, e identifica el periodo oficial desde los encabezados.
     /// </summary>
-    private List<PrecioMayoristaSipsa> ProcesarArchivoExcelSipsa(byte[] excelBytes, string periodo)
+    private (List<PrecioMayoristaSipsa> Precios, string? PeriodoExcel) ProcesarArchivoExcelSipsa(byte[] excelBytes, string periodo)
     {
         var lista = new List<PrecioMayoristaSipsa>();
+        string? periodoConfirmado = null;
 
         using var stream = new MemoryStream(excelBytes);
         
@@ -297,6 +429,32 @@ public class ScrapingPreciosService : BackgroundService
         {
             ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = false }
         });
+
+        // Intentar leer el periodo exacto del encabezado en la hoja de Índice o en 1.1
+        foreach (DataTable table in dataSet.Tables)
+        {
+            for (int r = 0; r < Math.Min(6, table.Rows.Count); r++)
+            {
+                var row = table.Rows[r];
+                for (int c = 0; c < row.ItemArray.Length; c++)
+                {
+                    var val = row[c]?.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(val) && val.Contains("Boletín semanal", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var p = ExtraerPeriodoTexto(val);
+                        if (!string.IsNullOrWhiteSpace(p))
+                        {
+                            periodoConfirmado = p;
+                            break;
+                        }
+                    }
+                }
+                if (periodoConfirmado != null) break;
+            }
+            if (periodoConfirmado != null) break;
+        }
+
+        var periodoFinal = periodoConfirmado ?? periodo;
 
         foreach (DataTable table in dataSet.Tables)
         {
@@ -399,14 +557,14 @@ public class ScrapingPreciosService : BackgroundService
                     PrecioMaximo = max,
                     PrecioMedio = medio,
                     Tendencia = tendencia,
-                    PeriodoBoletin = periodo,
+                    PeriodoBoletin = periodoFinal,
                     FechaBoletin = DateTime.UtcNow,
                     FechaActualizacion = DateTime.UtcNow
                 });
             }
         }
 
-        return lista;
+        return (lista, periodoConfirmado);
     }
 
     public static bool EsMercadoPopayanOCali(string mercado)
