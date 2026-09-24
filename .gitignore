@@ -37,6 +37,8 @@ npm-debug.log
 **/media_cache/
 **/uploads/
 *.media
-*.mp4
-*.webm
-*.mkv
+# Distribution and backups
+dist/
+backups/
+.env
+scratch*
