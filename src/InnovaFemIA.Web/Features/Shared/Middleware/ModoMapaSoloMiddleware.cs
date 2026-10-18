@@ -21,7 +21,8 @@ public static class ModoMapaSoloMiddlewareExtensions
                  path.StartsWith("/biocomercio", StringComparison.OrdinalIgnoreCase)) &&
                 !(context.User.Identity?.IsAuthenticated == true && (context.User.IsInRole("Administrador") || context.User.IsInRole("Admin"))))
             {
-                context.Response.Redirect("/mapa/directorio");
+                var redirectUrl = string.IsNullOrEmpty(context.Request.PathBase) ? "/mapa/directorio" : $"{context.Request.PathBase}/mapa/directorio";
+                context.Response.Redirect(redirectUrl);
                 return;
             }
             await next();

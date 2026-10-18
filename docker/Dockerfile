@@ -66,6 +66,7 @@ WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV PATH_BASE=/innovafemia
 
 # Copiar artefactos compilados desde la etapa de construcción
 COPY --from=build /app/publish .

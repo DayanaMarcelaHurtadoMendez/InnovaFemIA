@@ -21,14 +21,14 @@
     <!-- Header y botones de creación -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div>
-            <a href="/admin/dashboard" class="text-xs text-amber-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <a href="~/admin/dashboard" class="text-xs text-amber-800 font-bold hover:underline block mb-1">← Volver al Dashboard</a>
             <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
                 <span>🤖</span> Catálogo de Contenidos del Chatbot
             </h1>
             <p class="text-xs text-gray-500 mt-0.5">Módulo 2 · Gestión de recursos y materiales educativos digitales</p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-            <a href="/admin/cultivos" class="px-4 py-3 bg-emerald-50 hover:bg-emerald-100 text-verde text-xs font-bold rounded-2xl border border-emerald-200 transition-all">
+            <a href="~/admin/cultivos" class="px-4 py-3 bg-emerald-50 hover:bg-emerald-100 text-verde text-xs font-bold rounded-2xl border border-emerald-200 transition-all">
                 🌱 Catálogo de Cultivos
             </a>
             <button onclick="abrirModalCrearContenido()" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-2xl shadow-md transition-all">
@@ -124,13 +124,21 @@
                                     }
                                 </td>
                                 <td class="p-4 text-center font-bold text-gray-700">#@c.Orden</td>
-                                <td class="p-4 text-right space-x-2 shrink-0">
-                                    <button onclick='abrirModalEditarContenido(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(c)))' class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg transition-all border border-amber-200">
-                                        Editar
-                                    </button>
-                                    <button onclick="confirmarEliminarContenido(@c.Id, '@c.Titulo')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition-all">
-                                        Eliminar
-                                    </button>
+                                <td class="p-4 text-right shrink-0">
+                                    <div class="inline-flex items-center justify-end gap-2">
+                                        <button onclick='abrirModalEditarContenido(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(c)))' 
+                                                class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-w-[84px] bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-xl transition-all border border-amber-200 shadow-sm"
+                                                title="Editar contenido educativo">
+                                            <span>✏️</span>
+                                            <span>Editar</span>
+                                        </button>
+                                        <button onclick="confirmarEliminarContenido(@c.Id, '@c.Titulo')" 
+                                                class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-w-[84px] bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition-all border border-rose-200 shadow-sm"
+                                                title="Eliminar contenido educativo">
+                                            <span>🗑️</span>
+                                            <span>Eliminar</span>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -211,12 +219,16 @@
                             }
                         </div>
                         
-                        <div class="flex items-center gap-2 pt-2">
-                            <button onclick='abrirModalEditarContenido(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(c)))' class="flex-1 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-xl transition-all border border-amber-200">
-                                Editar
+                        <div class="grid grid-cols-2 gap-2 pt-2">
+                            <button onclick='abrirModalEditarContenido(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(c)))' 
+                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-xl transition-all border border-amber-200 shadow-sm">
+                                <span>✏️</span>
+                                <span>Editar</span>
                             </button>
-                            <button onclick="confirmarEliminarContenido(@c.Id, '@c.Titulo')" class="flex-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition-all border border-rose-200">
-                                Eliminar
+                            <button onclick="confirmarEliminarContenido(@c.Id, '@c.Titulo')" 
+                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition-all border border-rose-200 shadow-sm">
+                                <span>🗑️</span>
+                                <span>Eliminar</span>
                             </button>
                         </div>
                     </div>
@@ -273,7 +285,7 @@
             <h3 class="font-extrabold text-sm text-white">Agregar Recurso Educativo</h3>
             <button onclick="cerrarModalContenidoForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form action="/admin/chatbot/contenidos/crear" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form action="~/admin/chatbot/contenidos/crear" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
             @Html.AntiForgeryToken()
 
             <!-- SECCIÓN 1: Información Básica -->
@@ -285,7 +297,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-1">
                             <label class="block text-xs font-bold text-gray-700">Cultivo Asignado</label>
-                            <a href="/admin/cultivos" target="_blank" class="text-[10px] text-verde font-bold hover:underline">+ Crear</a>
+                            <a href="~/admin/cultivos" target="_blank" class="text-[10px] text-verde font-bold hover:underline">+ Crear</a>
                         </div>
                         <select name="CultivoId" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-600 bg-white shadow-sm">
                             @foreach (var cu in cultivos)
@@ -369,7 +381,7 @@
             <h3 class="font-extrabold text-sm text-white">Editar Recurso Educativo</h3>
             <button onclick="cerrarModalEditarContenidoForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form action="/admin/chatbot/contenidos/editar" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form action="~/admin/chatbot/contenidos/editar" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
             @Html.AntiForgeryToken()
             <input type="hidden" id="edit-id" name="id" value="" />
 
@@ -486,7 +498,7 @@
         <p class="text-xs text-gray-500">
             ¿Estás seguro de eliminar el recurso <strong id="contenido-nombre-eliminar" class="text-gray-800"></strong>?
         </p>
-        <form action="/admin/chatbot/contenidos/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+        <form action="~/admin/chatbot/contenidos/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
             @Html.AntiForgeryToken()
             <input type="hidden" id="contenido-id-eliminar" name="id" value="" />
             <button type="button" onclick="cerrarModalEliminarContenido()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>

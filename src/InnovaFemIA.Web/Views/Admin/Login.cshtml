@@ -2,6 +2,9 @@
     ViewData["Title"] = "Iniciar Sesión — Panel de Administración";
     var returnUrl = ViewBag.ReturnUrl as string;
     var error = ViewBag.Error as string;
+    var pathBase = (ViewBag.PathBase as string) ?? Context.Request.PathBase.Value;
+    if (string.IsNullOrEmpty(pathBase)) pathBase = "/innovafemia";
+    var loginActionUrl = $"{pathBase.TrimEnd('/')}/admin/login";
 }
 
 <div class="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -23,8 +26,7 @@
             </div>
         }
 
-        <form class="mt-6 space-y-5" action="/admin/login" method="POST">
-            @Html.AntiForgeryToken()
+        <form class="mt-6 space-y-5" action="@loginActionUrl" method="POST">
             <input type="hidden" name="returnUrl" value="@returnUrl" />
 
             <div>
