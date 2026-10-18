@@ -18,7 +18,7 @@
                 </div>
             }
 
-            <form action="/biocomercio/login" method="post" class="space-y-6">
+            <form action="~/biocomercio/login" method="post" class="space-y-6">
                 @Html.AntiForgeryToken()
                 
                 @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl))

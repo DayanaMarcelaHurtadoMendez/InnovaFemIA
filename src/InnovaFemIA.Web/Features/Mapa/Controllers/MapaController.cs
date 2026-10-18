@@ -81,4 +81,11 @@ public class MapaController : Controller
         var result = await _mediator.Send(new InnovaFemIA.Web.Features.Mapa.ObtenerLunar.ObtenerInformacionLunarQuery(cultivoId));
         return View("~/Views/Mapa/Lunar.cshtml", result.Value);
     }
+
+    /// <summary>Redirección al juego interactivo "Aprende con la Luna" (Artefacto en Claude.ai).</summary>
+    [HttpGet("lunar/juego")]
+    public IActionResult JuegoLunar()
+    {
+        return Redirect("https://claude.ai/artifact/V8mjKt9sRmspRg4VRgf4LY");
+    }
 }

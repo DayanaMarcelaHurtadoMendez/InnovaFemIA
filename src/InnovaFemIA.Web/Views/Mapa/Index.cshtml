@@ -20,7 +20,7 @@
         </div>
 
         <!-- Barra de búsqueda y filtros -->
-        <form method="get" action="/mapa" class="flex flex-col sm:flex-row gap-3 mt-6" id="form-filtros-familias">
+        <form method="get" action="~/mapa/directorio" class="flex flex-col sm:flex-row gap-3 mt-6" id="form-filtros-familias">
             <div class="flex-1 relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
                 <input type="text"
@@ -44,7 +44,7 @@
             </button>
             @if (!string.IsNullOrEmpty(ViewBag.Busqueda?.ToString()) || cultivoSeleccionado.HasValue)
             {
-                <a href="/mapa" class="btn-secondary text-center" id="btn-limpiar-filtros">
+                <a href="~/mapa/directorio" class="btn-secondary text-center" id="btn-limpiar-filtros">
                     Limpiar
                 </a>
             }
@@ -53,10 +53,10 @@
 
     <!-- Accesos rápidos a sub-pantallas -->
     <div class="flex flex-wrap gap-3 mb-8">
-        <a href="/mapa/mapa" class="btn-cian" id="link-ver-mapa">
+        <a href="~/mapa/mapa" class="btn-cian" id="link-ver-mapa">
             📍 Ver Mapa Interactivo de Caldono
         </a>
-        <a href="/mapa/precios" class="btn-secondary" id="link-ver-precios">
+        <a href="~/mapa/precios" class="btn-secondary" id="link-ver-precios">
             📊 Indicadores socioeconómicos DANE (Departamento Administrativo Nacional de Estadística)
         </a>
     </div>

@@ -53,8 +53,20 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(sesionExpiracion);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.Path = "/";
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
+
+// ─── PROTECCIÓN CONTRA CSRF / ANTIFORGERY COMPATIBLE CON PROXY REVERSO ─────
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.Name = "InnovaFemIA.Antiforgery";
+    options.Cookie.Path = "/";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.HeaderName = "X-XSRF-TOKEN";
 });
 
 // ─── AUTENTICACIÓN CON COOKIES ────────────────────────────────────────────────
@@ -71,6 +83,8 @@ builder.Services.AddAuthentication(options =>
     options.SlidingExpiration = true;
     options.Cookie.Name = "InnovaFemIA.Admin";
     options.Cookie.HttpOnly = true;
+    options.Cookie.Path = "/";
+    options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 })
 .AddCookie("InnovaFemIA.Familia", options =>
@@ -82,6 +96,8 @@ builder.Services.AddAuthentication(options =>
     options.SlidingExpiration = true;
     options.Cookie.Name = "InnovaFemIA.Familia";
     options.Cookie.HttpOnly = true;
+    options.Cookie.Path = "/";
+    options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
@@ -102,6 +118,134 @@ var app = builder.Build();
 // ────────────────────────────────────────────────────────────────────────────
 
 // ─── PIPELINE HTTP ────────────────────────────────────────────────────────────
+// Soporte para Proxy Reverso (Nginx, Traefik, HAProxy, IIS)
+var forwardedHeadersOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All
+};
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
+
+// Soporte para sub-rutas / PathBase configurable via variable de entorno PATH_BASE o X-Forwarded-Prefix
+// Permite desplegar bajo https://i2thub.icesi.edu.co:5443/innovafemia o en la raíz /
+var configuredPathBase = Environment.GetEnvironmentVariable("PATH_BASE")
+                      ?? builder.Configuration["PATH_BASE"]
+                      ?? builder.Configuration["App:PathBase"];
+
+if (!string.IsNullOrWhiteSpace(configuredPathBase))
+{
+    configuredPathBase = "/" + configuredPathBase.Trim().Trim('/');
+    if (configuredPathBase == "/" || configuredPathBase.Equals("/ROOT", StringComparison.OrdinalIgnoreCase) || configuredPathBase.Equals("/NONE", StringComparison.OrdinalIgnoreCase))
+    {
+        configuredPathBase = null;
+    }
+}
+else
+{
+    // Predeterminado para producción en el servidor de la Universidad ICESI
+    configuredPathBase = "/innovafemia";
+}
+
+app.Use(async (context, next) =>
+{
+    // 1. Sincronizar Scheme (https) cuando el proxy inverso termina SSL
+    if (context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var protoHeader) && !string.IsNullOrEmpty(protoHeader))
+    {
+        var proto = protoHeader.ToString().Split(',')[0].Trim();
+        if (!string.IsNullOrEmpty(proto))
+        {
+            context.Request.Scheme = proto;
+        }
+    }
+    else if (context.Request.Headers.TryGetValue("Referer", out var refProtoHeader) && refProtoHeader.ToString().StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Request.Scheme = "https";
+    }
+    else if (context.Request.Headers.TryGetValue("Origin", out var orgProtoHeader) && orgProtoHeader.ToString().StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Request.Scheme = "https";
+    }
+
+    // 2. Sincronizar Host y Puerto público (ej: i2thub.icesi.edu.co:5443)
+    // Esto asegura que context.Request.Host coincida con el Origin / Referer público del navegador
+    // evitando rechazos HTTP 400 por desajuste de origen en formularios con antiforgery detrás del proxy
+    if (context.Request.Headers.TryGetValue("Origin", out var originHeader) && Uri.TryCreate(originHeader.ToString(), UriKind.Absolute, out var originUri))
+    {
+        context.Request.Host = new HostString(originUri.Authority);
+    }
+    else if (context.Request.Headers.TryGetValue("X-Forwarded-Host", out var fwdHost) && !string.IsNullOrEmpty(fwdHost))
+    {
+        var hostStr = fwdHost.ToString().Split(',')[0].Trim();
+        if (context.Request.Headers.TryGetValue("X-Forwarded-Port", out var fwdPort) && !string.IsNullOrEmpty(fwdPort) && !hostStr.Contains(':'))
+        {
+            var portStr = fwdPort.ToString().Split(',')[0].Trim();
+            if (portStr != "80" && portStr != "443")
+            {
+                hostStr = $"{hostStr}:{portStr}";
+            }
+        }
+        context.Request.Host = new HostString(hostStr);
+    }
+    else if (context.Request.Headers.TryGetValue("Referer", out var refererHeader) && Uri.TryCreate(refererHeader.ToString(), UriKind.Absolute, out var refUri))
+    {
+        context.Request.Host = new HostString(refUri.Authority);
+    }
+
+    // 3. Resolver PathBase (/innovafemia)
+    string? prefix = null;
+
+    // Detectar prefijo dinámico desde header X-Forwarded-Prefix (si el proxy lo reenvía)
+    if (context.Request.Headers.TryGetValue("X-Forwarded-Prefix", out var prefixHeader))
+    {
+        var rawPrefix = prefixHeader.ToString().Trim().TrimEnd('/');
+        if (!string.IsNullOrEmpty(rawPrefix))
+        {
+            prefix = rawPrefix.StartsWith('/') ? rawPrefix : "/" + rawPrefix;
+        }
+    }
+
+    // Detectar si el Referer viene con /innovafemia (petición originada en navegador bajo el proxy)
+    if (string.IsNullOrEmpty(prefix) && context.Request.Headers.TryGetValue("Referer", out var refererH))
+    {
+        var referer = refererH.ToString();
+        if (referer.Contains("/innovafemia", StringComparison.OrdinalIgnoreCase))
+        {
+            prefix = "/innovafemia";
+        }
+    }
+
+    // Detectar si la URL entrante contiene /innovafemia
+    if (string.IsNullOrEmpty(prefix) && context.Request.Path.Value?.Contains("/innovafemia", StringComparison.OrdinalIgnoreCase) == true)
+    {
+        prefix = "/innovafemia";
+    }
+
+    // Si no se detectó dinámicamente, usar la configuración fija (default /innovafemia)
+    if (string.IsNullOrEmpty(prefix) && !string.IsNullOrWhiteSpace(configuredPathBase))
+    {
+        prefix = configuredPathBase;
+    }
+
+    if (!string.IsNullOrEmpty(prefix))
+    {
+        // Caso A: La petición entrante aún contiene el prefijo en Path (el proxy NO lo removió)
+        if (context.Request.Path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase, out var remaining))
+        {
+            context.Request.PathBase = context.Request.PathBase.Add(prefix);
+            context.Request.Path = remaining;
+        }
+        // Caso B: El proxy ya removió el prefijo antes de llegar a Kestrel.
+        // Asignamos PathBase para que los helpers de Razor (~/...), cookies y redirecciones usen el prefijo público.
+        else if (string.IsNullOrEmpty(context.Request.PathBase.Value))
+        {
+            context.Request.PathBase = new PathString(prefix);
+        }
+    }
+
+    await next();
+});
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

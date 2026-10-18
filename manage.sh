@@ -67,7 +67,13 @@ case "$1" in
         mkdir -p "$DIR_BACKUP"
         ARCHIVO="$DIR_BACKUP/backup_${DB_NAME}_${FECHA}.sql"
         echo "💾 Generando respaldo de la base de datos en: $ARCHIVO ..."
-        docker compose exec -T innovafemia-db mysqldump -u "$DB_USER" -p"$DB_PASS" --single-transaction --quick "$DB_NAME" > "$ARCHIVO"
+        DB_CONTAINER="innovafemia-mapa-db"
+        if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^innovafemia-mapa-db$"; then
+            if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^innovafemia-db$"; then
+                DB_CONTAINER="innovafemia-db"
+            fi
+        fi
+        docker exec "$DB_CONTAINER" mysqldump -u "$DB_USER" -p"$DB_PASS" --single-transaction --quick "$DB_NAME" > "$ARCHIVO"
         echo "✅ Respaldo generado con éxito en: $ARCHIVO"
         ;;
     *)

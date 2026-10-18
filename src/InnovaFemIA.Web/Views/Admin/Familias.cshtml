@@ -10,7 +10,7 @@
     <!-- Header y botón de creación -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div>
-            <a href="/admin/dashboard" class="text-xs text-verde font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <a href="~/admin/dashboard" class="text-xs text-verde font-bold hover:underline block mb-1">← Volver al Dashboard</a>
             <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
                 <span>👩‍🌾</span> Gestión de Familias ASCAMPESINA
             </h1>
@@ -36,14 +36,14 @@
     }
 
     <!-- Buscador -->
-    <form action="/admin/familias" method="GET" class="flex gap-3">
+    <form action="~/admin/familias" method="GET" class="flex gap-3">
         <input type="text" name="busqueda" value="@busqueda" placeholder="Buscar por nombre de familia o vereda..." class="w-full max-w-md px-4 py-2.5 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600" />
         <button type="submit" class="px-4 py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-gray-800">
             Buscar
         </button>
         @if (!string.IsNullOrEmpty(busqueda))
         {
-            <a href="/admin/familias" class="px-4 py-2.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200">
+            <a href="~/admin/familias" class="px-4 py-2.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200">
                 Limpiar
             </a>
         }
@@ -142,7 +142,7 @@
             <h3 id="modal-title" class="font-extrabold text-sm text-white">Agregar Nueva Familia</h3>
             <button onclick="cerrarModalFamiliaForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form id="form-familia" action="/admin/familias/crear" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <form id="form-familia" action="~/admin/familias/crear" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
             @Html.AntiForgeryToken()
             <input type="hidden" id="input-id" name="Id" value="0" />
 
@@ -241,7 +241,7 @@
         <p class="text-xs text-gray-500">
             ¿Estás seguro de eliminar a <strong id="nombre-eliminar" class="text-gray-800"></strong>? Esta acción no se puede deshacer.
         </p>
-        <form action="/admin/familias/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+        <form action="~/admin/familias/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
             @Html.AntiForgeryToken()
             <input type="hidden" id="id-eliminar" name="id" value="" />
             <button type="button" onclick="cerrarModalEliminar()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
@@ -263,7 +263,7 @@
 
     function abrirModalCrearFamilia() {
         document.getElementById('modal-title').innerText = 'Agregar Nueva Familia';
-        document.getElementById('form-familia').action = '/admin/familias/crear';
+        document.getElementById('form-familia').action = '@Url.Content("~/admin/familias/crear")';
         document.getElementById('input-id').value = 0;
         document.getElementById('input-nombre').value = '';
         document.getElementById('input-descripcion').value = '';
@@ -281,7 +281,7 @@
 
     function abrirModalEditarFamilia(f) {
         document.getElementById('modal-title').innerText = 'Editar Familia: ' + f.Nombre;
-        document.getElementById('form-familia').action = '/admin/familias/editar';
+        document.getElementById('form-familia').action = '@Url.Content("~/admin/familias/editar")';
         document.getElementById('input-id').value = f.Id;
         document.getElementById('input-nombre').value = f.Nombre;
         document.getElementById('input-descripcion').value = f.Descripcion || '';

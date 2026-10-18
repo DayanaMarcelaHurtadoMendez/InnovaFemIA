@@ -1,12 +1,14 @@
 # ==============================================================================
-# Script de Generacion de Paquete: Contenedor Especializado "Solo Mapa"
-# InnovaFemIA - Modo Reducido (Mapa Interactivo, Directorio y Calendario Lunar)
+# Script de Generacion de Paquete: Contenedor Especializado "Modo Mapa + DANE"
+# InnovaFemIA - Modo Reducido (Mapa Interactivo, Directorio, DANE y Calendario Lunar con Juego)
 # ==============================================================================
 # Este contenedor incluye:
 #  - /mapa y /mapa/mapa (Mapa Interactivo)
 #  - /mapa/directorio (Directorio de Familias)
 #  - /mapa/lunar (Calendario Lunar)
-#  - /admin (Panel Administrador completo con todas sus funciones normales)
+#  - /mapa/lunar/juego (Juego interactivo "Aprende con la Luna" - Saberes ASCAMPESINA)
+#  - /mapa/precios (Modulo de Indicadores Socioeconomicos y Precios DANE)
+#  - /admin (Panel Administrador completo adaptado con prefijo dinámico /innovafemia)
 # Excluye del menu publico y bloquea el Asistente y Biocomercio.
 # NO CONTIENE CODIGO FUENTE (.cs). Propiedad intelectual protegida.
 
@@ -64,6 +66,7 @@ $AppSettingsPath = "$Destino\app\appsettings.json"
 if (Test-Path $AppSettingsPath) {
     $json = Get-Content $AppSettingsPath -Raw | ConvertFrom-Json
     $json | Add-Member -MemberType NoteProperty -Name "ModoMapaSolo" -Value $true -Force
+    $json | Add-Member -MemberType NoteProperty -Name "PATH_BASE" -Value "/innovafemia" -Force
     $json | ConvertTo-Json -Depth 10 | Set-Content -Path $AppSettingsPath -Encoding UTF8
 }
 
@@ -88,6 +91,7 @@ ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV DOTNET_RUNNING_IN_CONTAINER=true
 ENV ModoMapaSolo=true
+ENV PATH_BASE=/innovafemia
 
 # Copiar binarios pre-compilados (.dll)
 COPY app/ .
@@ -159,6 +163,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
       DOTNET_RUNNING_IN_CONTAINER: "true"
       ModoMapaSolo: "true"
+      PATH_BASE: "`${PATH_BASE:-/innovafemia}"
       Admin__UsuarioPorDefecto: `${ADMIN_USER:-admin}
       Admin__ContrasenaPorDefecto: `${ADMIN_PASSWORD:-InnovaFemIA2026!}
       Admin__EmailPorDefecto: `${ADMIN_EMAIL:-dayana.hurtado@estudiante.fup.edu.co}
@@ -212,6 +217,9 @@ DB_ROOT_PASSWORD=InnovaFemIA_Root_2026!
 # Entorno
 ASPNETCORE_ENVIRONMENT=Production
 
+# Path Base para Proxy Reverso (ej. /innovafemia para https://i2thub.icesi.edu.co:5443/innovafemia, o dejar vacio para raiz /)
+PATH_BASE=/innovafemia
+
 # Administrador inicial
 ADMIN_USER=admin
 ADMIN_PASSWORD=InnovaFemIA2026!
@@ -222,45 +230,128 @@ Set-Content -Path "$Destino\.env" -Value $EnvContenido -Encoding UTF8
 Copy-Item "$Raiz\manage.sh" "$Destino\manage.sh" -Force
 
 # Guia de despliegue para el contenedor de produccion
-$ReadmeContenido = @"
-# Guia de Despliegue de InnovaFemIA
+$ReadmeContenido = @'
+# Guía de Actualización — InnovaFemIA (Modo Mapa)
 
-Este paquete contiene la solucion de produccion pre-compilada de **InnovaFemIA** lista para iniciar con Docker.
+Este documento detalla el procedimiento para actualizar la plataforma en un servidor de producción que ya tiene la versión anterior de los contenedores Docker en ejecución (`innovafemia-mapa-web` e `innovafemia-mapa-db`), preservando los datos de la base de datos MySQL.
 
-## Instrucciones de Despliegue:
+---
 
-1. Configure las contrasenas de la base de datos y el puerto web en el archivo .env:
-   nano .env
+### Paso 0: Respaldo Preventivo de la Base de Datos (Recomendado)
+Antes de actualizar, genere una copia de seguridad en caliente de la base de datos MySQL existente:
 
-2. Inicie los contenedores:
-   docker compose up -d --build
-   (o ejecute: ./manage.sh start)
+```bash
+# Opción 1: Usando el script manage.sh incluido
+./manage.sh backup
 
-3. Verifique el estado de salud:
+# Opción 2: Ejecutando mysqldump directamente en el contenedor
+docker exec innovafemia-mapa-db mysqldump -u innovafemia_user -p"InnovaFemIA_Pass_2026!" --single-transaction InnovaFemIA_Mapa > backup_previo_$(date +%Y%m%d_%H%M%S).sql
+```
+*Nota: El volumen de datos de MySQL (`innovafemia_mapa_mysql_data`) se conserva intacto en los siguientes pasos.*
+
+---
+
+### Paso 1: Extraer los Nuevos Binarios en el Servidor
+1. Transfiera el archivo `InnovaFemIA-Mapa-Despliegue.zip` al servidor de producción.
+2. Extraiga el contenido en el directorio del proyecto para actualizar la carpeta `app/`:
+   ```bash
+   unzip -o InnovaFemIA-Mapa-Despliegue.zip -d /ruta/al/proyecto/InnovaFemIA
+   cd /ruta/al/proyecto/InnovaFemIA
+   ```
+   > ⚠️ **ATENCIÓN con el archivo `.env`:**
+   > Si ya configuró contraseñas o puertos personalizados en el `.env` existente del servidor, **NO lo sobreescriba**. Solo verifique que contenga:
+   > ```env
+   > PATH_BASE=/innovafemia
+   > ```
+
+---
+
+### Paso 2: Detener y Remover Únicamente el Contenedor Web
+Para actualizar la aplicación sin interrumpir el almacenamiento de la base de datos:
+
+```bash
+# 1. Detener únicamente el servicio web
+docker compose stop innovafemia-mapa-web
+
+# 2. Eliminar el contenedor web viejo
+docker compose rm -f innovafemia-mapa-web
+```
+
+> 🛑 **ADVERTENCIA:**
+> **NO ejecute `docker compose down -v`**, ya que el parámetro `-v` borraría permanentemente los datos de la base de datos.
+
+---
+
+### Paso 3: Reconstruir la Imagen Web
+Reconstruya la imagen de Docker para incorporar los nuevos binarios precompilados:
+
+```bash
+docker compose build --no-cache innovafemia-mapa-web
+```
+
+---
+
+### Paso 4: Iniciar el Servicio Web Actualizado
+Inicie el nuevo contenedor web en segundo plano:
+
+```bash
+docker compose up -d innovafemia-mapa-web
+```
+
+Si por alguna razón la base de datos también estaba apagada, inicie todo con:
+```bash
+docker compose up -d
+```
+
+---
+
+### Paso 5: Verificar Estado y Logs
+1. Compruebe que ambos servicios estén saludables:
+   ```bash
    docker compose ps
-   (los contenedores deben mostrar estado 'healthy' / saludable)
+   ```
+   *Ambos servicios (`innovafemia-mapa-db` e `innovafemia-mapa-web`) deben figurar como `Up` y `(healthy)`.*
 
-4. Acceda a la plataforma:
-   http://<IP-DEL-SERVIDOR>:8081
+2. Revise los registros del arranque:
+   ```bash
+   docker compose logs -f --tail=30 innovafemia-mapa-web
+   ```
+   *(Presione `Ctrl + C` para salir de los logs).*
 
-Para realizar copias de seguridad de la base de datos:
-   ./manage.sh backup
-"@
-Set-Content -Path "$Destino\INSTRUCCIONES_DESPLIEGUE.md" -Value $ReadmeContenido -Encoding UTF8
+---
 
-Write-Host "[4/5] Comprimiendo paquete en dist\InnovaFemIA-Mapa-Despliegue.zip (formato POSIX)..." -ForegroundColor Yellow
+### Paso 6: Verificación en Navegador
+Acceda a través del dominio institucional con el sub-path configurado:
+`https://i2thub.icesi.edu.co:5443/innovafemia`
+
+- **Directorio de Familias:** `https://i2thub.icesi.edu.co:5443/innovafemia/mapa/directorio`
+- **Mapa Interactivo:** `https://i2thub.icesi.edu.co:5443/innovafemia/mapa`
+- **Indicadores DANE:** `https://i2thub.icesi.edu.co:5443/innovafemia/mapa/precios`
+- **Calendario Lunar:** `https://i2thub.icesi.edu.co:5443/innovafemia/mapa/lunar`
+- **Login Administrador:** `https://i2thub.icesi.edu.co:5443/innovafemia/admin/login`
+
+---
+
+### Plan de Reversión (Rollback en caso de emergencia)
+Si requiere volver a la versión previa:
+1. Reemplace los archivos de la carpeta `app/` con su respaldo anterior.
+2. Ejecute:
+   ```bash
+   docker compose build --no-cache innovafemia-mapa-web
+   docker compose up -d innovafemia-mapa-web
+   ```
+'@
+[System.IO.File]::WriteAllText("$Destino\INSTRUCCIONES_DESPLIEGUE.md", $ReadmeContenido, [System.Text.Encoding]::UTF8)
+
+Write-Host "[4/5] Comprimiendo paquete en dist\InnovaFemIA-Mapa-Despliegue.zip (formato ZIP estándar)..." -ForegroundColor Yellow
 $ZipDest = Join-Path $Raiz "dist\InnovaFemIA-Mapa-Despliegue.zip"
 if (Test-Path $ZipDest) { Remove-Item $ZipDest -Force }
 
-if (Get-Command tar.exe -ErrorAction SilentlyContinue) {
-    tar.exe -a -c -f "$ZipDest" -C "$Destino" .
-} else {
-    Compress-Archive -Path "$Destino\*" -DestinationPath $ZipDest -Force
-}
+Compress-Archive -Path "$Destino\*" -DestinationPath $ZipDest -Force
 
-Write-Host "`n[5/5] Paquete Modo Mapa generado con exito!" -ForegroundColor Green
+Write-Host "`n[5/5] Paquete Modo Mapa + DANE generado con exito!" -ForegroundColor Green
 Write-Host "Carpeta lista: $Destino" -ForegroundColor White
 Write-Host "Archivo ZIP listo para enviar: $ZipDest" -ForegroundColor Cyan
-Write-Host "Modo publico: Solo Mapa interactivo, Directorio y Calendario Lunar." -ForegroundColor Yellow
-Write-Host "Modo Administrador: 100% completo y normal." -ForegroundColor Green
+Write-Host "Modo publico: Mapa interactivo, Directorio, DANE y Calendario Lunar con Juego." -ForegroundColor Yellow
+Write-Host "Modo Administrador: 100% completo, adaptado para sub-path /innovafemia." -ForegroundColor Green
 Write-Host "Cero codigo expuesto: No hay archivos .cs. Solo binarios compilados." -ForegroundColor Green

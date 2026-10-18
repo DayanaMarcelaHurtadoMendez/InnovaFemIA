@@ -25,10 +25,15 @@
             </div>
             
             <div class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
-                <a href="/mapa/mapa" class="btn-cian text-xs px-4 py-2" title="Ver en el Mapa">
+                <a href="https://claude.ai/artifact/V8mjKt9sRmspRg4VRgf4LY" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-xs text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 shadow-sm shadow-emerald-200 hover:shadow-md transition-all active:scale-95" title="Aprende con la luna en Claude.ai">
+                    <span>🎮</span>
+                    <span>Aprende con la luna</span>
+                    <span class="bg-emerald-800/50 text-white text-[9px] px-1.5 py-0.5 rounded-md uppercase font-black">↗</span>
+                </a>
+                <a href="~/mapa/mapa" class="btn-cian text-xs px-4 py-2" title="Ver en el Mapa">
                     <span>🗺️</span> Ver en el Mapa
                 </a>
-                <a href="/chatbot" class="btn-naranja text-xs px-4 py-2" title="Preguntar a Asalia">
+                <a href="~/chatbot" class="btn-naranja text-xs px-4 py-2" title="Preguntar a Asalia">
                     <span>🤖</span> Preguntar a Asalia
                 </a>
             </div>
@@ -170,6 +175,7 @@
             </div>
         </div>
 
+
         <!-- ── FILTRO POR CULTIVO (SOLO SE MUESTRA SI HAY CULTIVOS ESPECÍFICOS REGISTRADOS EN REGLAS LUNARES) ── -->
         @if (Model.CultivosDisponibles.Any())
         {
@@ -180,12 +186,12 @@
                 </div>
 
                 <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
-                    <a href="/mapa/lunar" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all @(Model.CultivoIdSeleccionado == null ? "bg-purple-900 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
+                    <a href="~/mapa/lunar" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all @(Model.CultivoIdSeleccionado == null ? "bg-purple-900 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
                         🌱 Todos los cultivos
                     </a>
                     @foreach (var c in Model.CultivosDisponibles)
                     {
-                        <a href="/mapa/lunar?cultivoId=@c.Id" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all @(Model.CultivoIdSeleccionado == c.Id ? "bg-purple-900 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
+                        <a href="~/mapa/lunar?cultivoId=@c.Id" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all @(Model.CultivoIdSeleccionado == c.Id ? "bg-purple-900 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
                             <span>@c.Icono</span> @c.Nombre
                         </a>
                     }
@@ -246,6 +252,39 @@
                 </div>
             }
 
+        </div>
+
+        <!-- ── DESTACADO AL FINAL: JUEGO APRENDE CON LA LUNA (SABERES CAMPESINOS DE CALDONO) ── -->
+        <div class="bg-white border-2 border-emerald-100 hover:border-emerald-300 rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all animate-fade-in">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center sm:items-start gap-5 text-center sm:text-left flex-col sm:flex-row">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-4xl sm:text-5xl shadow-sm shrink-0">
+                        🎮
+                    </div>
+                    <div class="space-y-1.5 max-w-2xl">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-verde border border-emerald-200 text-xs font-black uppercase tracking-wider">
+                            <span>🎮</span> Saberes Campesinos de Caldono
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
+                            ¿Sabes en qué luna va cada labor del campo?
+                        </h3>
+                        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                            Repasa las 12 labores tradicionales de la comunidad en el juego interactivo <strong class="text-gray-900">Aprende con la Luna</strong>. ¡Pon a prueba tus saberes agroecológicos!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="shrink-0 w-full sm:w-auto">
+                    <a href="https://claude.ai/artifact/V8mjKt9sRmspRg4VRgf4LY"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-black text-sm shadow-md hover:shadow-lg transition-all active:scale-95 text-center">
+                        <span>🌙</span>
+                        <span>Aprende con la luna</span>
+                        <span>↗</span>
+                    </a>
+                </div>
+            </div>
         </div>
 
     </div>

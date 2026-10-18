@@ -61,6 +61,33 @@
     <!-- Favicon (emoji como data URI) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌺</text></svg>" />
 
+    <!-- Compatibilidad de Sub-Rutas y Proxy Reverso (PathBase) para llamadas JavaScript/fetch -->
+    <script>
+        (function () {
+            var base = '@(Context.Request.PathBase.Value ?? "")';
+            window.__PATH_BASE__ = base;
+            if (base) {
+                var origFetch = window.fetch;
+                window.fetch = function (resource, init) {
+                    if (typeof resource === 'string') {
+                        if (resource.startsWith('/') && !resource.startsWith('//') && !resource.startsWith(base + '/') && resource !== base) {
+                            resource = base + resource;
+                        }
+                    } else if (resource && resource.url) {
+                        try {
+                            var parsed = new URL(resource.url, window.location.origin);
+                            if (parsed.origin === window.location.origin && parsed.pathname.startsWith('/') && !parsed.pathname.startsWith(base + '/') && parsed.pathname !== base) {
+                                var newUrl = parsed.origin + base + parsed.pathname + parsed.search + parsed.hash;
+                                resource = new Request(newUrl, resource);
+                            }
+                        } catch (e) { }
+                    }
+                    return origFetch.call(this, resource, init);
+                };
+            }
+        })();
+    </script>
+
     @RenderSection("Head", required: false)
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50">

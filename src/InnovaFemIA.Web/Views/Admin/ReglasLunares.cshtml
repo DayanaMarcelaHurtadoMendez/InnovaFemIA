@@ -11,7 +11,7 @@
     <!-- Header y botón de creación -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div>
-            <a href="/admin/dashboard" class="text-xs text-verde font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <a href="~/admin/dashboard" class="text-xs text-verde font-bold hover:underline block mb-1">← Volver al Dashboard</a>
             <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
                 <span>🌘</span> Gestión de Prácticas & Calendario Lunar
             </h1>
@@ -38,19 +38,19 @@
 
     <!-- Filtro por Fase Lunar -->
     <div class="flex flex-wrap gap-2 text-xs">
-        <a href="/admin/reglas-lunares" class="px-4 py-2 rounded-xl font-bold border transition-all @(!faseSeleccionada.HasValue ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")">
+        <a href="~/admin/reglas-lunares" class="px-4 py-2 rounded-xl font-bold border transition-all @(!faseSeleccionada.HasValue ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")">
             Todas las Fases
         </a>
-        <a href="/admin/reglas-lunares?fase=LunaNueva" class="px-4 py-2 rounded-xl font-bold border transition-all @(faseSeleccionada == FaseLunar.LunaNueva ? "bg-purple-900 text-white border-purple-900" : "bg-white text-purple-900 border-purple-200 hover:bg-purple-50")">
+        <a href="~/admin/reglas-lunares?fase=LunaNueva" class="px-4 py-2 rounded-xl font-bold border transition-all @(faseSeleccionada == FaseLunar.LunaNueva ? "bg-purple-900 text-white border-purple-900" : "bg-white text-purple-900 border-purple-200 hover:bg-purple-50")">
             🌑 Luna Nueva
         </a>
-        <a href="/admin/reglas-lunares?fase=CuartoCrediente" class="px-4 py-2 rounded-xl font-bold border transition-all @(faseSeleccionada == FaseLunar.CuartoCrediente ? "bg-purple-900 text-white border-purple-900" : "bg-white text-purple-900 border-purple-200 hover:bg-purple-50")">
+        <a href="~/admin/reglas-lunares?fase=CuartoCrediente" class="px-4 py-2 rounded-xl font-bold border transition-all @(faseSeleccionada == FaseLunar.CuartoCrediente ? "bg-purple-900 text-white border-purple-900" : "bg-white text-purple-900 border-purple-200 hover:bg-purple-50")">
             🌒 Cuarto Creciente
         </a>
-        <a href="/admin/reglas-lunares?fase=LunaLlena" class="px-4 py-2 rounded-xl font-bold border transition-all @(faseSeleccionada == FaseLunar.LunaLlena ? "bg-purple-900 text-white border-purple-900" : "bg-white text-purple-900 border-purple-200 hover:bg-purple-50")">
+        <a href="~/admin/reglas-lunares?fase=LunaLlena" class="px-4 py-2 rounded-xl font-bold border transition-all @(faseSeleccionada == FaseLunar.LunaLlena ? "bg-purple-900 text-white border-purple-900" : "bg-white text-purple-900 border-purple-200 hover:bg-purple-50")">
             🌕 Luna Llena
         </a>
-        <a href="/admin/reglas-lunares?fase=CuartoMenguante" class="px-4 py-2 rounded-xl font-bold border transition-all @(faseSeleccionada == FaseLunar.CuartoMenguante ? "bg-purple-900 text-white border-purple-900" : "bg-white text-purple-900 border-purple-200 hover:bg-purple-50")">
+        <a href="~/admin/reglas-lunares?fase=CuartoMenguante" class="px-4 py-2 rounded-xl font-bold border transition-all @(faseSeleccionada == FaseLunar.CuartoMenguante ? "bg-purple-900 text-white border-purple-900" : "bg-white text-purple-900 border-purple-200 hover:bg-purple-50")">
             🌘 Cuarto Menguante
         </a>
     </div>
@@ -128,7 +128,7 @@
             <h3 id="modal-regla-title" class="font-extrabold text-sm text-white">Agregar Práctica Lunar</h3>
             <button onclick="cerrarModalReglaForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form id="form-regla" action="/admin/reglas-lunares/crear" method="POST" class="p-6 space-y-4">
+        <form id="form-regla" action="~/admin/reglas-lunares/crear" method="POST" class="p-6 space-y-4">
             @Html.AntiForgeryToken()
             <input type="hidden" id="regla-id" name="Id" value="0" />
 
@@ -191,7 +191,7 @@
         <p class="text-xs text-gray-500">
             ¿Estás seguro de eliminar la práctica <strong id="regla-nombre-eliminar" class="text-gray-800"></strong>?
         </p>
-        <form action="/admin/reglas-lunares/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+        <form action="~/admin/reglas-lunares/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
             @Html.AntiForgeryToken()
             <input type="hidden" id="regla-id-eliminar" name="id" value="" />
             <button type="button" onclick="cerrarModalEliminarRegla()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
@@ -203,7 +203,7 @@
 <script>
     function abrirModalCrearRegla() {
         document.getElementById('modal-regla-title').innerText = 'Agregar Práctica Lunar';
-        document.getElementById('form-regla').action = '/admin/reglas-lunares/crear';
+        document.getElementById('form-regla').action = '@Url.Content("~/admin/reglas-lunares/crear")';
         document.getElementById('regla-id').value = 0;
         document.getElementById('regla-practica').value = '';
         document.getElementById('regla-recomendacion').value = '';
@@ -213,7 +213,7 @@
 
     function abrirModalEditarRegla(r) {
         document.getElementById('modal-regla-title').innerText = 'Editar Práctica Lunar';
-        document.getElementById('form-regla').action = '/admin/reglas-lunares/editar';
+        document.getElementById('form-regla').action = '@Url.Content("~/admin/reglas-lunares/editar")';
         document.getElementById('regla-id').value = r.Id;
         document.getElementById('regla-fase').value = r.FaseLunar;
         document.getElementById('regla-practica').value = r.Practica;
