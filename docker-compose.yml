@@ -58,6 +58,7 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
       DOTNET_RUNNING_IN_CONTAINER: "true"
+      PATH_BASE: ${PATH_BASE:-/innovafemia}
       # Configuración de Admin Seed
       Admin__UsuarioPorDefecto: ${ADMIN_USER:-admin}
       Admin__ContrasenaPorDefecto: ${ADMIN_PASSWORD:-InnovaFemIA2026!}

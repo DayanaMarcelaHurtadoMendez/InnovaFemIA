@@ -204,15 +204,11 @@ Para realizar copias de seguridad:
 "@
 Set-Content -Path "$Destino\INSTRUCCIONES_DESPLIEGUE.md" -Value $ReadmeContenido -Encoding UTF8
 
-Write-Host "[4/5] Comprimiendo paquete en dist\InnovaFemIA-Despliegue.zip (formato POSIX)..." -ForegroundColor Yellow
+Write-Host "[4/5] Comprimiendo paquete en dist\InnovaFemIA-Despliegue.zip (formato ZIP estándar)..." -ForegroundColor Yellow
 $ZipDest = Join-Path $Raiz "dist\InnovaFemIA-Despliegue.zip"
 if (Test-Path $ZipDest) { Remove-Item $ZipDest -Force }
 
-if (Get-Command tar.exe -ErrorAction SilentlyContinue) {
-    tar.exe -a -c -f "$ZipDest" -C "$Destino" .
-} else {
-    Compress-Archive -Path "$Destino\*" -DestinationPath $ZipDest -Force
-}
+Compress-Archive -Path "$Destino\*" -DestinationPath $ZipDest -Force
 
 Write-Host "`n[5/5] Paquete generado con exito!" -ForegroundColor Green
 Write-Host "Carpeta lista: $Destino" -ForegroundColor White
