@@ -32,7 +32,7 @@ public class BiocomercioController : Controller
 
     [HttpPost("login")]
     [AllowAnonymous]
-    [ValidateAntiForgeryToken]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Login(string usuario, string contrasena, string? returnUrl = null)
     {
         if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(contrasena))

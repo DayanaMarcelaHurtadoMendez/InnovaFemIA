@@ -42,3 +42,10 @@ dist/
 backups/
 .env
 scratch*
+
+# Documentos anexos, ofimática y PDFs no requeridos en repositorio
+*.docx
+*.doc
+*.xlsx
+*.xls
+*.pdf

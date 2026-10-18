@@ -8,7 +8,7 @@
     <!-- Header y botón de creación -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
         <div>
-            <a href="/admin/dashboard" class="text-xs text-verde font-bold hover:underline block mb-1">← Volver al Dashboard</a>
+            <a href="~/admin/dashboard" class="text-xs text-verde font-bold hover:underline block mb-1">← Volver al Dashboard</a>
             <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
                 <span>🌱</span> Catálogo de Cultivos del Sistema
             </h1>
@@ -78,7 +78,7 @@
             <h3 id="modal-cultivo-title" class="font-extrabold text-sm text-white">Registrar Nuevo Cultivo</h3>
             <button onclick="cerrarModalCultivoForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form id="form-cultivo" action="/admin/cultivos/crear" method="POST" class="p-6 space-y-4 overflow-y-auto flex-1">
+        <form id="form-cultivo" action="~/admin/cultivos/crear" method="POST" class="p-6 space-y-4 overflow-y-auto flex-1">
             @Html.AntiForgeryToken()
             <input type="hidden" id="cultivo-id" name="Id" value="0" />
 
@@ -139,7 +139,7 @@
         <p class="text-xs text-gray-500">
             ¿Estás seguro de eliminar el cultivo <strong id="cultivo-nombre-eliminar" class="text-gray-800"></strong>?
         </p>
-        <form action="/admin/cultivos/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+        <form action="~/admin/cultivos/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
             @Html.AntiForgeryToken()
             <input type="hidden" id="cultivo-id-eliminar" name="id" value="" />
             <button type="button" onclick="cerrarModalEliminarCultivo()" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
@@ -284,7 +284,7 @@
 
     function abrirModalCrearCultivo() {
         document.getElementById('modal-cultivo-title').innerText = 'Registrar Nuevo Cultivo';
-        document.getElementById('form-cultivo').action = '/admin/cultivos/crear';
+        document.getElementById('form-cultivo').action = '@Url.Content("~/admin/cultivos/crear")';
         document.getElementById('cultivo-id').value = 0;
         seleccionarEmoji('🌱');
         document.getElementById('cultivo-nombre').value = '';
@@ -295,7 +295,7 @@
 
     function abrirModalEditarCultivo(c) {
         document.getElementById('modal-cultivo-title').innerText = 'Editar Cultivo';
-        document.getElementById('form-cultivo').action = '/admin/cultivos/editar';
+        document.getElementById('form-cultivo').action = '@Url.Content("~/admin/cultivos/editar")';
         document.getElementById('cultivo-id').value = c.Id;
         seleccionarEmoji(c.Icono || '🌱');
         document.getElementById('cultivo-nombre').value = c.Nombre;

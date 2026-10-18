@@ -12,7 +12,7 @@
     <!-- Header y Estadísticas -->
     <div class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div class="space-y-1">
-            <a href="/admin/dashboard" class="text-xs text-amber-800 font-bold hover:underline flex items-center gap-1 mb-1">
+            <a href="~/admin/dashboard" class="text-xs text-amber-800 font-bold hover:underline flex items-center gap-1 mb-1">
                 <span>←</span> Volver al Dashboard
             </a>
             <h1 class="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3">
@@ -95,27 +95,27 @@
                         <!-- Acciones de la Lección -->
                         <div class="flex items-center gap-2 self-end lg:self-center shrink-0">
                             <button onclick="abrirModalAgregarPregunta(@lec.Id, '@lec.Titulo.Replace("'", "\\'")'.replace(/&quot;/g, '&quot;'), @(lec.TotalPreguntas + 1))" 
-                                    class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-verde border border-emerald-200/80 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm"
+                                    class="h-9 px-3.5 bg-emerald-50 hover:bg-emerald-100 text-verde border border-emerald-200/80 rounded-xl text-xs font-black transition-all inline-flex items-center gap-1.5 shadow-sm"
                                     title="Agregar Pregunta a esta lección">
                                 <span>➕</span>
                                 <span class="hidden sm:inline">Agregar Pregunta</span>
                             </button>
 
                             <button onclick="abrirModalEditarLeccion(@lec.Id, @lec.NumeroLeccion, '@lec.Titulo.Replace("'", "\\'").Replace("\"", "&quot;")', '@(lec.Descripcion?.Replace("'", "\\'").Replace("\"", "&quot;").Replace("\r\n", "\\n").Replace("\n", "\\n") ?? "")')" 
-                                    class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+                                    class="h-9 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm"
                                     title="Editar Título y Descripción de la Lección">
                                 <span>✏️</span>
                                 <span class="hidden sm:inline">Editar</span>
                             </button>
 
                             <button onclick="togglePreguntas(@lec.Id)" id="btn-toggle-@lec.Id"
-                                    class="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200/80 rounded-xl text-xs font-bold transition-all flex items-center gap-1">
+                                    class="h-9 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200/80 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm">
                                 <span id="toggle-icon-@lec.Id">▼</span>
                                 <span class="hidden sm:inline">Ver preguntas</span>
                             </button>
 
                             <button onclick="confirmarEliminarLeccion(@lec.Id, '@lec.Titulo.Replace("'", "\\'")')" 
-                                    class="p-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all" 
+                                    class="h-9 w-9 inline-flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all shadow-sm" 
                                     title="Eliminar Lección Completa">
                                 <span>🗑️</span>
                             </button>
@@ -141,19 +141,20 @@
                                                 </h4>
                                             </div>
 
-                                            <div class="flex items-center gap-2 shrink-0">
+                                            <div class="inline-flex items-center justify-end gap-1.5 shrink-0">
                                                 <button type="button" 
                                                         onclick="cargarYEditarPregunta(@p.Id)"
                                                         id="btn-data-pregunta-@p.Id"
                                                         data-pregunta='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(p))'
-                                                        class="text-[11px] font-bold text-amber-700 hover:text-amber-900 hover:bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 transition-colors flex items-center gap-1">
+                                                        class="inline-flex items-center justify-center gap-1 min-w-[72px] text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200 transition-colors shadow-sm">
                                                     <span>✏️</span>
                                                     <span>Editar</span>
                                                 </button>
 
                                                 <button onclick="confirmarEliminarPregunta(@p.Id, '@p.TextoPregunta.Replace("'", "\\'")')" 
-                                                        class="text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 transition-colors">
-                                                    🗑️ Eliminar
+                                                        class="inline-flex items-center justify-center gap-1 min-w-[72px] text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 transition-colors shadow-sm">
+                                                    <span>🗑️</span>
+                                                    <span>Eliminar</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -248,7 +249,7 @@
             <button onclick="cerrarModalCrearLeccion()" class="text-white hover:text-gray-200 font-bold text-xl px-2">✕</button>
         </div>
 
-        <form action="/admin/chatbot/lecciones/crear" method="POST" class="p-6 space-y-4">
+        <form action="~/admin/chatbot/lecciones/crear" method="POST" class="p-6 space-y-4">
             @Html.AntiForgeryToken()
 
             <div>
@@ -292,7 +293,7 @@
             <button onclick="cerrarModalEditarLeccion()" class="text-white hover:text-gray-200 font-bold text-xl px-2">✕</button>
         </div>
 
-        <form action="/admin/chatbot/lecciones/editar" method="POST" class="p-6 space-y-4">
+        <form action="~/admin/chatbot/lecciones/editar" method="POST" class="p-6 space-y-4">
             @Html.AntiForgeryToken()
             <input type="hidden" id="edit-leccion-id" name="Id" value="" />
 
@@ -330,18 +331,18 @@
 <div id="modal-agregar-pregunta" class="fixed inset-0 z-50 hidden bg-gray-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-gray-100 my-8 flex flex-col max-h-[90vh] animate-scale-in">
         
-        <div class="bg-gray-900 text-white p-5 flex items-center justify-between shrink-0">
+        <div class="bg-amber-600 text-white p-5 flex items-center justify-between shrink-0">
             <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                    <span class="text-lg">❓</span>
+                <div class="flex items-center gap-2.5">
+                    <span class="text-xl">➕</span>
                     <h3 class="font-black text-sm text-white">Agregar Pregunta</h3>
                 </div>
-                <p id="label-leccion-destino" class="text-xs text-amber-300 font-bold truncate mt-0.5"></p>
+                <p id="label-leccion-destino" class="text-xs text-amber-100 font-bold truncate mt-0.5"></p>
             </div>
-            <button onclick="cerrarModalAgregarPregunta()" class="text-white hover:text-gray-300 font-bold text-xl px-2">✕</button>
+            <button onclick="cerrarModalAgregarPregunta()" class="text-white hover:text-amber-100 font-bold text-xl px-2">✕</button>
         </div>
 
-        <form id="form-agregar-pregunta" action="/admin/chatbot/lecciones/agregar-pregunta" method="POST" onsubmit="return validarFormularioPregunta(event)" class="p-6 space-y-5 overflow-y-auto flex-1">
+        <form id="form-agregar-pregunta" action="~/admin/chatbot/lecciones/agregar-pregunta" method="POST" onsubmit="return validarFormularioPregunta(event)" class="p-6 space-y-5 overflow-y-auto flex-1">
             @Html.AntiForgeryToken()
             <input type="hidden" id="pregunta-leccion-id" name="leccionId" value="" />
 
@@ -350,13 +351,13 @@
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                         Enunciado de la Pregunta <span class="text-rose-600">*</span>
                     </label>
-                    <input type="text" id="input-texto-pregunta" name="textoPregunta" required placeholder="Ej: ¿Cuál es la distancia recomendada para siembra de café?" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none" />
+                    <input type="text" id="input-texto-pregunta" name="textoPregunta" required placeholder="Ej: ¿Cuál es la distancia recomendada para siembra de café?" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                         Orden # <span class="text-rose-600">*</span>
                     </label>
-                    <input type="number" id="input-orden-pregunta" name="orden" value="1" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none text-center" />
+                    <input type="number" id="input-orden-pregunta" name="orden" value="1" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-center" />
                 </div>
             </div>
 
@@ -364,7 +365,7 @@
                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                     Contenido Explicativo Didáctico <span class="text-gray-400 font-normal">(Opcional, se muestra como ayuda pedagógica)</span>
                 </label>
-                <textarea name="contenidoExplicativo" rows="2" placeholder="El marco de plantación adecuado permite optimizar el paso de luz y nutrientes en la parcela..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                <textarea name="contenidoExplicativo" rows="2" placeholder="El marco de plantación adecuado permite optimizar el paso de luz y nutrientes en la parcela..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"></textarea>
             </div>
 
             <!-- Sección Dinámica de Opciones de Respuesta -->
@@ -393,7 +394,7 @@
 
             <div class="pt-4 border-t border-gray-100 flex justify-end gap-2.5 shrink-0">
                 <button type="button" onclick="cerrarModalAgregarPregunta()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all">Cancelar</button>
-                <button type="submit" class="px-6 py-2.5 bg-gray-900 hover:bg-black text-white font-black text-xs rounded-xl shadow-md transition-all">Guardar Pregunta</button>
+                <button type="submit" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all">Guardar Pregunta</button>
             </div>
         </form>
     </div>
@@ -403,18 +404,18 @@
 <div id="modal-editar-pregunta" class="fixed inset-0 z-50 hidden bg-gray-950/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-gray-100 my-8 flex flex-col max-h-[90vh] animate-scale-in">
         
-        <div class="bg-gray-900 text-white p-5 flex items-center justify-between shrink-0">
+        <div class="bg-amber-700 text-white p-5 flex items-center justify-between shrink-0">
             <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                    <span class="text-lg">✏️</span>
+                <div class="flex items-center gap-2.5">
+                    <span class="text-xl">✏️</span>
                     <h3 class="font-black text-sm text-white">Editar Pregunta</h3>
                 </div>
-                <p class="text-xs text-amber-300 font-bold truncate mt-0.5">Modifica el texto, explicación y opciones de respuesta</p>
+                <p class="text-xs text-amber-100 font-medium truncate mt-0.5">Modifica el texto, explicación y opciones de respuesta</p>
             </div>
-            <button onclick="cerrarModalEditarPregunta()" class="text-white hover:text-gray-300 font-bold text-xl px-2">✕</button>
+            <button onclick="cerrarModalEditarPregunta()" class="text-white hover:text-amber-100 font-bold text-xl px-2">✕</button>
         </div>
 
-        <form id="form-editar-pregunta" action="/admin/chatbot/lecciones/editar-pregunta" method="POST" onsubmit="return validarFormularioPreguntaEdit(event)" class="p-6 space-y-5 overflow-y-auto flex-1">
+        <form id="form-editar-pregunta" action="~/admin/chatbot/lecciones/editar-pregunta" method="POST" onsubmit="return validarFormularioPreguntaEdit(event)" class="p-6 space-y-5 overflow-y-auto flex-1">
             @Html.AntiForgeryToken()
             <input type="hidden" id="edit-pregunta-id" name="id" value="" />
 
@@ -423,13 +424,13 @@
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                         Enunciado de la Pregunta <span class="text-rose-600">*</span>
                     </label>
-                    <input type="text" id="edit-pregunta-texto" name="textoPregunta" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none" />
+                    <input type="text" id="edit-pregunta-texto" name="textoPregunta" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                         Orden # <span class="text-rose-600">*</span>
                     </label>
-                    <input type="number" id="edit-pregunta-orden" name="orden" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 outline-none text-center" />
+                    <input type="number" id="edit-pregunta-orden" name="orden" min="1" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-center" />
                 </div>
             </div>
 
@@ -437,7 +438,7 @@
                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                     Contenido Explicativo Didáctico <span class="text-gray-400 font-normal">(Opcional, ayuda pedagógica)</span>
                 </label>
-                <textarea id="edit-pregunta-explicacion" name="contenidoExplicativo" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                <textarea id="edit-pregunta-explicacion" name="contenidoExplicativo" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"></textarea>
             </div>
 
             <!-- Sección Dinámica de Opciones de Respuesta en Edición -->
@@ -466,7 +467,7 @@
 
             <div class="pt-4 border-t border-gray-100 flex justify-end gap-2.5 shrink-0">
                 <button type="button" onclick="cerrarModalEditarPregunta()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-all">Cancelar</button>
-                <button type="submit" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl shadow-md transition-all">Guardar Cambios</button>
+                <button type="submit" class="px-6 py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-black text-xs rounded-xl shadow-md transition-all">Guardar Cambios</button>
             </div>
         </form>
     </div>
@@ -484,7 +485,7 @@
                 Se eliminará permanentemente la lección <strong id="leccion-nombre-eliminar" class="text-gray-900 font-black"></strong> junto con todas sus preguntas y opciones de respuesta en cascada.
             </p>
         </div>
-        <form action="/admin/chatbot/lecciones/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
+        <form action="~/admin/chatbot/lecciones/eliminar" method="POST" class="pt-2 flex justify-center gap-3">
             @Html.AntiForgeryToken()
             <input type="hidden" id="leccion-id-eliminar" name="id" value="" />
             <button type="button" onclick="cerrarModalEliminarLeccion()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all">Cancelar</button>
@@ -505,7 +506,7 @@
                 ¿Estás seguro de eliminar la pregunta: <strong id="pregunta-nombre-eliminar" class="text-gray-900 font-bold"></strong>?
             </p>
         </div>
-        <form action="/admin/chatbot/lecciones/eliminar-pregunta" method="POST" class="pt-2 flex justify-center gap-3">
+        <form action="~/admin/chatbot/lecciones/eliminar-pregunta" method="POST" class="pt-2 flex justify-center gap-3">
             @Html.AntiForgeryToken()
             <input type="hidden" id="pregunta-id-eliminar" name="id" value="" />
             <button type="button" onclick="cerrarModalEliminarPregunta()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl">Cancelar</button>
