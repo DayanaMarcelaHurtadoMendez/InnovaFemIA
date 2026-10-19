@@ -128,7 +128,7 @@
             <h3 id="modal-regla-title" class="font-extrabold text-sm text-white">Agregar Práctica Lunar</h3>
             <button onclick="cerrarModalReglaForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form id="form-regla" action="~/admin/reglas-lunares/crear" method="POST" class="p-6 space-y-4">
+        <form id="form-regla" action="~/admin/reglas-lunares/crear" data-action-crear="@Url.Content("~/admin/reglas-lunares/crear")" data-action-editar="@Url.Content("~/admin/reglas-lunares/editar")" method="POST" class="p-6 space-y-4">
             @Html.AntiForgeryToken()
             <input type="hidden" id="regla-id" name="Id" value="0" />
 
@@ -200,40 +200,7 @@
     </div>
 </div>
 
-<script>
-    function abrirModalCrearRegla() {
-        document.getElementById('modal-regla-title').innerText = 'Agregar Práctica Lunar';
-        document.getElementById('form-regla').action = '@Url.Content("~/admin/reglas-lunares/crear")';
-        document.getElementById('regla-id').value = 0;
-        document.getElementById('regla-practica').value = '';
-        document.getElementById('regla-recomendacion').value = '';
-        document.getElementById('regla-cultivo').value = '';
-        document.getElementById('modal-regla-form').classList.remove('hidden');
-    }
+@section Scripts {
+    <script src="~/js/admin/reglas-lunares.js" asp-append-version="true"></script>
+}
 
-    function abrirModalEditarRegla(r) {
-        document.getElementById('modal-regla-title').innerText = 'Editar Práctica Lunar';
-        document.getElementById('form-regla').action = '@Url.Content("~/admin/reglas-lunares/editar")';
-        document.getElementById('regla-id').value = r.Id;
-        document.getElementById('regla-fase').value = r.FaseLunar;
-        document.getElementById('regla-practica').value = r.Practica;
-        document.getElementById('regla-recomendacion').value = r.Recomendacion;
-        document.getElementById('regla-confianza').value = r.NivelConfianza;
-        document.getElementById('regla-cultivo').value = r.CultivoId || '';
-        document.getElementById('modal-regla-form').classList.remove('hidden');
-    }
-
-    function cerrarModalReglaForm() {
-        document.getElementById('modal-regla-form').classList.add('hidden');
-    }
-
-    function confirmarEliminarRegla(id, nombre) {
-        document.getElementById('regla-id-eliminar').value = id;
-        document.getElementById('regla-nombre-eliminar').innerText = nombre;
-        document.getElementById('modal-eliminar-regla').classList.remove('hidden');
-    }
-
-    function cerrarModalEliminarRegla() {
-        document.getElementById('modal-eliminar-regla').classList.add('hidden');
-    }
-</script>
