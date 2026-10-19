@@ -24,21 +24,7 @@
     
     <!-- TailwindCSS CDN (Respaldo en Desarrollo) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        morado: { DEFAULT: '#42077f', light: '#f3e8ff' },
-                        cian: { DEFAULT: '#0190a6', light: '#e0f2fe' },
-                        verde: { DEFAULT: '#469542', light: '#dcfce7' },
-                        naranja: { DEFAULT: '#d74827', light: '#ffedd5' }
-                    },
-                    fontFamily: { sans: ['Outfit', 'system-ui', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
+    <script src="~/js/shared/tailwind.config.js" asp-append-version="true"></script>
     <style type="text/tailwindcss">
         @@layer components {
             .card { @@apply bg-white rounded-2xl p-5 transition-all duration-300; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
@@ -62,31 +48,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌺</text></svg>" />
 
     <!-- Compatibilidad de Sub-Rutas y Proxy Reverso (PathBase) para llamadas JavaScript/fetch -->
-    <script>
-        (function () {
-            var base = '@(Context.Request.PathBase.Value ?? "")';
-            window.__PATH_BASE__ = base;
-            if (base) {
-                var origFetch = window.fetch;
-                window.fetch = function (resource, init) {
-                    if (typeof resource === 'string') {
-                        if (resource.startsWith('/') && !resource.startsWith('//') && !resource.startsWith(base + '/') && resource !== base) {
-                            resource = base + resource;
-                        }
-                    } else if (resource && resource.url) {
-                        try {
-                            var parsed = new URL(resource.url, window.location.origin);
-                            if (parsed.origin === window.location.origin && parsed.pathname.startsWith('/') && !parsed.pathname.startsWith(base + '/') && parsed.pathname !== base) {
-                                var newUrl = parsed.origin + base + parsed.pathname + parsed.search + parsed.hash;
-                                resource = new Request(newUrl, resource);
-                            }
-                        } catch (e) { }
-                    }
-                    return origFetch.call(this, resource, init);
-                };
-            }
-        })();
-    </script>
+    <meta name="app-path-base" content="@(Context.Request.PathBase.Value ?? "")" />
+    <script src="~/js/shared/pathbase.js" asp-append-version="true"></script>
 
     @RenderSection("Head", required: false)
 </head>
@@ -105,6 +68,7 @@
 
     <!-- Scripts base -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/shared/navbar.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
 </body>
