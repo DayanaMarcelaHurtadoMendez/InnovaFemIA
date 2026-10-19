@@ -98,7 +98,7 @@
             <h3 id="modal-tiempo-title" class="font-extrabold text-sm text-white">Configurar Tiempo de Cosecha</h3>
             <button onclick="cerrarModalTiempoForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form id="form-tiempo" action="~/admin/biocomercio/tiempos/crear" method="POST" class="p-6 space-y-4">
+        <form id="form-tiempo" action="~/admin/biocomercio/tiempos/crear" data-action-crear="@Url.Content("~/admin/biocomercio/tiempos/crear")" data-action-editar="@Url.Content("~/admin/biocomercio/tiempos/editar")" method="POST" class="p-6 space-y-4">
             @Html.AntiForgeryToken()
             <input type="hidden" id="tiempo-id" name="Id" value="0" />
 
@@ -165,39 +165,4 @@
     </div>
 </div>
 
-<script>
-    function abrirModalCrearTiempo() {
-        document.getElementById('modal-tiempo-title').innerText = 'Configurar Tiempo de Cosecha';
-        document.getElementById('form-tiempo').action = '@Url.Content("~/admin/biocomercio/tiempos/crear")';
-        document.getElementById('tiempo-id').value = 0;
-        document.getElementById('tiempo-meses').value = 8;
-        document.getElementById('tiempo-template').value = 'Tu cultivo estará listo para cosecha en aproximadamente {meses} meses.';
-        document.getElementById('tiempo-notas').value = '';
-        document.getElementById('modal-tiempo-form').classList.remove('hidden');
-    }
-
-    function abrirModalEditarTiempo(t) {
-        document.getElementById('modal-tiempo-title').innerText = 'Editar Tiempo de Cosecha';
-        document.getElementById('form-tiempo').action = '@Url.Content("~/admin/biocomercio/tiempos/editar")';
-        document.getElementById('tiempo-id').value = t.Id;
-        document.getElementById('tiempo-cultivo').value = t.CultivoId;
-        document.getElementById('tiempo-actividad').value = t.Actividad;
-        document.getElementById('tiempo-meses').value = t.MesesHastaCosecha;
-        document.getElementById('tiempo-template').value = t.DescripcionTemplate;
-        document.getElementById('tiempo-notas').value = t.Notas || '';
-        document.getElementById('modal-tiempo-form').classList.remove('hidden');
-    }
-
-    function cerrarModalTiempoForm() {
-        document.getElementById('modal-tiempo-form').classList.add('hidden');
-    }
-
-    function confirmarEliminarTiempo(id) {
-        document.getElementById('tiempo-id-eliminar').value = id;
-        document.getElementById('modal-eliminar-tiempo').classList.remove('hidden');
-    }
-
-    function cerrarModalEliminarTiempo() {
-        document.getElementById('modal-eliminar-tiempo').classList.add('hidden');
-    }
-</script>
+<script src="~/js/admin/biocomercio-tiempos.js" asp-append-version="true"></script>

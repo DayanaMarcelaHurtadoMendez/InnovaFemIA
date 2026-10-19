@@ -124,7 +124,7 @@
             <h3 id="modal-actor-title" class="font-extrabold text-sm text-white">Agregar Nuevo Actor</h3>
             <button onclick="cerrarModalActorForm()" class="text-white hover:text-gray-300 font-bold text-lg">✕</button>
         </div>
-        <form id="form-actor" action="~/admin/actores/crear" method="POST" class="p-6 space-y-4">
+        <form id="form-actor" action="~/admin/actores/crear" data-action-crear="@Url.Content("~/admin/actores/crear")" data-action-editar="@Url.Content("~/admin/actores/editar")" method="POST" class="p-6 space-y-4">
             @Html.AntiForgeryToken()
             <input type="hidden" id="actor-id" name="Id" value="0" />
 
@@ -196,46 +196,4 @@
     </div>
 </div>
 
-<script>
-    function abrirModalCrearActor() {
-        document.getElementById('modal-actor-title').innerText = 'Agregar Nuevo Actor';
-        document.getElementById('form-actor').action = '@Url.Content("~/admin/actores/crear")';
-        document.getElementById('actor-id').value = 0;
-        document.getElementById('actor-nombre').value = '';
-        document.getElementById('actor-descripcion').value = '';
-        document.getElementById('actor-contacto').value = '';
-        document.getElementById('actor-latitud').value = '2.8145';
-        document.getElementById('actor-longitud').value = '-76.5360';
-        document.getElementById('actor-div-activo').classList.add('hidden');
-        document.getElementById('modal-actor-form').classList.remove('hidden');
-    }
-
-    function abrirModalEditarActor(a) {
-        document.getElementById('modal-actor-title').innerText = 'Editar Actor: ' + a.Nombre;
-        document.getElementById('form-actor').action = '@Url.Content("~/admin/actores/editar")';
-        document.getElementById('actor-id').value = a.Id;
-        document.getElementById('actor-tipo').value = a.TipoActor;
-        document.getElementById('actor-nombre').value = a.Nombre;
-        document.getElementById('actor-descripcion').value = a.Descripcion;
-        document.getElementById('actor-contacto').value = a.DatosContacto;
-        document.getElementById('actor-latitud').value = a.Latitud;
-        document.getElementById('actor-longitud').value = a.Longitud;
-        document.getElementById('actor-div-activo').classList.remove('hidden');
-        document.getElementById('actor-activo').checked = a.Activo;
-        document.getElementById('modal-actor-form').classList.remove('hidden');
-    }
-
-    function cerrarModalActorForm() {
-        document.getElementById('modal-actor-form').classList.add('hidden');
-    }
-
-    function confirmarEliminarActor(id, nombre) {
-        document.getElementById('actor-id-eliminar').value = id;
-        document.getElementById('actor-nombre-eliminar').innerText = nombre;
-        document.getElementById('modal-eliminar-actor').classList.remove('hidden');
-    }
-
-    function cerrarModalEliminarActor() {
-        document.getElementById('modal-eliminar-actor').classList.add('hidden');
-    }
-</script>
+<script src="~/js/admin/actores.js" asp-append-version="true"></script>

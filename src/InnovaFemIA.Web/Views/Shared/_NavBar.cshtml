@@ -169,12 +169,3 @@
 </nav>
 
 
-<script>
-    // Toggle mobile menu
-    document.getElementById('nav-mobile-toggle')?.addEventListener('click', function () {
-        const menu = document.getElementById('nav-mobile-menu');
-        const expanded = this.getAttribute('aria-expanded') === 'true';
-        menu.classList.toggle('hidden');
-        this.setAttribute('aria-expanded', String(!expanded));
-    });
-</script>
