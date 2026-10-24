@@ -42,6 +42,7 @@ builder.WebHost.ConfigureKestrel(options =>
 // ─── MVC + RAZOR VIEWS + SERVICIOS CORE ───────────────────────────────────────
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<InnovaFemIA.Web.Features.Shared.Services.IMediaCacheService, InnovaFemIA.Web.Features.Shared.Services.MediaCacheService>();
+builder.Services.AddScoped<InnovaFemIA.Web.Features.Biocomercio.DeteccionEnfermedades.IRoboflowEnfermedadesService, InnovaFemIA.Web.Features.Biocomercio.DeteccionEnfermedades.RoboflowEnfermedadesService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 // ─── SESIÓN (cookies para Admin y Familias) ───────────────────────────────────
