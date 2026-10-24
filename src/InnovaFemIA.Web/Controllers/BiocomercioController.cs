@@ -5,16 +5,22 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using InnovaFemIA.Web.Features.Biocomercio.DeteccionEnfermedades;
+
 namespace InnovaFemIA.Web.Controllers;
 
 [Route("biocomercio")]
 public class BiocomercioController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly IRoboflowEnfermedadesService _roboflowService;
 
-    public BiocomercioController(IMediator mediator)
+    public BiocomercioController(
+        IMediator mediator,
+        IRoboflowEnfermedadesService roboflowService)
     {
         _mediator = mediator;
+        _roboflowService = roboflowService;
     }
 
     [HttpGet("login")]
@@ -145,5 +151,30 @@ public class BiocomercioController : Controller
         }
 
         return RedirectToAction("MiStock");
+    }
+
+    [HttpGet("deteccion-enfermedades")]
+    [AllowAnonymous]
+    public IActionResult DeteccionEnfermedades()
+    {
+        return View("~/Views/Biocomercio/DeteccionEnfermedades.cshtml");
+    }
+
+    [HttpPost("api/detectar-enfermedad")]
+    [AllowAnonymous]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> DetectarEnfermedad([FromBody] DeteccionRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.ImagenBase64))
+        {
+            return BadRequest(new ResultadoDeteccionDto
+            {
+                Exito = false,
+                Mensaje = "No se recibió ninguna imagen para analizar."
+            });
+        }
+
+        var resultado = await _roboflowService.AnalizarImagenAsync(request.ImagenBase64, request.NombreArchivo);
+        return Ok(resultado);
     }
 }

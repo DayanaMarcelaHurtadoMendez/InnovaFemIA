@@ -1,4 +1,4 @@
-﻿@model IEnumerable<InnovaFemIA.Web.Features.Biocomercio.Calculadoras.CultivoTiempoDto>
+@model IEnumerable<InnovaFemIA.Web.Features.Biocomercio.Calculadoras.CultivoTiempoDto>
 @using System.Text.Json
 @{
     ViewData["Title"] = "Calculadoras de Biocomercio — InnovaFemIA";
@@ -25,12 +25,15 @@
                 Herramientas basadas en recomendaciones de Cenicafé, Agrosavia e Infoagro para planificar tus labores, estimar cosechas, evaluar la rentabilidad de tu lote y calcular rendimientos de café.
             </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="~/biocomercio/mi-stock" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors flex items-center gap-1.5">
+                <span>📦</span> Mi stock
+            </a>
+            <a href="~/biocomercio/deteccion-enfermedades" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-morado border border-purple-200 transition-colors flex items-center gap-1.5">
+                <span>🔬</span> Detección de Enfermedades
+            </a>
             <span class="px-3.5 py-1.5 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1.5">
-                <span>☕</span> Cenicafé / FNC
-            </span>
-            <span class="px-3.5 py-1.5 rounded-full text-xs font-black bg-emerald-100 text-verde border border-emerald-200 flex items-center gap-1.5">
-                <span>🌱</span> Agrosavia
+                <span>☕</span> Cenicafé
             </span>
         </div>
     </div>
