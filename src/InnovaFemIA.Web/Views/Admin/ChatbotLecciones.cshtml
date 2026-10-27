@@ -60,16 +60,87 @@
         </div>
     }
 
-    <!-- Listado Modular de Lecciones -->
-    <div class="space-y-5">
+    <!-- Barra de Herramientas y Filtros del Catálogo de Lecciones -->
+    <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <!-- Buscador en Vivo -->
+            <div class="relative flex-1 w-full">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500 text-sm">🔍</span>
+                <input type="text" id="buscador-lecciones" oninput="filtrarLecciones()" onkeydown="if(event.key==='Escape') limpiarBuscador();"
+                       placeholder="Buscar por número o título (ej: 32, #32, café)..." 
+                       autocomplete="off"
+                       style="background-color: #ffffff !important; color: #111827 !important; -webkit-text-fill-color: #111827 !important; caret-color: #111827 !important;"
+                       class="w-full pl-10 pr-10 py-2.5 rounded-2xl border border-gray-300 bg-white text-gray-900 text-sm font-semibold placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none transition-all shadow-xs" />
+                <button type="button" id="btn-limpiar-busqueda" onclick="limpiarBuscador()" 
+                        class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-700 font-bold text-sm transition-colors"
+                        title="Limpiar búsqueda">✕</button>
+            </div>
+
+            <!-- Selector Rápido de Salto -->
+            <div class="shrink-0">
+                <select id="selector-ir-leccion" onchange="irALeccion(this.value)" 
+                        style="background-color: #f9fafb !important; color: #1f2937 !important; -webkit-text-fill-color: #1f2937 !important;"
+                        class="w-full sm:w-auto px-4 py-2.5 rounded-2xl border border-gray-200 text-sm font-bold bg-gray-50 text-gray-800 focus:ring-2 focus:ring-amber-500 cursor-pointer shadow-xs">
+                    <option value="">⚡ Ir a lección rápida...</option>
+                    @foreach (var l in leccionesList.OrderByDescending(x => x.NumeroLeccion))
+                    {
+                        <option value="@l.Id">#@l.NumeroLeccion — @l.Titulo (@l.TotalPreguntas preg.)</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 justify-end shrink-0">
+            <!-- Alternar Orden Más Recientes Primero / Secuencial -->
+            <button type="button" id="btn-orden-lecciones" onclick="alternarOrdenLecciones()" 
+                    class="h-10 px-4 bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold text-xs rounded-2xl border border-gray-200 shadow-sm flex items-center gap-1.5 transition-all">
+                <span>🔄</span>
+                <span id="texto-orden">Más recientes primero (última lección arriba)</span>
+            </button>
+
+            <!-- Acciones de Acordeón Global -->
+            <button type="button" onclick="expandirTodas()" 
+                    class="h-10 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs rounded-2xl border border-amber-200 shadow-sm transition-all">
+                ▼ Expandir todas
+            </button>
+            <button type="button" onclick="colapsarTodas()" 
+                    class="h-10 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold text-xs rounded-2xl border border-gray-200 shadow-sm transition-all">
+                ▲ Colapsar todas
+            </button>
+        </div>
+    </div>
+
+    <!-- Indicador de Resultados -->
+    <div class="flex items-center justify-between px-2 text-xs font-bold text-gray-400">
+        <span id="contador-lecciones-visibles">Mostrando @totalLecciones de @totalLecciones lecciones</span>
+        <span class="text-amber-800">💡 Las lecciones están colapsadas por defecto para facilitar la navegación rápida</span>
+    </div>
+
+    <!-- Mensaje si no hay coincidencias de búsqueda -->
+    <div id="mensaje-sin-resultados" class="hidden bg-white rounded-3xl border border-gray-100 p-8 text-center space-y-3 shadow-sm">
+        <span class="text-3xl block">🔍</span>
+        <h3 class="text-base font-black text-gray-800">No se encontraron lecciones</h3>
+        <p class="text-xs text-gray-500">No encontramos ninguna lección que coincida con tu búsqueda.</p>
+        <button type="button" onclick="limpiarBuscador()" class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl transition-all">
+            Limpiar filtro de búsqueda
+        </button>
+    </div>
+
+    <!-- Listado Modular de Lecciones (Ordenadas por defecto de mayor a menor para acceso inmediato a la última) -->
+    <div id="contenedor-lecciones" class="space-y-4">
         @if (leccionesList.Any())
         {
-            @foreach (var lec in leccionesList)
+            @foreach (var lec in leccionesList.OrderByDescending(l => l.NumeroLeccion))
             {
-                <div id="leccion-card-@lec.Id" class="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                <div id="leccion-card-@lec.Id" 
+                     data-id="@lec.Id"
+                     data-numero="@lec.NumeroLeccion"
+                     data-titulo="@Html.Raw(System.Web.HttpUtility.HtmlAttributeEncode(lec.Titulo))" 
+                     data-descripcion="@Html.Raw(System.Web.HttpUtility.HtmlAttributeEncode(lec.Descripcion ?? ""))"
+                     class="leccion-card bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
                     
-                    <!-- Cabecera de la Lección -->
-                    <div class="p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-gradient-to-r from-white via-white to-amber-50/20">
+                    <!-- Cabecera de la Lección (Siempre visible, compacta y accesible) -->
+                    <div class="p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-gradient-to-r from-white via-white to-amber-50/20">
                         <div class="flex items-start gap-4 flex-1 min-w-0">
                             <span class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 border border-amber-200/60 flex items-center justify-center font-black text-base shrink-0 shadow-inner">
                                 #@lec.NumeroLeccion
@@ -111,7 +182,7 @@
                             <button onclick="togglePreguntas(@lec.Id)" id="btn-toggle-@lec.Id"
                                     class="h-9 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200/80 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm">
                                 <span id="toggle-icon-@lec.Id">▼</span>
-                                <span class="hidden sm:inline">Ver preguntas</span>
+                                <span id="toggle-text-@lec.Id" class="hidden sm:inline">Preguntas (@lec.TotalPreguntas)</span>
                             </button>
 
                             <button onclick="confirmarEliminarLeccion(@lec.Id, '@lec.Titulo.Replace("'", "\\'")')" 
@@ -122,8 +193,8 @@
                         </div>
                     </div>
 
-                    <!-- Acordeón Desplegable con las Preguntas -->
-                    <div id="preguntas-container-@lec.Id" class="border-t border-gray-100 p-6 bg-gray-50/40 space-y-4">
+                    <!-- Acordeón Desplegable con las Preguntas (Cerrado por defecto) -->
+                    <div id="preguntas-container-@lec.Id" class="hidden border-t border-gray-100 p-6 bg-gray-50/40 space-y-4">
                         @if (lec.Preguntas != null && lec.Preguntas.Any())
                         {
                             <div class="grid grid-cols-1 gap-4">

@@ -50,7 +50,7 @@ services:
     restart: unless-stopped
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     environment:
       # Cadena de conexión interna al contenedor de base de datos
       ConnectionStrings__DefaultConnection: >-

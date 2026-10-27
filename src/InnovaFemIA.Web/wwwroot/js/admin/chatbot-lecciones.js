@@ -1,13 +1,139 @@
-// ─── Despliegue de Acordeón ──────────────────────────────────────────────
+// ─── Despliegue de Acordeón y Gestión del Catálogo ─────────────────────────
 function togglePreguntas(leccionId) {
     const container = document.getElementById(`preguntas-container-${leccionId}`);
     const icon = document.getElementById(`toggle-icon-${leccionId}`);
+    const text = document.getElementById(`toggle-text-${leccionId}`);
+    if (!container) return;
+
     if (container.classList.contains('hidden')) {
         container.classList.remove('hidden');
-        icon.innerText = '▲';
+        if (icon) icon.innerText = '▲';
+        if (text) text.innerText = 'Ocultar preguntas';
     } else {
         container.classList.add('hidden');
-        icon.innerText = '▼';
+        if (icon) icon.innerText = '▼';
+        if (text) text.innerText = 'Ver preguntas';
+    }
+}
+
+function expandirTodas() {
+    document.querySelectorAll('[id^="preguntas-container-"]').forEach(el => el.classList.remove('hidden'));
+    document.querySelectorAll('[id^="toggle-icon-"]').forEach(el => el.innerText = '▲');
+    document.querySelectorAll('[id^="toggle-text-"]').forEach(el => el.innerText = 'Ocultar preguntas');
+}
+
+function colapsarTodas() {
+    document.querySelectorAll('[id^="preguntas-container-"]').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('[id^="toggle-icon-"]').forEach(el => el.innerText = '▼');
+    document.querySelectorAll('[id^="toggle-text-"]').forEach(el => el.innerText = 'Ver preguntas');
+}
+
+function normalizarTexto(str) {
+    return (str || '')
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+}
+
+function filtrarLecciones() {
+    const inputEl = document.getElementById('buscador-lecciones');
+    const btnLimpiar = document.getElementById('btn-limpiar-busqueda');
+    const rawVal = inputEl ? inputEl.value : '';
+    const query = normalizarTexto(rawVal);
+
+    if (btnLimpiar) {
+        btnLimpiar.classList.toggle('hidden', rawVal.trim().length === 0);
+    }
+
+    const cards = document.querySelectorAll('.leccion-card');
+    let visibles = 0;
+
+    // Detectar si el usuario busca específicamente por número (ej: "32", "#32", "leccion 32", "lec 32")
+    const matchNumero = query.match(/^(?:#|leccion\s*|lección\s*|lec\s*)?(\d+)$/i);
+    const busquedaNumero = matchNumero ? matchNumero[1] : null;
+
+    // Palabras buscadas (separadas por espacio) para búsqueda flexible
+    const palabrasQuery = query.split(/\s+/).filter(p => p.length > 0);
+
+    cards.forEach(card => {
+        const numStr = String(card.getAttribute('data-numero') || '').trim();
+        const titulo = normalizarTexto(card.getAttribute('data-titulo') || '');
+        const desc = normalizarTexto(card.getAttribute('data-descripcion') || '');
+
+        let coincide = false;
+
+        if (palabrasQuery.length === 0) {
+            coincide = true;
+        } else if (busquedaNumero) {
+            // Si el usuario escribió un número (ej: 5, #5, leccion 5), match de lección exacta o que comience por ese número
+            coincide = (numStr === busquedaNumero) || (busquedaNumero.length > 1 && numStr.startsWith(busquedaNumero));
+        } else {
+            // Búsqueda por texto: cada palabra debe estar presente en el título, descripción o número
+            const textoIndexado = `${numStr} leccion ${numStr} #${numStr} ${titulo} ${desc}`;
+            coincide = palabrasQuery.every(palabra => textoIndexado.includes(palabra));
+        }
+
+        if (coincide) {
+            card.style.display = '';
+            visibles++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    const contador = document.getElementById('contador-lecciones-visibles');
+    if (contador) {
+        contador.innerText = `Mostrando ${visibles} de ${cards.length} lecciones`;
+    }
+
+    const sinResultados = document.getElementById('mensaje-sin-resultados');
+    if (sinResultados) {
+        sinResultados.classList.toggle('hidden', visibles > 0 || cards.length === 0);
+    }
+}
+
+function limpiarBuscador() {
+    const inputEl = document.getElementById('buscador-lecciones');
+    if (inputEl) {
+        inputEl.value = '';
+        inputEl.focus();
+    }
+    filtrarLecciones();
+}
+
+function irALeccion(id) {
+    if (!id) return;
+    const card = document.getElementById(`leccion-card-${id}`);
+    if (card) {
+        card.style.display = '';
+        const container = document.getElementById(`preguntas-container-${id}`);
+        if (container && container.classList.contains('hidden')) {
+            togglePreguntas(id);
+        }
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('ring-4', 'ring-amber-400');
+        setTimeout(() => card.classList.remove('ring-4', 'ring-amber-400'), 2500);
+    }
+}
+
+let ordenDescendente = true;
+function alternarOrdenLecciones() {
+    const contenedor = document.getElementById('contenedor-lecciones');
+    if (!contenedor) return;
+    const cards = Array.from(contenedor.querySelectorAll('.leccion-card'));
+    ordenDescendente = !ordenDescendente;
+
+    cards.sort((a, b) => {
+        const numA = parseInt(a.getAttribute('data-numero') || '0', 10);
+        const numB = parseInt(b.getAttribute('data-numero') || '0', 10);
+        return ordenDescendente ? (numB - numA) : (numA - numB);
+    });
+
+    cards.forEach(c => contenedor.appendChild(c));
+    const texto = document.getElementById('texto-orden');
+    if (texto) {
+        texto.innerText = ordenDescendente ? 'Más recientes primero (última lección arriba)' : 'Orden secuencial (lección 1 arriba)';
     }
 }
 

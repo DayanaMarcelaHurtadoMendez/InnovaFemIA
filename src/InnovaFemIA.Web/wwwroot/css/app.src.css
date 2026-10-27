@@ -30,6 +30,14 @@
   html {
     @apply scroll-smooth;
     font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 16.8px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @screen md {
+    html {
+      font-size: 19.2px;
+    }
   }
 
   body {
