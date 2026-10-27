@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
             
             // ── Coordenadas Reales de Caldono, Cauca (OpenStreetMap / DANE) ──
             const LAT_CALDONO = 2.8152;
@@ -206,13 +206,13 @@
                             // 2. Tarjeta flotante de vista previa (Google Maps Style)
                             const tooltipHtml = `
                                 <div style="font-family: inherit; line-height: 1.35;" class="flex items-center gap-3" onclick="window.mapaLeaflet?.closePopup(); window.abrirModalFamilia(${f.idFam});">
-                                    <div style="width: 40px; height: 40px; border-radius: 9999px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border: 2px solid #d1d5db; flex-shrink: 0;">
+                                    <div style="width: 44px; height: 44px; border-radius: 9999px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 2px solid #d1d5db; flex-shrink: 0;">
                                         ${f.fotoFam ? `<img src="${f.fotoFam}" style="width: 100%; height: 100%; object-fit: cover;" />` : '👩‍🌾'}
                                     </div>
                                     <div>
-                                        <span style="font-weight: 800; font-size: 16px; color: #111827; display: block; white-space: nowrap;">${f.nombreFam}</span>
-                                        <span style="font-weight: 600; font-size: 14px; color: #4b5563; display: block; white-space: nowrap; margin-top: 2px;">📍 Vereda ${f.veredaFam}</span>
-                                        ${cultivosPreview ? `<span style="font-size: 12px; color: #6b7280; display: block; margin-top: 3px; white-space: nowrap;">${cultivosPreview}</span>` : ''}
+                                        <span style="font-weight: 800; font-size: 19px; color: #111827; display: block; white-space: nowrap;">${f.nombreFam}</span>
+                                        <span style="font-weight: 600; font-size: 16.5px; color: #4b5563; display: block; white-space: nowrap; margin-top: 2px;">📍 Vereda ${f.veredaFam}</span>
+                                        ${cultivosPreview ? `<span style="font-size: 14.4px; color: #6b7280; display: block; margin-top: 3px; white-space: nowrap;">${cultivosPreview}</span>` : ''}
                                     </div>
                                 </div>
                             `;
@@ -310,18 +310,18 @@
                             });
 
                             const popupHtml = `
-                                <div class="w-64 bg-white p-3.5 rounded-2xl font-sans">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 inline-block mb-1">Asociación Campesina</span>
-                                    <h3 class="font-bold text-xs text-gray-900">${a.nombreActor}</h3>
-                                    <p class="text-[11px] text-gray-600 mt-1">${a.descActor}</p>
-                                    <p class="text-[10px] text-gray-400 mt-2 border-t border-gray-100 pt-1.5 font-medium">📞 ${a.contactoActor}</p>
+                                <div class="w-72 bg-white p-4 rounded-2xl font-sans">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 inline-block mb-1.5">Asociación Campesina</span>
+                                    <h3 class="font-extrabold text-base text-gray-900">${a.nombreActor}</h3>
+                                    <p class="text-sm text-gray-600 mt-1.5 leading-relaxed">${a.descActor}</p>
+                                    <p class="text-xs text-gray-500 mt-2.5 border-t border-gray-100 pt-2 font-bold">📞 ${a.contactoActor}</p>
                                 </div>
                             `;
 
                             const tooltipHtml = `
-                                <div style="line-height: 1.25;">
-                                    <span style="font-weight: 800; font-size: 11px; color: #111827; display: block;">🏛️ ${a.nombreActor}</span>
-                                    <span style="font-weight: 600; font-size: 9px; color: #b45309; display: block;">Asociación Campesina</span>
+                                <div style="line-height: 1.3; padding: 2px 4px;">
+                                    <span style="font-weight: 800; font-size: 13.2px; color: #111827; display: block;">🏛️ ${a.nombreActor}</span>
+                                    <span style="font-weight: 700; font-size: 11px; color: #b45309; display: block;">Asociación Campesina</span>
                                 </div>
                             `;
 
@@ -376,18 +376,18 @@
                             });
 
                             const popupHtml = `
-                                <div class="w-64 bg-white p-3.5 rounded-2xl font-sans">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 inline-block mb-1">Punto de Acopio / Compra</span>
-                                    <h3 class="font-bold text-xs text-gray-900">${a.nombreActor}</h3>
-                                    <p class="text-[11px] text-gray-600 mt-1">${a.descActor}</p>
-                                    <p class="text-[10px] text-gray-400 mt-2 border-t border-gray-100 pt-1.5 font-medium">📞 ${a.contactoActor}</p>
+                                <div class="w-72 bg-white p-4 rounded-2xl font-sans">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900 inline-block mb-1.5">Punto de Acopio / Compra</span>
+                                    <h3 class="font-extrabold text-base text-gray-900">${a.nombreActor}</h3>
+                                    <p class="text-sm text-gray-600 mt-1.5 leading-relaxed">${a.descActor}</p>
+                                    <p class="text-xs text-gray-500 mt-2.5 border-t border-gray-100 pt-2 font-bold">📞 ${a.contactoActor}</p>
                                 </div>
                             `;
 
                             const tooltipHtml = `
-                                <div style="line-height: 1.25;">
-                                    <span style="font-weight: 800; font-size: 11px; color: #111827; display: block;">🏬 ${a.nombreActor}</span>
-                                    <span style="font-weight: 600; font-size: 9px; color: #1d4ed8; display: block;">Punto de Acopio</span>
+                                <div style="line-height: 1.3; padding: 2px 4px;">
+                                    <span style="font-weight: 800; font-size: 13.2px; color: #111827; display: block;">🏬 ${a.nombreActor}</span>
+                                    <span style="font-weight: 700; font-size: 11px; color: #1d4ed8; display: block;">Punto de Acopio</span>
                                 </div>
                             `;
 

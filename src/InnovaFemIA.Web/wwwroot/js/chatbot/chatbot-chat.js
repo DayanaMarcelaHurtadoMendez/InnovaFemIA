@@ -1,5 +1,6 @@
-﻿// Catálogo de cultivos pre-cargado desde Razor (Solo cultivos que SI tienen contenidos en BD)
+// Catálogo de cultivos pre-cargado desde Razor (Solo cultivos que SI tienen contenidos en BD)
     const CULTIVOS_DATA = JSON.parse(document.getElementById('cultivos-data')?.textContent || '[]');
+    const getBasePath = () => (window.AppEndpoints ? window.AppEndpoints.base : (window.__PATH_BASE__ || window.AppPathBase || '').replace(/\/+$/, ''));
 
     // Estado del flujo actual
     let estadoActual = {
@@ -34,7 +35,7 @@
             <div class="w-9 h-9 rounded-2xl bg-verde text-white flex items-center justify-center text-base shrink-0 shadow-sm border border-verde">
                 👩‍🌾
             </div>
-            <div class="bg-white p-4 rounded-3xl rounded-tl-sm border border-gray-100 shadow-sm text-xs text-gray-800 space-y-3 leading-relaxed w-full">
+            <div class="bg-white p-4 rounded-3xl rounded-tl-sm border border-gray-100 shadow-sm text-sm text-gray-800 space-y-3 leading-relaxed w-full">
                 ${htmlContent}
             </div>
         `;
@@ -49,7 +50,7 @@
         wrapper.className = 'flex items-end justify-end gap-2 animate-fade-in';
         
         wrapper.innerHTML = `
-            <div class="bg-verde text-white px-4 py-3 rounded-3xl rounded-tr-sm shadow-md text-xs font-bold max-w-md">
+            <div class="bg-verde text-white px-4 py-3 rounded-3xl rounded-tr-sm shadow-md text-sm font-bold max-w-md">
                 ${texto}
             </div>
             <div class="w-8 h-8 rounded-full bg-emerald-100 text-verde flex items-center justify-center text-xs font-bold shrink-0">
@@ -93,7 +94,7 @@
                             <span class="text-[10px] text-indigo-700 font-normal">Cuándo sembrar y podar</span>
                         </div>
                     </button>
-                    <a href="/chatbot/lecciones" class="p-3 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-2xl border border-amber-200 text-left font-bold flex items-center gap-2 transition-all group">
+                    <a href="${getBasePath()}/chatbot/lecciones" class="p-3 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-2xl border border-amber-200 text-left font-bold flex items-center gap-2 transition-all group">
                         <span class="text-xl group-hover:scale-110 transition-transform">🎓</span>
                         <div>
                             <span class="block">Modo Lección</span>
@@ -284,7 +285,7 @@
         let fileUrl = '';
 
         if (rTieneArchivo) {
-            fileUrl = `/chatbot/recursos/${rId}/archivo`;
+            fileUrl = `${getBasePath()}/chatbot/recursos/${rId}/archivo`;
         } else if (rUrl) {
             fileUrl = rUrl;
         }
@@ -421,7 +422,7 @@
                     <button onclick="iniciarFlujoCultivos()" class="px-3 py-1.5 bg-gray-100 text-gray-800 font-bold rounded-xl text-xs">
                         🌱 Ver otros cultivos
                     </button>
-                    <a href="/chatbot/lecciones" class="px-3 py-1.5 bg-amber-100 text-amber-900 font-bold rounded-xl text-xs">
+                    <a href="${getBasePath()}/chatbot/lecciones" class="px-3 py-1.5 bg-amber-100 text-amber-900 font-bold rounded-xl text-xs">
                         🎓 Ir al Modo Lección
                     </a>
                 </div>

@@ -40,7 +40,11 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 // ─── MVC + RAZOR VIEWS + SERVICIOS CORE ───────────────────────────────────────
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddSingleton<InnovaFemIA.Web.Features.Shared.Services.IMediaCacheService, InnovaFemIA.Web.Features.Shared.Services.MediaCacheService>();
 builder.Services.AddScoped<InnovaFemIA.Web.Features.Biocomercio.DeteccionEnfermedades.IRoboflowEnfermedadesService, InnovaFemIA.Web.Features.Biocomercio.DeteccionEnfermedades.RoboflowEnfermedadesService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());

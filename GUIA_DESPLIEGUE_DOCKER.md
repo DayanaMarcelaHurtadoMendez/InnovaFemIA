@@ -105,6 +105,51 @@ Ambos contenedores deben mostrar estado `healthy` (saludable):
 
 ---
 
+## 🔄 Actualización en Servidor Existente (Preservando la Base de Datos al 100%)
+
+Cuando ya tienes la aplicación en producción y deseas subir una nueva versión o paquete con cambios (código, chatbot, recursos, estilos):
+
+### 1. Respaldo preventivo (Recomendado):
+```bash
+./manage.sh backup
+# O directamente:
+docker exec innovafemia-db mysqldump -u innovafemia_user -p"InnovaFemIA_Pass_2026!" --single-transaction InnovaFemIA > backup_previo_$(date +%Y%m%d_%H%M%S).sql
+```
+
+### 2. Actualizar binarios / código:
+Si usas el paquete ZIP pre-compilado (`InnovaFemIA-Despliegue.zip`):
+```bash
+unzip -o InnovaFemIA-Despliegue.zip -d /ruta/al/proyecto/InnovaFemIA
+# IMPORTANTE: No sobreescribir el archivo .env existente si ya tiene contraseñas configuradas
+```
+Si usas Git directamente en el servidor:
+```bash
+git pull origin develop
+```
+
+### 3. Reemplazar únicamente el contenedor web:
+```bash
+# Paso A: Detener el contenedor web actual
+docker compose stop innovafemia-web
+
+# Paso B: Eliminar el contenedor web viejo
+docker compose rm -f innovafemia-web
+
+# Paso C: Reconstruir la imagen web con los nuevos archivos
+docker compose build --no-cache innovafemia-web
+
+# Paso D: Iniciar el nuevo contenedor web
+docker compose up -d innovafemia-web
+```
+
+> 🛑 **REGLA DE ORO:**
+> **JAMÁS ejecutes `docker compose down -v`**, porque el flag `-v` destruye permanentemente el volumen de MySQL (`innovafemia_mysql_data`).
+> La base de datos `innovafemia-db` nunca se detiene ni se reinicia durante este proceso, manteniendo el almacenamiento 100% íntegro.
+
+*(Atajo alternativo en una sola línea: `docker compose up -d --build --no-deps innovafemia-web` o `./manage.sh rebuild`)*
+
+---
+
 ## ⚙️ Puertos y Configuración de Red
 
 | Servicio | Puerto Interno | Variable `.env` | Puerto Host por Defecto | Recomendación de Seguridad |

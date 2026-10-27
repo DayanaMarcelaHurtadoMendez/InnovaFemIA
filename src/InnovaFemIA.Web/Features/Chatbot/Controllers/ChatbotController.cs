@@ -140,17 +140,33 @@ public class ChatbotController : Controller
     [HttpGet("recursos/{id:int}/archivo")]
     public async Task<IActionResult> ServirArchivoRecurso(int id)
     {
-        var medio = await _mediaCacheService.ObtenerRutaMedioAsync(id);
-        if (medio == null || string.IsNullOrEmpty(medio.Value.FilePath))
+        try
         {
-            return NotFound("El archivo no se encuentra disponible.");
+            var medio = await _mediaCacheService.ObtenerRutaMedioAsync(id);
+            if (medio != null && !string.IsNullOrEmpty(medio.Value.FilePath) && System.IO.File.Exists(medio.Value.FilePath))
+            {
+                Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
+                Response.Headers["Accept-Ranges"] = "bytes";
+
+                // Kernel-mode zero-copy streaming con PhysicalFileResult (0% RAM / 0% CPU)
+                return PhysicalFile(medio.Value.FilePath, medio.Value.MimeType, enableRangeProcessing: true);
+            }
+        }
+        catch
+        {
+            // Fallback directo a base de datos si ocurre cualquier excepción de caché en disco
         }
 
-        Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
-        Response.Headers["Accept-Ranges"] = "bytes";
+        // Fallback resiliente: servir directamente desde MySQL con soporte para rangos HTTP (206)
+        var archivoDb = await _mediator.Send(new ObtenerArchivoRecursoQuery(id));
+        if (archivoDb.IsSuccess && archivoDb.Value != null && archivoDb.Value.Bytes.Length > 0)
+        {
+            Response.Headers["Cache-Control"] = "public, max-age=86400";
+            Response.Headers["Accept-Ranges"] = "bytes";
+            return File(archivoDb.Value.Bytes, archivoDb.Value.MimeType, archivoDb.Value.NombreArchivo, enableRangeProcessing: true);
+        }
 
-        // Kernel-mode zero-copy streaming con PhysicalFileResult (0% RAM / 0% CPU)
-        return PhysicalFile(medio.Value.FilePath, medio.Value.MimeType, enableRangeProcessing: true);
+        return NotFound("El archivo no se encuentra disponible.");
     }
 
     [HttpGet("lecciones/{id:int}/imagen")]

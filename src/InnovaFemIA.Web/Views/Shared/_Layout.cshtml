@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <meta name="color-scheme" content="light" />
+
     <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | InnovaFemIA" : "InnovaFemIA — Plataforma Orquídeas ICESI")</title>
     <meta name="description" content="@(ViewData["Description"] ?? "InnovaFemIA: Mapa de oportunidades, asistente educativo y biocomercio para mujeres rurales de ASCAMPESINA — Caldono, Cauca. Proyecto Orquídeas, Universidad ICESI.")" />
     <meta name="keywords" content="ASCAMPESINA, mujeres rurales, Caldon, biocomercio, soberanía alimentaria" />
@@ -26,6 +28,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="~/js/shared/tailwind.config.js" asp-append-version="true"></script>
     <style type="text/tailwindcss">
+        @@layer base {
+            html {
+                font-size: 16.8px; /* +20% exacto sobre 14px original en móvil */
+                -webkit-text-size-adjust: 100%;
+                color-scheme: light;
+            }
+            @@media (min-width: 768px) {
+                html {
+                    font-size: 19.2px; /* +20% exacto sobre 16px original en desktop */
+                }
+            }
+            body {
+                font-family: 'Outfit', system-ui, sans-serif;
+                color-scheme: light;
+            }
+            input, select, textarea {
+                color-scheme: light;
+            }
+        }
         @@layer components {
             .card { @@apply bg-white rounded-2xl p-5 transition-all duration-300; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
             .card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
@@ -42,6 +63,12 @@
             .nav-link { @@apply flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-gray-600 hover:text-morado hover:bg-morado-light transition-all duration-200; }
             .nav-link.active { @@apply text-morado bg-morado-light; }
         }
+
+        /* Micro-etiquetas con aumento proporcional exacto del +20% */
+        [class*="text-[9px]"] { font-size: 10.8px !important; }
+        [class*="text-[10px]"] { font-size: 12px !important; }
+        [class*="text-[11px]"] { font-size: 13.2px !important; }
+        [class*="text-[12px]"] { font-size: 14.4px !important; }
     </style>
 
     <!-- Favicon (emoji como data URI) -->

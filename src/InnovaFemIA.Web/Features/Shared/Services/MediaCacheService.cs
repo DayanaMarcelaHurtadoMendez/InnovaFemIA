@@ -37,9 +37,28 @@ public class MediaCacheService : IMediaCacheService
         var webRoot = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         _cacheDirectory = Path.Combine(webRoot, "media_cache");
 
-        if (!Directory.Exists(_cacheDirectory))
+        try
         {
-            Directory.CreateDirectory(_cacheDirectory);
+            if (!Directory.Exists(_cacheDirectory))
+            {
+                Directory.CreateDirectory(_cacheDirectory);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "No se pudo acceder o crear la carpeta {CacheDir}. Probando ruta alternativa en Temp.", _cacheDirectory);
+            try
+            {
+                _cacheDirectory = Path.Combine(Path.GetTempPath(), "innovafemia_media_cache");
+                if (!Directory.Exists(_cacheDirectory))
+                {
+                    Directory.CreateDirectory(_cacheDirectory);
+                }
+            }
+            catch (Exception exTemp)
+            {
+                _logger.LogError(exTemp, "Tampoco se pudo inicializar la caché temporal en {TempDir}.", _cacheDirectory);
+            }
         }
     }
 

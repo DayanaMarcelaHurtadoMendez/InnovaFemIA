@@ -114,8 +114,9 @@ function abrirModalCrearContenido() {
 
         let fileUrl = '';
         if (recurso.TieneArchivoEnBd) {
-            const base = (window.AppPathBase || '').replace(/\/$/, '');
-            fileUrl = `${base}/admin/chatbot/contenidos/${recurso.Id}/archivo`;
+            fileUrl = (window.AppEndpoints && window.AppEndpoints.admin)
+                ? window.AppEndpoints.admin.contenidoArchivo(recurso.Id)
+                : `${(window.__PATH_BASE__ || '').replace(/\/+$/, '')}/admin/chatbot/contenidos/${recurso.Id}/archivo`;
             filenameEl.innerText = `Archivo: ${recurso.ArchivoNombre || 'recurso'} (${(recurso.TamanoBytes / (1024 * 1024)).toFixed(1)} MB)`;
         } else {
             fileUrl = recurso.Url;
