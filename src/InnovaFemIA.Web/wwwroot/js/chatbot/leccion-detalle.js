@@ -1,4 +1,4 @@
-﻿const LECCION_DATA = JSON.parse(document.getElementById('leccion-data')?.textContent || '{}');
+const LECCION_DATA = JSON.parse(document.getElementById('leccion-data')?.textContent || '{}');
 
     let indicePregunta = 0;
     let opcionSeleccionada = null;
@@ -49,7 +49,7 @@
                     </div>
                     ${p.TieneImagenExplicativa ? `
                         <div class="rounded-xl overflow-hidden shadow-xs border border-emerald-200 max-h-48 bg-white">
-                            <img src="/chatbot/preguntas/${p.Id}/imagen" alt="Ilustración explicativa" class="w-full h-full object-cover max-h-48" />
+                            <img src="${(window.__PATH_BASE__ || window.AppPathBase || '').replace(/\/+$/, '')}/chatbot/preguntas/${p.Id}/imagen" alt="Ilustración explicativa" class="w-full h-full object-cover max-h-48" />
                         </div>
                     ` : ''}
                     ${p.ContenidoExplicativo ? `<p class="text-xs text-verde leading-relaxed">${p.ContenidoExplicativo}</p>` : ''}

@@ -71,9 +71,9 @@ ENV PATH_BASE=/innovafemia
 # Copiar artefactos compilados desde la etapa de construcción
 COPY --from=build /app/publish .
 
-# Crear carpetas requeridas y otorgar permisos 755 y propiedad al usuario 'app'
+# Crear carpetas requeridas y otorgar permisos de lectura/escritura y propiedad al usuario 'app'
 RUN mkdir -p /app/wwwroot/media_cache /app/wwwroot/uploads \
-    && chmod -R 755 /app \
+    && chmod -R 777 /app/wwwroot/media_cache /app/wwwroot/uploads \
     && chown -R app:app /app
 
 # Ejecutar el contenedor bajo usuario no privilegiado por seguridad

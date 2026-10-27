@@ -55,7 +55,7 @@
                             <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-verde border border-emerald-200/80 flex items-center justify-center text-2xl shrink-0 font-black shadow-inner overflow-hidden">
                                 @if (leccion.TieneImagen)
                                 {
-                                    <img src="/chatbot/lecciones/@leccion.Id/imagen" alt="@leccion.Titulo" class="w-full h-full object-cover" />
+                                    <img src="~/chatbot/lecciones/@leccion.Id/imagen" alt="@leccion.Titulo" class="w-full h-full object-cover" />
                                 }
                                 else
                                 {
@@ -85,7 +85,7 @@
                         <!-- Botón de Acción -->
                         <div class="shrink-0 w-full sm:w-auto">
                             <a id="btn-accion-@leccion.Id" 
-                               href="/chatbot/lecciones/@leccion.Id" 
+                               href="~/chatbot/lecciones/@leccion.Id" 
                                class="btn-leccion w-full sm:w-auto px-5 py-3 bg-emerald-600 hover:bg-verde text-white font-extrabold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2">
                                 <span>🚀</span>
                                 <span>Empezar Lección</span>

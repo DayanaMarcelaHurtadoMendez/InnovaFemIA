@@ -76,13 +76,14 @@ WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV PATH_BASE=/innovafemia
 
 # Copiar binarios pre-compilados (.dll)
 COPY app/ .
 
-# Otorgar permisos 755 completos y propiedad al usuario no privilegiado 'app'
+# Otorgar permisos 777 completos a las carpetas de medios y subidas, y propiedad al usuario 'app'
 RUN mkdir -p /app/wwwroot/media_cache /app/wwwroot/uploads \
-    && chmod -R 755 /app \
+    && chmod -R 777 /app/wwwroot/media_cache /app/wwwroot/uploads \
     && chown -R app:app /app
 
 USER app
@@ -93,7 +94,13 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 
 ENTRYPOINT ["dotnet", "InnovaFemIA.Web.dll"]
 "@
+# Guardar Dockerfile tanto en la raiz del paquete como en docker/ para compatibilidad con cualquier orquestador
 Set-Content -Path "$Destino\docker\Dockerfile" -Value $DockerfileContenido -Encoding UTF8
+Set-Content -Path "$Destino\Dockerfile" -Value $DockerfileContenido -Encoding UTF8
+
+if (Test-Path "$Raiz\.dockerignore") {
+    Copy-Item "$Raiz\.dockerignore" "$Destino\.dockerignore" -Force
+}
 
 # Docker Compose listo para el paquete de entrega
 $ComposeContenido = @"
@@ -139,13 +146,14 @@ services:
     restart: unless-stopped
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     environment:
       ConnectionStrings__DefaultConnection: >-
         Server=innovafemia-db;Port=3306;Database=`${DB_DATABASE:-InnovaFemIA};User=`${DB_USER:-innovafemia_user};Password=`${DB_PASSWORD:-InnovaFemIA_Pass_2026!};Allow User Variables=true;SslMode=None;
       ASPNETCORE_ENVIRONMENT: `${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
       DOTNET_RUNNING_IN_CONTAINER: "true"
+      PATH_BASE: `${PATH_BASE:-/innovafemia}
       Admin__UsuarioPorDefecto: `${ADMIN_USER:-admin}
       Admin__ContrasenaPorDefecto: `${ADMIN_PASSWORD:-InnovaFemIA2026!}
       Admin__EmailPorDefecto: `${ADMIN_EMAIL:-dayana.hurtado@estudiante.fup.edu.co}
@@ -180,29 +188,143 @@ Set-Content -Path "$Destino\docker-compose.yml" -Value $ComposeContenido -Encodi
 
 Copy-Item "$Raiz\manage.sh" "$Destino\manage.sh" -Force
 
-# Guia de despliegue compacta dentro del paquete
+# Guia de despliegue y actualizacion detallada dentro del paquete
 $ReadmeContenido = @"
-# Despliegue de InnovaFemIA en Servidor Linux
+# Guia de Despliegue y Actualizacion - InnovaFemIA (Proyecto Completo)
 
-Este paquete contiene la version de produccion pre-compilada de **InnovaFemIA** lista para iniciar con Docker.
+Este documento detalla el procedimiento para:
+1. **Actualizacion en un servidor de produccion existente** que ya tiene los contenedores en ejecucion (``innovafemia-web`` e ``innovafemia-db``), **preservando al 100% la base de datos MySQL y sin borrar ningun registro**.
+2. **Despliegue inicial desde cero.**
 
-## Instrucciones de Inicio Rapido:
+---
 
-1. Configure sus contrasenas en el archivo de entorno .env:
-   nano .env
+## Opcion A: Actualizar un Servidor que YA esta en Produccion (Sin Borrar la BD)
 
-2. Inicie los contenedores (usando --build para compilar la imagen local con todos los recursos y permisos):
-   docker compose up -d --build
-   (o ejecute: ./manage.sh rebuild)
+Si ya tienes la plataforma publicada y solo deseas subir los nuevos cambios (correcciones del chatbot, recursos multimedia, nuevas vistas o ajustes de interfaz):
 
-3. Verifique el estado de salud:
+### Paso 0: Respaldo Preventivo de la Base de Datos (Recomendado)
+Antes de actualizar, genera una copia de seguridad en caliente de la base de datos MySQL existente:
+
+````bash
+# Opcion 1: Usando el script de control
+./manage.sh backup
+
+# Opcion 2: Ejecutando mysqldump directamente en el contenedor
+docker exec innovafemia-db mysqldump -u innovafemia_user -p"InnovaFemIA_Pass_2026!" --single-transaction InnovaFemIA > backup_previo_`$(date +%Y%m%d_%H%M%S).sql
+````
+*Nota: El volumen de datos de MySQL (``innovafemia_mysql_data``) se conserva intacto en los siguientes pasos.*
+
+---
+
+### Paso 1: Extraer los Nuevos Archivos en el Servidor
+1. Transfiere el archivo ``InnovaFemIA-Despliegue.zip`` al servidor de produccion.
+2. Extrae el contenido en el directorio del proyecto para actualizar la carpeta ``app/`` y el ``Dockerfile``:
+   ````bash
+   unzip -o InnovaFemIA-Despliegue.zip -d /ruta/al/proyecto/InnovaFemIA
+   cd /ruta/al/proyecto/InnovaFemIA
+   ````
+   > **ATENCION con el archivo ``.env``:**
+   > Si ya configuraste contrasenas o puertos en el ``.env`` existente del servidor, **NO lo sobreescribas**. Solo verifica que contenga la variable de sub-ruta:
+   > ````env
+   > PATH_BASE=/innovafemia
+   > ````
+
+---
+
+### Paso 2: Detener y Remover Unicamente el Contenedor Web
+Para actualizar la aplicacion sin interrumpir ni reiniciar el motor de base de datos MySQL:
+
+````bash
+# 1. Detener unicamente el servicio web
+docker compose stop innovafemia-web
+
+# 2. Eliminar el contenedor web anterior
+docker compose rm -f innovafemia-web
+````
+
+> **ADVERTENCIA CRITICA:**
+> **JAMAS ejecutes ``docker compose down -v``**, ya que el parametro ``-v`` (volumes) borraria permanentemente los datos fisicos de la base de datos.
+> La base de datos ``innovafemia-db`` puede seguir corriendo mientras reemplazas ``innovafemia-web``.
+
+---
+
+### Paso 3: Reconstruir la Imagen Web
+Reconstruye la imagen de Docker para incorporar los nuevos binarios precompilados y los permisos en la cache:
+
+````bash
+docker compose build --no-cache innovafemia-web
+````
+
+---
+
+### Paso 4: Iniciar el Servicio Web Actualizado
+Inicia el nuevo contenedor web en segundo plano:
+
+````bash
+docker compose up -d innovafemia-web
+````
+
+*(Atajo alternativo en un solo paso: ``docker compose up -d --build --no-deps innovafemia-web`` o ``./manage.sh rebuild``)*
+
+---
+
+### Paso 5: Verificar Estado y Logs
+1. Comprueba que ambos servicios esten saludables (``healthy``):
+   ````bash
    docker compose ps
-   (ambos contenedores deben mostrar estado 'healthy')
+   ````
+   *Ambos servicios (``innovafemia-db`` e ``innovafemia-web``) deben figurar como ``Up`` y ``(healthy)``.*
 
-Para realizar copias de seguridad:
-   ./manage.sh backup
+2. Revisa los registros del arranque:
+   ````bash
+   docker compose logs -f --tail=30 innovafemia-web
+   ````
+   *(Presiona ``Ctrl + C`` para salir de los logs).*
+
+---
+
+### Paso 6: Verificacion en el Navegador
+Accede a traves del dominio con el sub-path configurado (``/innovafemia``):
+- **Inicio / Portal:** ``https://tudominio.com/innovafemia``
+- **Asistente Educativo (Chatbot Asalia):** ``https://tudominio.com/innovafemia/chatbot``
+- **Modo Leccion (Trivias Campesinas):** ``https://tudominio.com/innovafemia/chatbot/lecciones``
+- **Biocomercio y Deteccion IA:** ``https://tudominio.com/innovafemia/biocomercio``
+- **Mapa Interactivo:** ``https://tudominio.com/innovafemia/mapa``
+- **Calendario Lunar Agricola:** ``https://tudominio.com/innovafemia/mapa/lunar``
+- **Indicadores DANE SIPSA:** ``https://tudominio.com/innovafemia/mapa/precios``
+- **Panel Administrador:** ``https://tudominio.com/innovafemia/admin/login``
+
+---
+
+## Opcion B: Despliegue Inicial Desde Cero (Primer Despliegue)
+
+Si estas instalando la aplicacion por primera vez en un servidor nuevo:
+
+1. Configura tus credenciales y puertos en ``.env``:
+   ````bash
+   nano .env
+   ````
+2. Inicia los contenedores por primera vez:
+   ````bash
+   docker compose up -d --build
+   ````
+3. Verifica que ambos contenedores esten listos:
+   ````bash
+   docker compose ps
+   ````
+
+---
+
+## Plan de Reversion (Rollback de Emergencia)
+Si por cualquier motivo requieres volver a la version previa:
+1. Reemplaza los archivos de la carpeta ``app/`` con tu respaldo anterior.
+2. Ejecuta:
+   ````bash
+   docker compose build --no-cache innovafemia-web
+   docker compose up -d innovafemia-web
+   ````
 "@
-Set-Content -Path "$Destino\INSTRUCCIONES_DESPLIEGUE.md" -Value $ReadmeContenido -Encoding UTF8
+[System.IO.File]::WriteAllText("$Destino\INSTRUCCIONES_DESPLIEGUE.md", $ReadmeContenido, [System.Text.Encoding]::UTF8)
 
 Write-Host "[4/5] Comprimiendo paquete en dist\InnovaFemIA-Despliegue.zip (formato ZIP estándar)..." -ForegroundColor Yellow
 $ZipDest = Join-Path $Raiz "dist\InnovaFemIA-Despliegue.zip"
