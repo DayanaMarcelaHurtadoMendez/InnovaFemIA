@@ -87,31 +87,9 @@ public class MediaCacheService : IMediaCacheService
                 return (cacheFilePath, cachedMime, cachedName);
             }
 
-            _logger.LogInformation("Extrayendo medio #{Id} desde la base de datos a la caché local...", contenidoId);
-
-            using var scope = _serviceProvider.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var contenido = await db.ContenidosChatbot
-                .Where(c => c.Id == contenidoId)
-                .Select(c => new { c.ArchivoBytes, c.ArchivoMimeType, c.ArchivoNombre })
-                .FirstOrDefaultAsync(ct);
-
-            if (contenido == null || contenido.ArchivoBytes == null || contenido.ArchivoBytes.Length == 0)
-            {
-                return null;
-            }
-
-            var mime = string.IsNullOrWhiteSpace(contenido.ArchivoMimeType) ? "application/octet-stream" : contenido.ArchivoMimeType;
-            var name = string.IsNullOrWhiteSpace(contenido.ArchivoNombre) ? $"recurso_{contenidoId}.dat" : contenido.ArchivoNombre;
-
-            // Guardar archivo binario y metadatos en disco local
-            await File.WriteAllBytesAsync(cacheFilePath, contenido.ArchivoBytes, ct);
-            await File.WriteAllLinesAsync(metaFilePath, [mime, name], ct);
-
-            _logger.LogInformation("Medio #{Id} almacenado exitosamente en caché local ({Size:F1} MB).", contenidoId, contenido.ArchivoBytes.Length / (1024.0 * 1024.0));
-
-            return (cacheFilePath, mime, name);
+            // En el Módulo de Mapa, sirve medios cacheados en disco
+            await Task.CompletedTask;
+            return null;
         }
         catch (Exception ex)
         {

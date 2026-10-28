@@ -10,7 +10,6 @@ public record AdminDashboardDto(
     int TotalAsociaciones,
     int TotalPuntosCompra,
     int TotalCultivos,
-    int TotalCuentasFamilias,
     int TotalReglasLunares,
     int TotalErroresLog,
     List<UltimoLogErrorDto> UltimosErrores
@@ -35,7 +34,6 @@ public class ObtenerDashboardHandler : IRequestHandler<ObtenerDashboardQuery, Re
         var totalAsociaciones = await _db.ActoresMapa.CountAsync(a => a.TipoActor == Shared.Entities.TipoActorMapa.Asociacion, cancellationToken);
         var totalPuntosCompra = await _db.ActoresMapa.CountAsync(a => a.TipoActor == Shared.Entities.TipoActorMapa.PuntoCompra, cancellationToken);
         var totalCultivos = await _db.Cultivos.CountAsync(cancellationToken);
-        var totalCuentas = await _db.UsuariosFamilias.CountAsync(cancellationToken);
         var totalReglasLunares = await _db.ReglasLunares.CountAsync(cancellationToken);
         var totalErrores = await _db.RegistrosSistema.CountAsync(r => r.TipoEvento.Contains("Error"), cancellationToken);
 
@@ -51,7 +49,6 @@ public class ObtenerDashboardHandler : IRequestHandler<ObtenerDashboardQuery, Re
             totalAsociaciones,
             totalPuntosCompra,
             totalCultivos,
-            totalCuentas,
             totalReglasLunares,
             totalErrores,
             ultimosErrores

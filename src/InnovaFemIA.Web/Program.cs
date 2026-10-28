@@ -46,9 +46,7 @@ builder.Services.AddControllersWithViews()
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 builder.Services.AddSingleton<InnovaFemIA.Web.Features.Shared.Services.IMediaCacheService, InnovaFemIA.Web.Features.Shared.Services.MediaCacheService>();
-builder.Services.AddScoped<InnovaFemIA.Web.Features.Biocomercio.DeteccionEnfermedades.IRoboflowEnfermedadesService, InnovaFemIA.Web.Features.Biocomercio.DeteccionEnfermedades.RoboflowEnfermedadesService>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
-
 // ─── SESIÓN (cookies para Admin y Familias) ───────────────────────────────────
 var sesionExpiracion = builder.Configuration.GetValue<int>("Sesion:TiempoExpiracionMinutos", 60);
 
@@ -87,19 +85,6 @@ builder.Services.AddAuthentication(options =>
     options.ExpireTimeSpan = TimeSpan.FromMinutes(sesionExpiracion);
     options.SlidingExpiration = true;
     options.Cookie.Name = "InnovaFemIA.Admin";
-    options.Cookie.HttpOnly = true;
-    options.Cookie.Path = "/";
-    options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-})
-.AddCookie("InnovaFemIA.Familia", options =>
-{
-    options.LoginPath = "/biocomercio/login";
-    options.LogoutPath = "/biocomercio/logout";
-    options.AccessDeniedPath = "/biocomercio/acceso-denegado";
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(sesionExpiracion);
-    options.SlidingExpiration = true;
-    options.Cookie.Name = "InnovaFemIA.Familia";
     options.Cookie.HttpOnly = true;
     options.Cookie.Path = "/";
     options.Cookie.SameSite = SameSiteMode.Lax;

@@ -1,6 +1,5 @@
-@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
-    bool soloMapa = Configuration.GetValue<bool>("ModoMapaSolo", false);
+    bool soloMapa = true;
     bool esAdmin = User.Identity?.IsAuthenticated == true && (User.IsInRole("Administrador") || User.IsInRole("Admin"));
 }
 @* Navbar principal de InnovaFemIA — visible en toda la plataforma *@
@@ -154,13 +153,6 @@
                     <a href="~/admin/logout" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-sm mt-3 transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" /></svg>
                         <span>Cerrar Sesión (Admin)</span>
-                    </a>
-                }
-                else if (User.Identity?.IsAuthenticated == true)
-                {
-                    <a href="~/biocomercio/logout" class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-sm mt-3 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" /></svg>
-                        <span>Cerrar Sesión (Familia)</span>
                     </a>
                 }
             </div>

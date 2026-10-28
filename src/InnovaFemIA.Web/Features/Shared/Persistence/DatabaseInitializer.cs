@@ -79,21 +79,6 @@ public static class DatabaseInitializer
     /// </summary>
     private static async Task EnsureSchemaCompatibilityAsync(AppDbContext db, ILogger logger)
     {
-        try
-        {
-            // Sincronizar nombres de temas oficiales del chatbot si hay registros previos
-            await db.Database.ExecuteSqlRawAsync(@"
-                UPDATE ContenidosChatbot SET Tema = 'Siembra' WHERE Tema = 'CuandoSembrar';
-                UPDATE ContenidosChatbot SET Tema = 'Cosecha' WHERE Tema = 'CuandoCosechar';
-                UPDATE ContenidosChatbot SET Tema = 'AbonadoNutricion' WHERE Tema = 'Abonado';
-                UPDATE ContenidosChatbot SET Tema = 'PlagasEnfermedades' WHERE Tema = 'PlagasEnfermedades';
-                UPDATE ContenidosChatbot SET Tema = 'PodasManejo' WHERE Tema IN ('PodaMantenimiento', 'ManejoAgroecologico');
-                UPDATE ContenidosChatbot SET Tema = 'Riego' WHERE Tema = 'RiegoDrenaje';
-                UPDATE ContenidosChatbot SET Tema = 'PostcosechaAlmacenamiento' WHERE Tema = 'PostcosechaManejo';
-                UPDATE ContenidosChatbot SET Tema = 'Comercializacion' WHERE Tema = 'ComercializacionCalidad';
-            ");
-        }
-        catch { }
 
         try
         {

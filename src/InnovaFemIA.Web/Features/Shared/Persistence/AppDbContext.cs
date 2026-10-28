@@ -23,15 +23,6 @@ public class AppDbContext : DbContext
     public DbSet<BoletinSipsaInfo> BoletinesSipsaInfo => Set<BoletinSipsaInfo>();
     public DbSet<ReglasLunares> ReglasLunares => Set<ReglasLunares>();
 
-    // ─── Módulo 3 — Biocomercio ────────────────────────────────────────────
-    public DbSet<CultivoTiempo> CultivosTiempos => Set<CultivoTiempo>();
-    public DbSet<UsuarioFamilia> UsuariosFamilias => Set<UsuarioFamilia>();
-
-    // ─── Módulo 2 — Chatbot ────────────────────────────────────────────────
-    public DbSet<ContenidoChatbot> ContenidosChatbot => Set<ContenidoChatbot>();
-    public DbSet<LeccionChatbot> LeccionesChatbot => Set<LeccionChatbot>();
-    public DbSet<PreguntaLeccion> PreguntasLecciones => Set<PreguntaLeccion>();
-    public DbSet<OpcionPregunta> OpcionesPregunta => Set<OpcionPregunta>();
 
     // ─── Sistema ───────────────────────────────────────────────────────────
     public DbSet<Administrador> Administradores => Set<Administrador>();
@@ -212,47 +203,6 @@ public class AppDbContext : DbContext
         });
 
         // ── CultivoTiempo ─────────────────────────────────────────────────
-        modelBuilder.Entity<CultivoTiempo>(e =>
-        {
-            e.ToTable("CultivosTiempos");
-            e.HasKey(ct => ct.Id);
-            e.Property(ct => ct.Actividad).IsRequired().HasConversion<string>().HasMaxLength(50);
-            e.Property(ct => ct.DescripcionTemplate).HasMaxLength(500);
-            e.Property(ct => ct.Notas).HasMaxLength(500);
-
-            e.HasOne(ct => ct.Cultivo)
-                .WithMany(c => c.CultivosTiempos)
-                .HasForeignKey(ct => ct.CultivoId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Seed: tiempos estándar de cosecha por cultivo y actividad
-            e.HasData(
-                new CultivoTiempo { Id = 1, CultivoId = 1, Actividad = ActividadAgricola.Siembra, MesesHastaCosecha = 8, DescripcionTemplate = "Tu café sembrado el {fecha} estaría listo para cosechar aproximadamente en {mes} de {año}" },
-                new CultivoTiempo { Id = 2, CultivoId = 2, Actividad = ActividadAgricola.Siembra, MesesHastaCosecha = 9, DescripcionTemplate = "Tu plátano sembrado el {fecha} estaría listo para cosechar aproximadamente en {mes} de {año}" },
-                new CultivoTiempo { Id = 3, CultivoId = 3, Actividad = ActividadAgricola.Siembra, MesesHastaCosecha = 14, DescripcionTemplate = "Tu aguacate sembrado el {fecha} estaría listo para cosechar aproximadamente en {mes} de {año}" },
-                new CultivoTiempo { Id = 4, CultivoId = 4, Actividad = ActividadAgricola.Siembra, MesesHastaCosecha = 6, DescripcionTemplate = "Tu yuca sembrada el {fecha} estaría lista para cosechar aproximadamente en {mes} de {año}" },
-                new CultivoTiempo { Id = 5, CultivoId = 5, Actividad = ActividadAgricola.Siembra, MesesHastaCosecha = 12, DescripcionTemplate = "Tu caña sembrada el {fecha} estaría lista para cosechar aproximadamente en {mes} de {año}" },
-                new CultivoTiempo { Id = 6, CultivoId = 6, Actividad = ActividadAgricola.Siembra, MesesHastaCosecha = 4, DescripcionTemplate = "Tu maíz sembrado el {fecha} estaría listo para cosechar aproximadamente en {mes} de {año}" },
-                new CultivoTiempo { Id = 7, CultivoId = 7, Actividad = ActividadAgricola.Siembra, MesesHastaCosecha = 5, DescripcionTemplate = "Tu limón sembrado el {fecha} estaría listo para cosechar aproximadamente en {mes} de {año}" }
-            );
-        });
-
-        // ── UsuarioFamilia ─────────────────────────────────────────────────
-        modelBuilder.Entity<UsuarioFamilia>(e =>
-        {
-            e.ToTable("UsuariosFamilias");
-            e.HasKey(u => u.Id);
-            e.HasIndex(u => u.NombreUsuario).IsUnique();
-            e.Property(u => u.NombreUsuario).IsRequired().HasMaxLength(100);
-            e.Property(u => u.HashContrasena).IsRequired().HasMaxLength(256);
-            e.Property(u => u.Activo).HasDefaultValue(true);
-            e.Property(u => u.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
-
-            e.HasOne(u => u.Familia)
-                .WithOne(f => f.UsuarioFamilia)
-                .HasForeignKey<UsuarioFamilia>(u => u.FamiliaId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
 
         // ── Administrador ─────────────────────────────────────────────────
         modelBuilder.Entity<Administrador>(e =>
@@ -296,68 +246,5 @@ public class AppDbContext : DbContext
             e.HasIndex(r => new { r.Modulo, r.FechaHoraUtc });
         });
 
-        // ── ContenidoChatbot ──────────────────────────────────────────────
-        modelBuilder.Entity<ContenidoChatbot>(e =>
-        {
-            e.ToTable("ContenidosChatbot");
-            e.HasKey(c => c.Id);
-            e.Property(c => c.Tema).IsRequired().HasConversion<string>().HasMaxLength(50);
-            e.Property(c => c.TipoRecurso).IsRequired().HasConversion<string>().HasMaxLength(20);
-            e.Property(c => c.Titulo).IsRequired().HasMaxLength(200);
-            e.Property(c => c.Url).HasMaxLength(500);
-            e.Property(c => c.ArchivoBytes).HasColumnType("LONGBLOB");
-            e.Property(c => c.ArchivoMimeType).HasMaxLength(50);
-            e.Property(c => c.ArchivoNombre).HasMaxLength(200);
-            e.Property(c => c.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
-            e.HasIndex(c => new { c.CultivoId, c.Tema, c.Orden });
-
-            e.HasOne(c => c.Cultivo)
-                .WithMany(cu => cu.ContenidosChatbot)
-                .HasForeignKey(c => c.CultivoId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        // ── LeccionChatbot ────────────────────────────────────────────────
-        modelBuilder.Entity<LeccionChatbot>(e =>
-        {
-            e.ToTable("LeccionesChatbot");
-            e.HasKey(l => l.Id);
-            e.HasIndex(l => l.NumeroLeccion).IsUnique();
-            e.Property(l => l.Titulo).IsRequired().HasMaxLength(200);
-            e.Property(l => l.Descripcion).HasMaxLength(500);
-            e.Property(l => l.ImagenBytes).HasColumnType("LONGBLOB");
-            e.Property(l => l.ImagenMimeType).HasMaxLength(50);
-            e.Property(l => l.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
-        });
-
-        // ── PreguntaLeccion ───────────────────────────────────────────────
-        modelBuilder.Entity<PreguntaLeccion>(e =>
-        {
-            e.ToTable("PreguntasLecciones");
-            e.HasKey(p => p.Id);
-            e.Property(p => p.TextoPregunta).IsRequired().HasMaxLength(500);
-            e.Property(p => p.ContenidoExplicativo).HasColumnType("TEXT");
-            e.Property(p => p.ImagenExplicativaBytes).HasColumnType("LONGBLOB");
-            e.Property(p => p.ImagenExplicativaMimeType).HasMaxLength(50);
-
-            e.HasOne(p => p.Leccion)
-                .WithMany(l => l.Preguntas)
-                .HasForeignKey(p => p.LeccionId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        // ── OpcionPregunta ─────────────────────────────────────────────────
-        modelBuilder.Entity<OpcionPregunta>(e =>
-        {
-            e.ToTable("OpcionesPregunta");
-            e.HasKey(o => o.Id);
-            e.Property(o => o.TextoOpcion).IsRequired().HasMaxLength(300);
-            e.Property(o => o.Retroalimentacion).HasMaxLength(500);
-
-            e.HasOne(o => o.Pregunta)
-                .WithMany(p => p.Opciones)
-                .HasForeignKey(o => o.PreguntaId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
     }
 }

@@ -54,5 +54,4 @@ public class Familia
     // Navegación
     public ICollection<FamiliaCultivo> FamiliaCultivos { get; set; } = [];
     public ICollection<Stock> Stocks { get; set; } = [];
-    public UsuarioFamilia? UsuarioFamilia { get; set; }
 }

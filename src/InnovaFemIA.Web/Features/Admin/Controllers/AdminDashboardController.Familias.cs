@@ -1,5 +1,4 @@
 using InnovaFemIA.Web.Features.Admin.GestionActores;
-using InnovaFemIA.Web.Features.Admin.GestionCuentasFamilias;
 using InnovaFemIA.Web.Features.Admin.GestionFamilias;
 using InnovaFemIA.Web.Features.Shared.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -161,47 +160,5 @@ public partial class AdminDashboardController
         if (!result.IsSuccess) TempData["Error"] = result.Error;
         else TempData["Exito"] = "Actor eliminado exitosamente.";
         return RedirectToAction("Actores");
-    }
-
-    // ── MÓDULO 3: GESTIÓN DE CUENTAS DE FAMILIAS (BIOCOMERCIO) ───────────────
-    [HttpGet("biocomercio/cuentas")]
-    [HttpGet("cuentas-familias")]
-    public async Task<IActionResult> CuentasFamilias()
-    {
-        var result = await _mediator.Send(new ObtenerCuentasFamiliasQuery());
-        var familiasResult = await _mediator.Send(new ObtenerFamiliasAdminQuery());
-        
-        ViewBag.Familias = familiasResult.Value ?? [];
-        return View("~/Views/Admin/CuentasFamilias.cshtml", result.Value);
-    }
-
-    [HttpPost("cuentas-familias/crear")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CrearCuentaFamilia([FromForm] CrearCuentaFamiliaCommand command)
-    {
-        var result = await _mediator.Send(command);
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Cuenta de familia creada exitosamente.";
-        return RedirectToAction("CuentasFamilias");
-    }
-
-    [HttpPost("cuentas-familias/editar")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditarCuentaFamilia([FromForm] EditarCuentaFamiliaCommand command)
-    {
-        var result = await _mediator.Send(command);
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Cuenta de familia actualizada exitosamente.";
-        return RedirectToAction("CuentasFamilias");
-    }
-
-    [HttpPost("cuentas-familias/eliminar")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EliminarCuentaFamilia([FromForm] int id)
-    {
-        var result = await _mediator.Send(new EliminarCuentaFamiliaCommand(id));
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Cuenta de familia eliminada exitosamente.";
-        return RedirectToAction("CuentasFamilias");
     }
 }

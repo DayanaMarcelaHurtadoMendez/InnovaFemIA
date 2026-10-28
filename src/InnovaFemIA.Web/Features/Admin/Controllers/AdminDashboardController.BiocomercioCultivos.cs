@@ -1,7 +1,5 @@
 using InnovaFemIA.Web.Features.Admin.GestionCultivos;
 using InnovaFemIA.Web.Features.Admin.GestionReglasLunares;
-using InnovaFemIA.Web.Features.Admin.GestionStockConsolidado;
-using InnovaFemIA.Web.Features.Admin.GestionTiemposCosecha;
 using InnovaFemIA.Web.Features.Shared.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -87,54 +85,5 @@ public partial class AdminDashboardController
         if (!result.IsSuccess) TempData["Error"] = result.Error;
         else TempData["Exito"] = "Práctica lunar eliminada exitosamente.";
         return RedirectToAction("ReglasLunares");
-    }
-
-    // ── MÓDULO 3: VISTA CONSOLIDADA DE STOCK ─────────────────────────────────
-    [HttpGet("biocomercio/stock")]
-    public async Task<IActionResult> BiocomercioStock()
-    {
-        var result = await _mediator.Send(new ObtenerStockConsolidadoQuery());
-        return View("~/Views/Admin/BiocomercioStock.cshtml", result.Value);
-    }
-
-    // ── MÓDULO 3: TIEMPOS ESTÁNDAR DE COSECHA (CALCULADORA) ──────────────────
-    [HttpGet("biocomercio/tiempos")]
-    public async Task<IActionResult> BiocomercioTiempos()
-    {
-        var result = await _mediator.Send(new ObtenerTiemposCosechaAdminQuery());
-        var cultivosResult = await _mediator.Send(new Mapa.ObtenerCultivos.ObtenerCultivosQuery());
-        
-        ViewBag.Cultivos = cultivosResult.Value ?? [];
-        return View("~/Views/Admin/BiocomercioTiempos.cshtml", result.Value);
-    }
-
-    [HttpPost("biocomercio/tiempos/crear")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CrearTiempoCosecha([FromForm] CrearTiempoCosechaCommand command)
-    {
-        var result = await _mediator.Send(command);
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Tiempo estándar de cosecha registrado exitosamente.";
-        return RedirectToAction("BiocomercioTiempos");
-    }
-
-    [HttpPost("biocomercio/tiempos/editar")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditarTiempoCosecha([FromForm] EditarTiempoCosechaCommand command)
-    {
-        var result = await _mediator.Send(command);
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Tiempo estándar actualizado exitosamente.";
-        return RedirectToAction("BiocomercioTiempos");
-    }
-
-    [HttpPost("biocomercio/tiempos/eliminar")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EliminarTiempoCosecha([FromForm] int id)
-    {
-        var result = await _mediator.Send(new EliminarTiempoCosechaCommand(id));
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Registro eliminado exitosamente.";
-        return RedirectToAction("BiocomercioTiempos");
     }
 }

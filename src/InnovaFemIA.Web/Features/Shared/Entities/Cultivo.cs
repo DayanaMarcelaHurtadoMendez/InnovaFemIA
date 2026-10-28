@@ -28,6 +28,4 @@ public class Cultivo
     public ICollection<Stock> Stocks { get; set; } = [];
     public ICollection<PrecioMercado> PreciosMercado { get; set; } = [];
     public ICollection<ReglasLunares> ReglasLunares { get; set; } = [];
-    public ICollection<CultivoTiempo> CultivosTiempos { get; set; } = [];
-    public ICollection<ContenidoChatbot> ContenidosChatbot { get; set; } = [];
 }
