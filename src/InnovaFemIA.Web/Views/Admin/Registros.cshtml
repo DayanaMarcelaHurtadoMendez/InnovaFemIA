@@ -22,11 +22,9 @@
     <form action="~/admin/registros" method="GET" class="flex flex-wrap gap-3">
         <select name="modulo" class="px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none">
             <option value="">Todos los Módulos</option>
-            <option value="Mapa" selected="@(modulo == "Mapa")">Módulo 1: Mapa</option>
-            <option value="Chatbot" selected="@(modulo == "Chatbot")">Módulo 2: Chatbot</option>
             <option value="Biocomercio" selected="@(modulo == "Biocomercio")">Módulo 3: Biocomercio</option>
-            <option value="Sistema" selected="@(modulo == "Sistema")">Sistema / General</option>
             <option value="Scraping" selected="@(modulo == "Scraping")">Scraping DANE</option>
+            <option value="Sistema" selected="@(modulo == "Sistema")">Sistema / General</option>
         </select>
 
         <select name="tipo" class="px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none">
