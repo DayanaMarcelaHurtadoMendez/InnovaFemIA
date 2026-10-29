@@ -2,7 +2,7 @@
 @using InnovaFemIA.Web.Features.Shared.Entities
 @{
     ViewData["Title"] = "Catálogo de Contenidos Chatbot — Admin";
-    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerCultivos.CultivoDto> ?? [];
+    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Chatbot.CultivoChatbotDto> ?? [];
     var cultivoSeleccionado = ViewBag.CultivoSeleccionado as int?;
     var temaSeleccionado = ViewBag.TemaSeleccionado as TemaContenido?;
 

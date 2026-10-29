@@ -6,12 +6,10 @@ using Microsoft.EntityFrameworkCore;
 namespace InnovaFemIA.Web.Features.Admin.AdminDashboard;
 
 public record AdminDashboardDto(
-    int TotalFamilias,
-    int TotalAsociaciones,
-    int TotalPuntosCompra,
+    int TotalContenidos,
+    int TotalLecciones,
+    int TotalPreguntas,
     int TotalCultivos,
-    int TotalCuentasFamilias,
-    int TotalReglasLunares,
     int TotalErroresLog,
     List<UltimoLogErrorDto> UltimosErrores
 );
@@ -31,12 +29,10 @@ public class ObtenerDashboardHandler : IRequestHandler<ObtenerDashboardQuery, Re
 
     public async Task<Result<AdminDashboardDto>> Handle(ObtenerDashboardQuery request, CancellationToken cancellationToken)
     {
-        var totalFamilias = await _db.Familias.CountAsync(cancellationToken);
-        var totalAsociaciones = await _db.ActoresMapa.CountAsync(a => a.TipoActor == Shared.Entities.TipoActorMapa.Asociacion, cancellationToken);
-        var totalPuntosCompra = await _db.ActoresMapa.CountAsync(a => a.TipoActor == Shared.Entities.TipoActorMapa.PuntoCompra, cancellationToken);
+        var totalContenidos = await _db.ContenidosChatbot.CountAsync(cancellationToken);
+        var totalLecciones = await _db.LeccionesChatbot.CountAsync(cancellationToken);
+        var totalPreguntas = await _db.PreguntasLecciones.CountAsync(cancellationToken);
         var totalCultivos = await _db.Cultivos.CountAsync(cancellationToken);
-        var totalCuentas = await _db.UsuariosFamilias.CountAsync(cancellationToken);
-        var totalReglasLunares = await _db.ReglasLunares.CountAsync(cancellationToken);
         var totalErrores = await _db.RegistrosSistema.CountAsync(r => r.TipoEvento.Contains("Error"), cancellationToken);
 
         var ultimosErrores = await _db.RegistrosSistema
@@ -47,12 +43,10 @@ public class ObtenerDashboardHandler : IRequestHandler<ObtenerDashboardQuery, Re
             .ToListAsync(cancellationToken);
 
         return Result<AdminDashboardDto>.Success(new AdminDashboardDto(
-            totalFamilias,
-            totalAsociaciones,
-            totalPuntosCompra,
+            totalContenidos,
+            totalLecciones,
+            totalPreguntas,
             totalCultivos,
-            totalCuentas,
-            totalReglasLunares,
             totalErrores,
             ultimosErrores
         ));

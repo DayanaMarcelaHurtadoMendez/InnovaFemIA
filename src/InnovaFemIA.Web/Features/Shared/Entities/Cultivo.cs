@@ -2,7 +2,7 @@ namespace InnovaFemIA.Web.Features.Shared.Entities;
 
 /// <summary>
 /// Cultivo agrícola registrado en el sistema.
-/// Es la entidad central compartida entre Módulo 1 (Mapa), Módulo 2 (Chatbot) y Módulo 3 (Biocomercio).
+/// Entidad central consultada en el Módulo 2 (Chatbot / Asistente Asalia).
 /// </summary>
 public class Cultivo
 {
@@ -11,12 +11,12 @@ public class Cultivo
     /// <summary>Nombre del cultivo (ej. "Café", "Aguacate", "Plátano").</summary>
     public string Nombre { get; set; } = string.Empty;
 
-    /// <summary>Descripción breve del cultivo para el chatbot y directorio.</summary>
+    /// <summary>Descripción breve del cultivo para el chatbot.</summary>
     public string Descripcion { get; set; } = string.Empty;
 
     /// <summary>
     /// Ícono representativo del cultivo en emoji o nombre de ícono
-    /// (ej. "☕", "🥑", "🍌"). Usado en tarjetas del directorio y precios.
+    /// (ej. "☕", "🥑", "🍌"). Usado en el menú de selección de Asalia.
     /// </summary>
     public string Icono { get; set; } = "🌱";
 
@@ -24,10 +24,5 @@ public class Cultivo
     public bool Activo { get; set; } = true;
 
     // Navegación
-    public ICollection<FamiliaCultivo> FamiliaCultivos { get; set; } = [];
-    public ICollection<Stock> Stocks { get; set; } = [];
-    public ICollection<PrecioMercado> PreciosMercado { get; set; } = [];
-    public ICollection<ReglasLunares> ReglasLunares { get; set; } = [];
-    public ICollection<CultivoTiempo> CultivosTiempos { get; set; } = [];
     public ICollection<ContenidoChatbot> ContenidosChatbot { get; set; } = [];
 }

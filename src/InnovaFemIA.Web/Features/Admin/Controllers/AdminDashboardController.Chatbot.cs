@@ -14,7 +14,7 @@ public partial class AdminDashboardController
     public async Task<IActionResult> ChatbotContenidos(int? cultivoId, TemaContenido? tema)
     {
         var result = await _mediator.Send(new ObtenerContenidosChatbotQuery(cultivoId, tema));
-        var cultivosResult = await _mediator.Send(new Mapa.ObtenerCultivos.ObtenerCultivosQuery());
+        var cultivosResult = await _mediator.Send(new ObtenerCultivosChatbotQuery());
         
         ViewBag.Cultivos = cultivosResult.Value ?? [];
         ViewBag.CultivoSeleccionado = cultivoId;
