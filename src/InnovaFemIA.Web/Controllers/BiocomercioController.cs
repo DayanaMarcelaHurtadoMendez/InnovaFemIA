@@ -104,8 +104,8 @@ public class BiocomercioController : Controller
     [Authorize(AuthenticationSchemes = "InnovaFemIA.Familia")]
     public async Task<IActionResult> Index()
     {
-        var preciosResult = await _mediator.Send(new InnovaFemIA.Web.Features.Mapa.ObtenerPrecios.ObtenerPreciosQuery(null, null, null));
-        var precios = preciosResult.IsSuccess ? preciosResult.Value : new InnovaFemIA.Web.Features.Mapa.ObtenerPrecios.PreciosSipsaViewModel();
+        var preciosResult = await _mediator.Send(new InnovaFemIA.Web.Features.Biocomercio.ObtenerPrecios.ObtenerPreciosQuery(null, null, null));
+        var precios = preciosResult.IsSuccess ? preciosResult.Value : new InnovaFemIA.Web.Features.Biocomercio.ObtenerPrecios.PreciosSipsaViewModel();
         return View("~/Views/Biocomercio/Index.cshtml", precios);
     }
 

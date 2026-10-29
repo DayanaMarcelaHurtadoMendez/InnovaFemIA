@@ -1,5 +1,5 @@
-using InnovaFemIA.Web.Features.Admin.GestionActores;
 using InnovaFemIA.Web.Features.Admin.GestionCuentasFamilias;
+using InnovaFemIA.Web.Features.Admin.GestionCultivos;
 using InnovaFemIA.Web.Features.Admin.GestionFamilias;
 using InnovaFemIA.Web.Features.Shared.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -8,12 +8,12 @@ namespace InnovaFemIA.Web.Features.Admin.Controllers;
 
 public partial class AdminDashboardController
 {
-    // ── MÓDULO 1: GESTIÓN DE FAMILIAS ASCAMPESINA ────────────────────────────
+    // ── GESTIÓN DE FAMILIAS ASCAMPESINA ──────────────────────────────────────
     [HttpGet("familias")]
     public async Task<IActionResult> Familias(string? busqueda)
     {
         var result = await _mediator.Send(new ObtenerFamiliasAdminQuery(busqueda));
-        var cultivosResult = await _mediator.Send(new Mapa.ObtenerCultivos.ObtenerCultivosQuery());
+        var cultivosResult = await _mediator.Send(new ObtenerCultivosAdminQuery());
         
         ViewBag.Cultivos = cultivosResult.Value ?? [];
         ViewBag.Busqueda = busqueda;
@@ -122,45 +122,6 @@ public partial class AdminDashboardController
         if (!result.IsSuccess) TempData["Error"] = result.Error;
         else TempData["Exito"] = "Familia eliminada exitosamente.";
         return RedirectToAction("Familias");
-    }
-
-    // ── MÓDULO 1: GESTIÓN DE ACTORES DEL MAPA ────────────────────────────────
-    [HttpGet("actores")]
-    public async Task<IActionResult> Actores(TipoActorMapa? tipo)
-    {
-        var result = await _mediator.Send(new ObtenerActoresAdminQuery(tipo));
-        ViewBag.TipoSeleccionado = tipo;
-        return View("~/Views/Admin/Actores.cshtml", result.Value);
-    }
-
-    [HttpPost("actores/crear")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CrearActor([FromForm] CrearActorAdminCommand command)
-    {
-        var result = await _mediator.Send(command);
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Actor del mapa registrado exitosamente.";
-        return RedirectToAction("Actores");
-    }
-
-    [HttpPost("actores/editar")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditarActor([FromForm] EditarActorAdminCommand command)
-    {
-        var result = await _mediator.Send(command);
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Actor del mapa actualizado exitosamente.";
-        return RedirectToAction("Actores");
-    }
-
-    [HttpPost("actores/eliminar")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EliminarActor([FromForm] int id)
-    {
-        var result = await _mediator.Send(new EliminarActorAdminCommand(id));
-        if (!result.IsSuccess) TempData["Error"] = result.Error;
-        else TempData["Exito"] = "Actor eliminado exitosamente.";
-        return RedirectToAction("Actores");
     }
 
     // ── MÓDULO 3: GESTIÓN DE CUENTAS DE FAMILIAS (BIOCOMERCIO) ───────────────

@@ -277,15 +277,9 @@ app.UseCaseInsensitiveStaticFiles();
 
 app.UseRouting();
 
-// ─── MIDDLEWARE API KEY ────────────────────────────────────────────────────────
-app.UseMiddleware<ApiKeyMiddleware>();
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
-
-// ─── RESTRICCIÓN MODO MAPA SOLO (SI ESTÁ ACTIVO EN EL CONTENEDOR) ───────────────
-app.UseModoMapaSolo();
 
 // ─── RUTAS & ENDPOINTS ────────────────────────────────────────────────────────
 app.MapStaticAssets();

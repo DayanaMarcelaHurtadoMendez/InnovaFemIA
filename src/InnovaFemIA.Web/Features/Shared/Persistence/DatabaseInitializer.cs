@@ -4,8 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace InnovaFemIA.Web.Features.Shared.Persistence;
 
 /// <summary>
-/// Servicio de inicialización resiliente de la base de datos para entornos de producción y contenedores Docker.
-/// Aplica migraciones de Entity Framework Core de forma idempotente y aprovisiona exclusivamente al usuario administrador inicial.
+/// Servicio de inicialización resiliente de la base de datos para el Módulo de Biocomercio.
 /// </summary>
 public static class DatabaseInitializer
 {
@@ -45,27 +44,12 @@ public static class DatabaseInitializer
 
         if (!dbConectada)
         {
-            throw new InvalidOperationException("No se pudo conectar a la base de datos MySQL tras agotar los reintentos. Verifique la conectividad de la base de datos.");
+            throw new InvalidOperationException("No se pudo conectar a la base de datos MySQL tras agotar los reintentos.");
         }
 
         try
         {
-            // Configurar max_allowed_packet a 512 MB si el servidor lo permite
-            try
-            {
-                await db.Database.ExecuteSqlRawAsync("SET GLOBAL max_allowed_packet = 536870912;");
-                await db.Database.CloseConnectionAsync();
-                logger.LogInformation("MySQL max_allowed_packet verificado/configurado a 512 MB.");
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug("Aviso informativo: SET GLOBAL max_allowed_packet delegado a la configuración del servidor: {Msg}", ex.Message);
-            }
-
-            // Compatibilidad de esquema y sincronización de catálogos
             await EnsureSchemaCompatibilityAsync(db, logger);
-
-            // Aprovisionar exclusivamente al Administrador por defecto (sin datos de prueba)
             await SeedAdminAsync(db, config, logger);
         }
         catch (Exception ex)
@@ -74,30 +58,10 @@ public static class DatabaseInitializer
         }
     }
 
-    /// <summary>
-    /// Asegura la existencia de tablas de soporte e índices requeridos si la BD proviene de versiones anteriores.
-    /// </summary>
     private static async Task EnsureSchemaCompatibilityAsync(AppDbContext db, ILogger logger)
     {
         try
         {
-            // Sincronizar nombres de temas oficiales del chatbot si hay registros previos
-            await db.Database.ExecuteSqlRawAsync(@"
-                UPDATE ContenidosChatbot SET Tema = 'Siembra' WHERE Tema = 'CuandoSembrar';
-                UPDATE ContenidosChatbot SET Tema = 'Cosecha' WHERE Tema = 'CuandoCosechar';
-                UPDATE ContenidosChatbot SET Tema = 'AbonadoNutricion' WHERE Tema = 'Abonado';
-                UPDATE ContenidosChatbot SET Tema = 'PlagasEnfermedades' WHERE Tema = 'PlagasEnfermedades';
-                UPDATE ContenidosChatbot SET Tema = 'PodasManejo' WHERE Tema IN ('PodaMantenimiento', 'ManejoAgroecologico');
-                UPDATE ContenidosChatbot SET Tema = 'Riego' WHERE Tema = 'RiegoDrenaje';
-                UPDATE ContenidosChatbot SET Tema = 'PostcosechaAlmacenamiento' WHERE Tema = 'PostcosechaManejo';
-                UPDATE ContenidosChatbot SET Tema = 'Comercializacion' WHERE Tema = 'ComercializacionCalidad';
-            ");
-        }
-        catch { }
-
-        try
-        {
-            // Asegurar columna Descripcion en Familias si es una base de datos preexistente
             try
             {
                 await db.Database.ExecuteSqlRawAsync("ALTER TABLE Familias ADD COLUMN IF NOT EXISTS Descripcion TEXT NULL;");
@@ -115,7 +79,6 @@ public static class DatabaseInitializer
 
         try
         {
-            // Asegurar existencia de tablas del DANE SIPSA
             await db.Database.ExecuteSqlRawAsync(@"
                 CREATE TABLE IF NOT EXISTS BoletinesSipsaInfo (
                     Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -155,9 +118,6 @@ public static class DatabaseInitializer
         }
     }
 
-    /// <summary>
-    /// Aprovisiona al usuario administrador por defecto del sistema si no existe en la base de datos.
-    /// </summary>
     private static async Task SeedAdminAsync(AppDbContext db, IConfiguration config, ILogger logger)
     {
         var usuario = config.GetValue<string>("Admin:UsuarioPorDefecto", "admin")!;

@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using InnovaFemIA.Web.Features.Shared.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovaFemIA.Web.Features.Shared.Services;
@@ -12,28 +11,21 @@ public interface IMediaCacheService
 }
 
 /// <summary>
-/// Servicio de alto rendimiento para almacenamiento en caché local de medios (Videos, PDFs e Imágenes).
-/// Almacena una copia física en el servidor tras la primera consulta o subida, evitando re-consultar
-/// la base de datos MySQL (LONGBLOB) y reduciendo el consumo de CPU y RAM a 0% mediante kernel-mode streaming.
+/// Servicio de almacenamiento en caché de medios locales en disco.
 /// </summary>
 public class MediaCacheService : IMediaCacheService
 {
     private readonly IWebHostEnvironment _env;
-    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<MediaCacheService> _logger;
     private readonly string _cacheDirectory;
-    private static readonly ConcurrentDictionary<int, SemaphoreSlim> _locks = new();
 
     public MediaCacheService(
         IWebHostEnvironment env,
-        IServiceProvider serviceProvider,
         ILogger<MediaCacheService> logger)
     {
         _env = env;
-        _serviceProvider = serviceProvider;
         _logger = logger;
 
-        // Directorio persistente en el servidor (ignorado en Git)
         var webRoot = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         _cacheDirectory = Path.Combine(webRoot, "media_cache");
 
@@ -46,82 +38,22 @@ public class MediaCacheService : IMediaCacheService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "No se pudo acceder o crear la carpeta {CacheDir}. Probando ruta alternativa en Temp.", _cacheDirectory);
-            try
-            {
-                _cacheDirectory = Path.Combine(Path.GetTempPath(), "innovafemia_media_cache");
-                if (!Directory.Exists(_cacheDirectory))
-                {
-                    Directory.CreateDirectory(_cacheDirectory);
-                }
-            }
-            catch (Exception exTemp)
-            {
-                _logger.LogError(exTemp, "Tampoco se pudo inicializar la caché temporal en {TempDir}.", _cacheDirectory);
-            }
+            _logger.LogWarning(ex, "No se pudo acceder o crear la carpeta {CacheDir}.", _cacheDirectory);
         }
     }
 
-    public async Task<(string? FilePath, string MimeType, string FileName)?> ObtenerRutaMedioAsync(int contenidoId, CancellationToken ct = default)
+    public Task<(string? FilePath, string MimeType, string FileName)?> ObtenerRutaMedioAsync(int contenidoId, CancellationToken ct = default)
     {
         var cacheFilePath = Path.Combine(_cacheDirectory, $"{contenidoId}.media");
         var metaFilePath = Path.Combine(_cacheDirectory, $"{contenidoId}.meta");
 
-        // 1. Si ya existe en el disco local y tiene contenido válido
         if (File.Exists(cacheFilePath) && new FileInfo(cacheFilePath).Length > 0)
         {
             var (cachedMime, cachedName) = LeerMetadata(metaFilePath, contenidoId);
-            return (cacheFilePath, cachedMime, cachedName);
+            return Task.FromResult<(string? FilePath, string MimeType, string FileName)?>((cacheFilePath, cachedMime, cachedName));
         }
 
-        // 2. Control de concurrencia: Evita que múltiples solicitudes HTTP 206 (Range) descarguen de BD al mismo tiempo
-        var semaphore = _locks.GetOrAdd(contenidoId, _ => new SemaphoreSlim(1, 1));
-        await semaphore.WaitAsync(ct);
-
-        try
-        {
-            // Verificar nuevamente tras adquirir el semáforo
-            if (File.Exists(cacheFilePath) && new FileInfo(cacheFilePath).Length > 0)
-            {
-                var (cachedMime, cachedName) = LeerMetadata(metaFilePath, contenidoId);
-                return (cacheFilePath, cachedMime, cachedName);
-            }
-
-            _logger.LogInformation("Extrayendo medio #{Id} desde la base de datos a la caché local...", contenidoId);
-
-            using var scope = _serviceProvider.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var contenido = await db.ContenidosChatbot
-                .Where(c => c.Id == contenidoId)
-                .Select(c => new { c.ArchivoBytes, c.ArchivoMimeType, c.ArchivoNombre })
-                .FirstOrDefaultAsync(ct);
-
-            if (contenido == null || contenido.ArchivoBytes == null || contenido.ArchivoBytes.Length == 0)
-            {
-                return null;
-            }
-
-            var mime = string.IsNullOrWhiteSpace(contenido.ArchivoMimeType) ? "application/octet-stream" : contenido.ArchivoMimeType;
-            var name = string.IsNullOrWhiteSpace(contenido.ArchivoNombre) ? $"recurso_{contenidoId}.dat" : contenido.ArchivoNombre;
-
-            // Guardar archivo binario y metadatos en disco local
-            await File.WriteAllBytesAsync(cacheFilePath, contenido.ArchivoBytes, ct);
-            await File.WriteAllLinesAsync(metaFilePath, [mime, name], ct);
-
-            _logger.LogInformation("Medio #{Id} almacenado exitosamente en caché local ({Size:F1} MB).", contenidoId, contenido.ArchivoBytes.Length / (1024.0 * 1024.0));
-
-            return (cacheFilePath, mime, name);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al extraer o guardar en caché el medio #{Id}", contenidoId);
-            return null;
-        }
-        finally
-        {
-            semaphore.Release();
-        }
+        return Task.FromResult<(string? FilePath, string MimeType, string FileName)?>(null);
     }
 
     public async Task GuardarEnCacheAsync(int contenidoId, byte[] bytes, string? mimeType, string? fileName)
@@ -135,9 +67,7 @@ public class MediaCacheService : IMediaCacheService
             var name = string.IsNullOrWhiteSpace(fileName) ? $"recurso_{contenidoId}.dat" : fileName;
 
             await File.WriteAllBytesAsync(cacheFilePath, bytes);
-            await File.WriteAllLinesAsync(metaFilePath, [mime, name]);
-
-            _logger.LogInformation("Medio #{Id} guardado directamente en caché local al crearse/editarse.", contenidoId);
+            await File.WriteAllLinesAsync(metaFilePath, new[] { mime, name });
         }
         catch (Exception ex)
         {
@@ -154,8 +84,6 @@ public class MediaCacheService : IMediaCacheService
 
             if (File.Exists(cacheFilePath)) File.Delete(cacheFilePath);
             if (File.Exists(metaFilePath)) File.Delete(metaFilePath);
-
-            _logger.LogInformation("Caché invalidada para medio #{Id}", contenidoId);
         }
         catch (Exception ex)
         {

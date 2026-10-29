@@ -1,7 +1,7 @@
 @model IEnumerable<InnovaFemIA.Web.Features.Admin.GestionFamilias.FamiliaAdminDto>
 @{
     ViewData["Title"] = "Gestión de Familias — Panel de Admin";
-    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Mapa.ObtenerCultivos.CultivoDto> ?? [];
+    var cultivos = ViewBag.Cultivos as IEnumerable<InnovaFemIA.Web.Features.Admin.GestionCultivos.CultivoAdminDto> ?? [];
     var busqueda = ViewBag.Busqueda as string;
 }
 

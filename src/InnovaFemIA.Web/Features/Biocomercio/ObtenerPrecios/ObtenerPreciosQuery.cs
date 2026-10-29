@@ -1,10 +1,10 @@
 using InnovaFemIA.Web.Features.Shared.Common;
 using MediatR;
 
-namespace InnovaFemIA.Web.Features.Mapa.ObtenerPrecios;
+namespace InnovaFemIA.Web.Features.Biocomercio.ObtenerPrecios;
 
 /// <summary>
-/// Query para obtener los precios mayoristas SIPSA DANE y los precios de referencia de cultivos.
+/// Query para obtener los precios mayoristas SIPSA DANE y los precios de referencia de cultivos para el portal de Biocomercio.
 /// </summary>
 public record ObtenerPreciosQuery(
     string? Grupo = null,
@@ -62,7 +62,7 @@ public class PrecioMercadoDto
     public decimal PrecioMaximo { get; set; }
     public string MercadoReferencia { get; set; } = string.Empty;
     public string Tendencia { get; set; } = "=";
-    public string EstadoVariacion { get; set; } = "Igual"; // "Sube", "Baja", "Igual"
+    public string EstadoVariacion { get; set; } = "Igual";
     public decimal PorcentajeVariacion { get; set; }
     public DateTime FechaActualizacion { get; set; }
     public string Fuente { get; set; } = "DANE";
