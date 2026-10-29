@@ -1,14 +1,13 @@
 @{
-    bool soloMapa = true;
     bool esAdmin = User.Identity?.IsAuthenticated == true && (User.IsInRole("Administrador") || User.IsInRole("Admin"));
 }
-@* Navbar principal de InnovaFemIA — visible en toda la plataforma *@
+@* Navbar del Módulo 1 — Cartografía Productiva, Calendario Lunar y Precios DANE InnovaFemIA *@
 <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
             <!-- Logo / Brand -->
-            <a href="~/" class="flex items-center gap-3 group" id="nav-brand">
+            <a href="~/mapa/mapa" class="flex items-center gap-3 group" id="nav-brand">
                 <img src="~/images/general/Logo.png" alt="InnovaFemIA" class="h-[45px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
                 <div class="flex flex-col leading-tight">
                     <span class="font-bold text-base text-gray-900">InnovaFem<span class="text-morado">IA</span></span>
@@ -18,73 +17,34 @@
 
             <!-- Módulos de navegación — desktop -->
             <div class="hidden md:flex items-center gap-1" role="navigation" aria-label="Módulos principales">
-                @if (soloMapa)
-                {
-                    <a href="~/mapa/mapa"
-                       id="nav-mapa"
-                       title="Mapa interactivo de Caldono, Cauca"
-                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Mapa" ? "active" : "")">
-                        <span aria-hidden="true">🗺️</span>
-                        <span>Mapa interactivo</span>
-                    </a>
-                    <a href="~/mapa/directorio"
-                       id="nav-directorio"
-                       title="Directorio de Familias y Organizaciones"
-                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
-                        <span aria-hidden="true">📋</span>
-                        <span>Directorio</span>
-                    </a>
-                    <a href="~/mapa/precios"
-                       id="nav-precios"
-                       title="Indicadores socioeconómicos DANE SIPSA"
-                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Precios" ? "active" : "")">
-                        <span aria-hidden="true">📊</span>
-                        <span>Indicadores DANE</span>
-                    </a>
-                    <a href="~/mapa/lunar"
-                       id="nav-lunar"
-                       title="Calendario Lunar Agrícola y Juego Aprende con la Luna"
-                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lunar" || ViewContext.RouteData.Values["action"]?.ToString() == "JuegoLunar" ? "active" : "")">
-                        <span aria-hidden="true">🌒</span>
-                        <span>Calendario Lunar</span>
-                    </a>
-                }
-                else
-                {
-                    <a href="~/mapa"
-                       id="nav-mapa"
-                       title="Cartografía productiva del territorio"
-                       class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Mapa" && ViewContext.RouteData.Values["action"]?.ToString() != "Precios" ? "active" : "")">
-                        <span aria-hidden="true">🗺️</span>
-                        <span>Cartografía productiva</span>
-                    </a>
-                    <a href="~/mapa/precios"
-                       id="nav-precios"
-                       title="Indicadores socioeconómicos DANE (Departamento Administrativo Nacional de Estadística)"
-                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Precios" ? "active" : "")">
-                        <span aria-hidden="true">📊</span>
-                        <span>Indicadores DANE</span>
-                    </a>
-                    <a href="~/mapa/lunar"
-                       id="nav-lunar"
-                       title="Calendario Lunar Agrícola y Juego Aprende con la Luna"
-                       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lunar" || ViewContext.RouteData.Values["action"]?.ToString() == "JuegoLunar" ? "active" : "")">
-                        <span aria-hidden="true">🌒</span>
-                        <span>Calendario Lunar</span>
-                    </a>
-                    <a href="~/chatbot"
-                       id="nav-chatbot"
-                       class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Chatbot" ? "active" : "")">
-                        <span aria-hidden="true">🤖</span>
-                        <span>Asistente</span>
-                    </a>
-                    <a href="~/biocomercio"
-                       id="nav-biocomercio"
-                       class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Biocomercio" ? "active" : "")">
-                        <span aria-hidden="true">🌿</span>
-                        <span>Biocomercio</span>
-                    </a>
-                }
+                <a href="~/mapa/mapa"
+                   id="nav-mapa"
+                   title="Mapa interactivo de Caldono, Cauca"
+                   class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Mapa" ? "active" : "")">
+                    <span aria-hidden="true">🗺️</span>
+                    <span>Mapa interactivo</span>
+                </a>
+                <a href="~/mapa/directorio"
+                   id="nav-directorio"
+                   title="Directorio de Familias y Organizaciones"
+                   class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                    <span aria-hidden="true">📋</span>
+                    <span>Directorio</span>
+                </a>
+                <a href="~/mapa/precios"
+                   id="nav-precios"
+                   title="Indicadores socioeconómicos DANE SIPSA"
+                   class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Precios" ? "active" : "")">
+                    <span aria-hidden="true">📊</span>
+                    <span>Indicadores DANE</span>
+                </a>
+                <a href="~/mapa/lunar"
+                   id="nav-lunar"
+                   title="Calendario Lunar Agrícola y Saberes Ancestrales"
+                   class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Lunar" || ViewContext.RouteData.Values["action"]?.ToString() == "JuegoLunar" ? "active" : "")">
+                    <span aria-hidden="true">🌒</span>
+                    <span>Calendario Lunar</span>
+                </a>
             </div>
 
             <!-- Acciones derecha -->
@@ -102,17 +62,10 @@
                         <span>Cerrar Sesión</span>
                     </a>
                 }
-                else if (User.Identity?.IsAuthenticated == true)
+                else
                 {
-                    <span class="hidden sm:inline-flex items-center gap-1.5 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700">
-                        <span>👩‍🌾</span>
-                        <span>@(User.Identity.Name ?? "Mi Perfil")</span>
-                    </span>
-                    <a href="~/biocomercio/logout" id="nav-logout"
-                       title="Cerrar sesión de familia campesina"
-                       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-sm shadow-rose-200 hover:shadow-md transition-all active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1" /></svg>
-                        <span>Cerrar Sesión</span>
+                    <a href="~/admin/login" id="nav-login" class="nav-link text-gray-600 hover:text-gray-900 text-xs sm:text-sm font-semibold">
+                        <span>Ingreso Admin</span>
                     </a>
                 }
 
@@ -131,21 +84,10 @@
         <!-- Menú mobile desplegable -->
         <div id="nav-mobile-menu" class="md:hidden hidden pb-4 animate-fade-in">
             <div class="flex flex-col gap-1 pt-2 border-t border-gray-100">
-                @if (soloMapa)
-                {
-                    <a href="~/mapa/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Mapa interactivo</a>
-                    <a href="~/mapa/directorio" class="nav-link" id="nav-mobile-directorio">📋 Directorio de Familias</a>
-                    <a href="~/mapa/precios" class="nav-link" id="nav-mobile-precios">📊 Indicadores DANE</a>
-                    <a href="~/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
-                }
-                else
-                {
-                    <a href="~/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Cartografía productiva del territorio</a>
-                    <a href="~/mapa/precios" class="nav-link" id="nav-mobile-precios">📊 Indicadores socioeconómicos DANE</a>
-                    <a href="~/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
-                    <a href="~/chatbot" class="nav-link" id="nav-mobile-chatbot">🤖 Asistente Educativo</a>
-                    <a href="~/biocomercio" class="nav-link" id="nav-mobile-biocomercio">🌿 Biocomercio</a>
-                }
+                <a href="~/mapa/mapa" class="nav-link" id="nav-mobile-mapa">🗺️ Mapa interactivo</a>
+                <a href="~/mapa/directorio" class="nav-link" id="nav-mobile-directorio">📋 Directorio de Familias</a>
+                <a href="~/mapa/precios" class="nav-link" id="nav-mobile-precios">📊 Indicadores DANE</a>
+                <a href="~/mapa/lunar" class="nav-link" id="nav-mobile-lunar">🌒 Calendario Lunar Agrícola</a>
 
                 @if (esAdmin)
                 {
@@ -155,9 +97,11 @@
                         <span>Cerrar Sesión (Admin)</span>
                     </a>
                 }
+                else
+                {
+                    <a href="~/admin/login" class="nav-link text-gray-600 mt-2">🔐 Acceso Admin</a>
+                }
             </div>
         </div>
     </div>
 </nav>
-
-
