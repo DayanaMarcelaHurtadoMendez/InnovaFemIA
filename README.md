@@ -1,54 +1,56 @@
 # InnovaFemIA
 
-Plataforma tecnologica integral para la gestion productiva, pedagogica y comercial desarrollada para la Asociacion Municipal de Mujeres Campesinas de Caldono (ASCAMPESINA), Cauca, en el marco del Proyecto Orquideas.
+Plataforma tecnológica integral para la gestión productiva, pedagógica y comercial desarrollada para la Asociación Municipal de Mujeres Campesinas de Caldono (ASCAMPESINA), Cauca, en el marco del Proyecto Orquídeas.
 
-La plataforma articula tres modulos verticales sobre una misma infraestructura:
-1. **Cartografia Productiva y Calendario Lunar:** Georreferenciacion de predios campesinos, red de actores territoriales, saberes ancestrales de siembra segun fases lunares e indicadores de precios mayoristas DANE SIPSA.
-2. **Asistente Educativo y Modo Leccion (Chatbot Asalia):** Asistente conversacional agroecologico, catalogo de recursos formativos multimedia y modulo interactivo de evaluacion campesina.
-3. **Biocomercio y Diagnostico Fitosanitario con IA:** Monitoreo descentralizado de inventario de cosechas (Mi Stock), calculadoras agronomicas/financieras y diagnostico foliar de enfermedades de cafe mediante vision artificial.
+La plataforma articula tres módulos verticales sobre una misma infraestructura, gestionados y supervisados de manera centralizada desde un módulo de administración integral:
+
+1. **Cartografía Productiva y Calendario Lunar:** Georreferenciación de predios campesinos, red de actores territoriales, saberes ancestrales de siembra según fases lunares e indicadores de precios mayoristas DANE SIPSA.
+2. **Asistente Educativo y Modo Lección (Chatbot Asalia):** Asistente conversacional agroecológico, catálogo de recursos formativos multimedia y módulo interactivo de evaluación campesina.
+3. **Biocomercio y Diagnóstico Fitosanitario con IA:** Monitoreo descentralizado de inventario de cosechas (Mi Stock), calculadoras agronómicas/financieras y diagnóstico foliar de enfermedades de café mediante visión artificial.
+4. **Panel de Administración Integral:** Módulo transversal de control administrativo que centraliza el padrón de productoras asociadas, el catálogo de especies agrícolas, el monitor consolidado de oferta municipal, la asignación de credenciales campesinas, la biblioteca de contenidos y el visor de auditoría técnica del sistema.
 
 ---
 
-## 1. Stack Tecnologico y Dependencias
+## 1. Stack Tecnológico y Dependencias
 
-### Nucleo de la Aplicacion
+### Núcleo de la Aplicación
 - **Lenguaje y Plataforma:** C# 13 sobre **.NET 9** (`net9.0`).
-- **Framework Web:** **ASP.NET Core 9** (modelo hibrido: vistas MVC renderizadas con Razor y controladores de API REST).
+- **Framework Web:** **ASP.NET Core 9** (modelo híbrido: vistas MVC renderizadas con Razor y controladores de API REST).
 - **Servidor Web:** Kestrel integrado bajo proxy inverso (Nginx / Docker Swarm).
 
 ### Base de Datos y Persistencia
 - **Motor Relacional:** **MySQL 8.0** oficial.
   - Conjunto de caracteres: `utf8mb4`.
-  - Intercalacion: `utf8mb4_unicode_ci`.
-  - Autenticacion: `mysql_native_password`.
+  - Intercalación: `utf8mb4_unicode_ci`.
+  - Autenticación: `mysql_native_password`.
   - Soporte de paquetes de red: 512 MB (`max_allowed_packet = 536870912`) para streaming y almacenamiento de medios.
 - **ORM / Mapeo Objeto-Relacional:** **Entity Framework Core 9** con enfoque Code-First.
 
 ### Paquetes NuGet (Backend)
-- `MediatR` (version 12.5.0): Implementacion del patron Mediador y segregacion CQRS (comandos y consultas desacopladas).
-- `Microsoft.EntityFrameworkCore.Design` (version 9.0.7): Herramientas en tiempo de diseno para generacion y control de migraciones.
-- `Pomelo.EntityFrameworkCore.MySql` (version 9.0.0-preview.2): Proveedor optimizado de Entity Framework Core para MySQL.
-- `BCrypt.Net-Next` (version 4.2.0): Funciones de hash criptografico con sal dinamica para resguardo de contrasenas.
-- `HtmlAgilityPack` (version 1.12.4): Analizador sintactico de HTML para el servicio de extraccion de boletines del DANE.
-- `ExcelDataReader` (version 3.9.0) y `ExcelDataReader.DataSet` (version 3.9.0): Lectura y conversion estructurada de boletines mayoristas en formato Excel.
-- `SquareWidget.Astronomy.Core` (version 1.0.0): Motor astronomico basado en los algoritmos de Jean Meeus para calculo de posicion, iluminacion y fase lunar.
+- `MediatR` (versión 12.5.0): Implementación del patrón Mediador y segregación CQRS (comandos y consultas desacopladas).
+- `Microsoft.EntityFrameworkCore.Design` (versión 9.0.7): Herramientas en tiempo de diseño para generación y control de migraciones.
+- `Pomelo.EntityFrameworkCore.MySql` (versión 9.0.0-preview.2): Proveedor optimizado de Entity Framework Core para MySQL.
+- `BCrypt.Net-Next` (versión 4.2.0): Funciones de hash criptográfico con sal dinámica para resguardo de contraseñas.
+- `HtmlAgilityPack` (versión 1.12.4): Analizador sintáctico de HTML para el servicio de extracción de boletines del DANE.
+- `ExcelDataReader` (versión 3.9.0) y `ExcelDataReader.DataSet` (versión 3.9.0): Lectura y conversión estructurada de boletines mayoristas en formato Excel.
+- `SquareWidget.Astronomy.Core` (versión 1.0.0): Motor astronómico basado en los algoritmos de Jean Meeus para cálculo de posición, iluminación y fase lunar.
 
-### Frontend y Diseno
-- **Framework CSS:** **TailwindCSS** (version 3.4.0), compilado mediante Node.js / npm.
+### Frontend y Diseño
+- **Framework CSS:** **TailwindCSS** (versión 3.4.0), compilado mediante Node.js / npm.
 - **JavaScript:** Vanilla JavaScript modular organizado por dominios (`wwwroot/js/`), sin dependencias de frameworks cliente pesados (cero JS inline en vistas).
-- **Cartografia Web:** Leaflet 1.9.4 para visualizacion de mapas interactivos y capas GeoJSON.
+- **Cartografía Web:** Leaflet 1.9.4 para visualización de mapas interactivos y capas GeoJSON.
 
 ### Servicios Externos
-- **Roboflow Serverless API:** Modelo de vision artificial para clasificacion de imagenes foliares de cafe (deteccion de roya, mancha de hierro, broca y ojo de gallo).
-- **DANE SIPSA:** Sistema de Informacion de Precios y Abastecimiento del Sector Agropecuario (boletines semanales de Popayan y Cali).
+- **Roboflow Serverless API:** Modelo de visión artificial para clasificación de imágenes foliares de café (detección de roya, mancha de hierro, broca y ojo de gallo).
+- **DANE SIPSA:** Sistema de Información de Precios y Abastecimiento del Sector Agropecuario (boletines semanales de Popayán y Cali).
 
 ---
 
 ## 2. Requisitos de Entorno para Desarrollo
 
 Para compilar y ejecutar el proyecto localmente se requiere:
-- **.NET 9 SDK** (version 9.0.100 o superior).
-- **Node.js** (version 18 o superior) y **npm** (para la compilacion de estilos TailwindCSS).
+- **.NET 9 SDK** (versión 9.0.100 o superior).
+- **Node.js** (versión 18 o superior) y **npm** (para la compilación de estilos TailwindCSS).
 - **MySQL 8.0** local o accesible por red, con una base de datos creada (por defecto `InnovaFemIA`).
 
 ---
@@ -60,20 +62,39 @@ Para compilar y ejecutar el proyecto localmente se requiere:
    git checkout develop
    ```
 
-2. Configurar la conexion y credenciales en `src/InnovaFemIA.Web/appsettings.json`:
+2. Configurar la conexión y credenciales en `src/InnovaFemIA.Web/appsettings.json`:
    ```json
    {
+     "Logging": {
+       "LogLevel": {
+         "Default": "Information",
+         "Microsoft.AspNetCore": "Warning",
+         "Microsoft.EntityFrameworkCore": "Warning"
+       }
+     },
+     "AllowedHosts": "*",
+     "PATH_BASE": "/innovafemia",
      "ConnectionStrings": {
-       "DefaultConnection": "Server=localhost;Port=3306;Database=InnovaFemIA;User=root;Password=TuPassword;Allow User Variables=true;"
+       "DefaultConnection": "Server=localhost;Port=3306;Database=InnovaFemIA;User=root;Password=TU_CONTRASENA_AQUI;SslMode=None;Allow User Variables=true;"
+     },
+     "Sesion": {
+       "TiempoExpiracionMinutos": 60,
+       "NombreCookieAdmin": "InnovaFemIA.Admin",
+       "NombreCookieFamilia": "InnovaFemIA.Familia"
+     },
+     "Scraping": {
+       "IntervalHoras": 5,
+       "DelayInicialMinutos": 1,
+       "UrlDane": "https://www.dane.gov.co/index.php/estadisticas-por-tema/agropecuario/sistema-de-informacion-de-precios-sipsa/mayoristas-boletin-semanal-1/boletin-mayorista-semanal-2026"
      },
      "Admin": {
        "UsuarioPorDefecto": "admin",
-       "ContrasenaPorDefecto": "InnovaFemIA2026!",
+       "ContrasenaPorDefecto": "CambiarEstaContrasena123!",
        "EmailPorDefecto": "admin@innovafemia.local"
      },
      "Roboflow": {
        "WorkflowUrl": "https://serverless.roboflow.com/iot-proyecto/workflows/hojas-de-cafe-enfermedades-obje",
-       "ApiKey": "TU_API_KEY",
+       "ApiKey": "TU_API_KEY_ROBOFLOW",
        "Workspace": "iot-proyecto",
        "WorkflowId": "hojas-de-cafe-enfermedades-obje"
      }
@@ -88,69 +109,69 @@ Para compilar y ejecutar el proyecto localmente se requiere:
    cd ../..
    ```
 
-4. Compilar y ejecutar la aplicacion:
+4. Compilar y ejecutar la aplicación:
    ```bash
    dotnet run --project src/InnovaFemIA.Web/InnovaFemIA.Web.csproj
    ```
 
-Al iniciar por primera vez, el servicio `DatabaseInitializer` ejecuta automaticamente las migraciones pendientes en MySQL, crea las tablas del sistema, provisiona el usuario administrador por defecto e inicializa el catalogo de cultivos.
+Al iniciar por primera vez, el servicio `DatabaseInitializer` ejecuta automáticamente las migraciones pendientes en MySQL, crea las tablas del sistema, provisiona el usuario administrador por defecto e inicializa el catálogo de cultivos.
 
 ---
 
-## 4. Generacion del Paquete de Entrega para Produccion
+## 4. Generación del Paquete de Entrega para Producción
 
-Para entregar o desplegar la plataforma en servidores de produccion sin exponer el codigo fuente (`.cs`), el repositorio incluye el script automatizado `generar_paquete_entrega.ps1`.
+Para entregar o desplegar la plataforma en servidores de producción sin exponer el código fuente (`.cs`), el repositorio incluye el script automatizado `generar_paquete_entrega.ps1`.
 
-### Como ejecutar el script
-Desde PowerShell en la raiz del proyecto:
+### Cómo ejecutar el script
+Desde PowerShell en la raíz del proyecto:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\generar_paquete_entrega.ps1
 ```
 
-### Que realiza el script:
-1. **Compilacion de estilos:** Ejecuta `npm run tw:build` en el proyecto web para generar el archivo CSS final minificado (`app.css`).
-2. **Compilacion a binarios cerrados:** Ejecuta `dotnet publish -c Release /p:UseAppHost=false` generando exclusivamente librerias precompiladas (`.dll`) y vistas precompiladas en `dist/InnovaFemIA-Entrega/app/`. No se incluye ningun archivo `.cs`, resguardando la propiedad intelectual del software.
-3. **Limpieza e higiene de carpetas:** Inicializa los directorios vacios de `media_cache` y `uploads` para evitar arrastrar residuos de pruebas locales.
-4. **Generacion de la infraestructura Docker:**
-   - **`Dockerfile`:** Contenedor optimizado de ejecucion basado en `mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim`, configurado bajo el usuario de seguridad no privilegiado `app`, con zona horaria `America/Bogota` y sondeo de salud (`HEALTHCHECK`) sobre `/health`.
-   - **`docker-compose.yml`:** Orquestacion completa de los dos servicios requeridos: `innovafemia-web` (aplicacion web) e `innovafemia-db` (motor MySQL 8.0 con volumen persistente).
-   - **`docker/mysql/my.cnf`:** Configuracion de MySQL con parametros optimizados para operacion estable (`innodb_buffer_pool_size = 512M`, `max_allowed_packet = 512M`, timeouts de 28800 segundos).
-   - **`.env`:** Archivo base de variables de entorno (puertos, contrasenas y sub-ruta `PATH_BASE`).
-   - **`.dockerignore`:** Reglas de exclusion para optimizar el contexto de construccion.
-   - **`manage.sh`:** Script utilitario para administracion en servidores Linux (arranque, detencion, respaldos `mysqldump` y reconstruccion sin perdida de datos).
+### Qué realiza el script:
+1. **Compilación de estilos:** Ejecuta `npm run tw:build` en el proyecto web para generar el archivo CSS final minificado (`app.css`).
+2. **Compilación a binarios cerrados:** Ejecuta `dotnet publish -c Release /p:UseAppHost=false` generando exclusivamente librerías precompiladas (`.dll`) y vistas precompiladas en `dist/InnovaFemIA-Entrega/app/`. No se incluye ningún archivo `.cs`, resguardando la propiedad intelectual del software.
+3. **Limpieza e higiene de carpetas:** Inicializa los directorios vacíos de `media_cache` y `uploads` para evitar arrastrar residuos de pruebas locales.
+4. **Generación de la infraestructura Docker:**
+   - **`Dockerfile`:** Contenedor optimizado de ejecución basado en `mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim`, configurado bajo el usuario de seguridad no privilegiado `app`, con zona horaria `America/Bogota` y sondeo de salud (`HEALTHCHECK`) sobre `/health`.
+   - **`docker-compose.yml`:** Orquestación completa de los dos servicios requeridos: `innovafemia-web` (aplicación web) e `innovafemia-db` (motor MySQL 8.0 con volumen persistente).
+   - **`docker/mysql/my.cnf`:** Configuración de MySQL con parámetros optimizados para operación estable (`innodb_buffer_pool_size = 512M`, `max_allowed_packet = 512M`, timeouts de 28800 segundos).
+   - **`.env`:** Archivo base de variables de entorno (puertos, contraseñas y sub-ruta `PATH_BASE`).
+   - **`.dockerignore`:** Reglas de exclusión para optimizar el contexto de construcción.
+   - **`manage.sh`:** Script utilitario para administración en servidores Linux (arranque, detención, respaldos `mysqldump` y reconstrucción sin pérdida de datos).
    - **`INSTRUCCIONES_DESPLIEGUE.md`:** Manual operativo detallado paso a paso para actualizar servidores existentes conservando intacta la base de datos MySQL o para desplegar instalaciones nuevas.
-5. **Empaquetado final:** Comprime todo el contenido en el archivo estandar `dist/InnovaFemIA-Despliegue.zip` (aproximadamente 7 a 9 MB), listo para su transferencia al servidor.
+5. **Empaquetado final:** Comprime todo el contenido en el archivo estándar `dist/InnovaFemIA-Despliegue.zip` (aproximadamente 7 a 9 MB), listo para su transferencia al servidor.
 
 ---
 
 ## 5. Estructura de Ramas y Convenciones de Trabajo
 
-El repositorio sigue un esquema de ramificacion estructurado:
+El repositorio sigue un esquema de ramificación estructurado:
 
 ### Ramas Principales
-- **`main`:** Rama protegida de produccion que refleja la version estable desplegada.
-- **`develop`:** Rama activa de integracion continua donde converge el desarrollo de los tres modulos y la administracion.
+- **`main`:** Rama protegida de producción que refleja la versión estable desplegada.
+- **`develop`:** Rama activa de integración continua donde converge el desarrollo de los tres módulos y la administración.
 
-### Ramas de Registro de Software (DNDA)
-Para cumplir con los requerimientos formales de registro de soporte logico ante la Direccion Nacional de Derecho de Autor, se mantienen tres ramas aisladas cuyo codigo fuente corresponde exclusivamente a cada dominio, conservando unicamente el nucleo comun indispensable para su compilacion y operacion autonoma:
-- **`registro-software/modulo-mapa-lunar`:** Cartografia productiva, georreferenciacion, saberes ancestrales lunares, indicadores DANE y administracion territorial.
-- **`registro-software/modulo-chatbot`:** Asistente conversacional Asalia, biblioteca multimedia, modo leccion y administracion pedagogica.
-- **`registro-software/modulo-biocomercio`:** Portal de productoras campesinas, Mi Stock, calculadoras agronomicas, diagnostico foliar con IA y administracion de cosechas.
+### Ramas de Registro de Software ante la Dirección Nacional de Derecho de Autor
+Para cumplir con los requerimientos formales de registro de soporte lógico ante la Dirección Nacional de Derecho de Autor, se mantienen tres ramas aisladas cuyo código fuente corresponde exclusivamente a cada dominio, conservando únicamente el núcleo común indispensable para su compilación y operación autónoma:
+- **`registro-software/modulo-mapa-lunar`:** Cartografía productiva, georreferenciación, saberes ancestrales lunares, indicadores DANE y administración territorial.
+- **`registro-software/modulo-chatbot`:** Asistente conversacional Asalia, biblioteca multimedia, modo lección y administración pedagógica.
+- **`registro-software/modulo-biocomercio`:** Portal de productoras campesinas, Mi Stock, calculadoras agronómicas, diagnóstico foliar con IA y administración de cosechas.
 
-### Convencion de Ramas de Trabajo
+### Convención de Ramas de Trabajo
 - Las ramas temporales de desarrollo se derivan desde `develop` utilizando el prefijo `feature/`:
   - `feature/modulo-precios-dane`
   - `feature/deteccion-enfermedades-biocomercio`
 
-### Convencion de Mensajes de Commit
-Los commits del proyecto deben redactarse de manera formal, tecnica y descriptiva, iniciando con el prefijo `feature|` seguido del detalle del cambio:
+### Convención de Mensajes de Commit
+Los commits del proyecto deben redactarse de manera formal, técnica y descriptiva, iniciando con el prefijo `feature|` seguido del detalle del cambio:
 ```bash
 git commit -m "feature|Se incorpora soporte para... y se optimiza la persistencia relacional"
 ```
 
 ---
 
-## 6. Documentacion Arquitectonica Adicional
+## 6. Documentación Arquitectónica Adicional
 
-Para consultar el analisis en profundidad de patrones de diseno, tics de implementacion de CQRS con MediatR, persistencia con EF Core y componentes de seguridad, consulte el documento:
-- [ARQUITECTURA.md](ARQUITECTURA.md): Especificacion tecnica y diseno arquitectonico detallado.
+Para consultar el análisis en profundidad de patrones de diseño, detalles de implementación de CQRS con MediatR, persistencia con EF Core y componentes de seguridad, consulte el documento:
+- [ARQUITECTURA.md](ARQUITECTURA.md): Especificación técnica y diseño arquitectónico detallado.
