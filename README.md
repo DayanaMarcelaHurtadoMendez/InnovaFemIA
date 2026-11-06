@@ -57,9 +57,9 @@ Para compilar y ejecutar el proyecto localmente se requiere:
 
 ## 3. Puesta en Marcha en Entorno Local
 
-1. Clonar el repositorio y situarse en la rama `develop`:
+1. Clonar el repositorio y situarse en la rama `main`:
    ```bash
-   git checkout develop
+   git checkout main
    ```
 
 2. Configurar la conexión y credenciales en `src/InnovaFemIA.Web/appsettings.json`:
