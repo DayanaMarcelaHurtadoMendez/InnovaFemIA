@@ -1,0 +1,757 @@
+document.addEventListener('DOMContentLoaded', function () {
+            
+            // ── Coordenadas Reales de Caldono, Cauca (OpenStreetMap / DANE) ──
+            const LAT_CALDONO = 2.8152;
+            const LNG_CALDONO = -76.4958;
+            const ZOOM_INICIAL = 11.5;
+
+            // Capas de mapas
+            const tileOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap · Proyecto Orquídeas ICESI'
+            });
+
+            const tileSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18,
+                attribution: 'Tiles &copy; Esri &mdash; Caldono, Cauca'
+            });
+
+            // Inicializar Mapa Leaflet
+            const map = L.map('mapa-caldono', {
+                center: [LAT_CALDONO, LNG_CALDONO],
+                zoom: ZOOM_INICIAL,
+                layers: [tileOSM]
+            });
+
+            // Asignar el objeto mapa a nivel global para que sea accesible desde los eventos onclick de los popups
+            window.mapaLeaflet = map;
+
+            function actualizarZoomClase() {
+                const el = document.getElementById('mapa-caldono');
+                // Nivel de zoom muy cercano (>= 14.5) para que las tarjetas de texto salgan
+                if (map.getZoom() >= 14.5) {
+                    el.classList.remove('zoom-lejano');
+                } else {
+                    el.classList.add('zoom-lejano');
+                }
+            }
+            map.on('zoomend', actualizarZoomClase);
+            actualizarZoomClase();
+
+            let currentTile = tileOSM;
+
+            // ── LÍMITES ADMINISTRATIVOS OFICIALES DE CALDONO, CAUCA (OpenStreetMap Relación 1722357 - DANE) ──
+            const caldonoPolygonCoords = [[2.87201, -76.63056], [2.86863, -76.62753], [2.86726, -76.62656], [2.86372, -76.62174], [2.86239, -76.61954], [2.86145, -76.61833], [2.85984, -76.61710], [2.85800, -76.61428], [2.85647, -76.61272], [2.85585, -76.61150], [2.85574, -76.61058], [2.85473, -76.60889], [2.85110, -76.60264], [2.85064, -76.60136], [2.84869, -76.59620], [2.84761, -76.59457], [2.84473, -76.59165], [2.84209, -76.58804], [2.83990, -76.58488], [2.83828, -76.58307], [2.83663, -76.58181], [2.83484, -76.58085], [2.83135, -76.57942], [2.82967, -76.57912], [2.82840, -76.57636], [2.82785, -76.57360], [2.82688, -76.57195], [2.82417, -76.56994], [2.82103, -76.56798], [2.81788, -76.56665], [2.81406, -76.56526], [2.81100, -76.56403], [2.80930, -76.56304], [2.80746, -76.56116], [2.80498, -76.55928], [2.80225, -76.55790], [2.79918, -76.55711], [2.79828, -76.55702], [2.79734, -76.55565], [2.79619, -76.55487], [2.79567, -76.55405], [2.79521, -76.55375], [2.79518, -76.55324], [2.79410, -76.55390], [2.79372, -76.55374], [2.79359, -76.55278], [2.79315, -76.55253], [2.79350, -76.55205], [2.79335, -76.55159], [2.79314, -76.55081], [2.79396, -76.55049], [2.79361, -76.55013], [2.79292, -76.54980], [2.79255, -76.55013], [2.79208, -76.55011], [2.79177, -76.55009], [2.79151, -76.55054], [2.79096, -76.55059], [2.78989, -76.55030], [2.78912, -76.55064], [2.78863, -76.55032], [2.78833, -76.54967], [2.78801, -76.54936], [2.78720, -76.54923], [2.78486, -76.54948], [2.78399, -76.54993], [2.78342, -76.55014], [2.78262, -76.55014], [2.78162, -76.54989], [2.78132, -76.54972], [2.78056, -76.54963], [2.77899, -76.54957], [2.77812, -76.54910], [2.77706, -76.54844], [2.77654, -76.54825], [2.77572, -76.54807], [2.77502, -76.54764], [2.77452, -76.54715], [2.77406, -76.54640], [2.77379, -76.54542], [2.77328, -76.54451], [2.77283, -76.54363], [2.77250, -76.54252], [2.77203, -76.54152], [2.77084, -76.54098], [2.76834, -76.53957], [2.76603, -76.53790], [2.76527, -76.53754], [2.76425, -76.53723], [2.76319, -76.53700], [2.76253, -76.53666], [2.76215, -76.53584], [2.76144, -76.53582], [2.76036, -76.53620], [2.75953, -76.53635], [2.75819, -76.53649], [2.75740, -76.53648], [2.75668, -76.53622], [2.75587, -76.53592], [2.75491, -76.53582], [2.75401, -76.53543], [2.75312, -76.53517], [2.75226, -76.53507], [2.75024, -76.53507], [2.74948, -76.53485], [2.74858, -76.53444], [2.74773, -76.53448], [2.74692, -76.53480], [2.74617, -76.53522], [2.74541, -76.53523], [2.74475, -76.53485], [2.74424, -76.53421], [2.74417, -76.53336], [2.74402, -76.53264], [2.74338, -76.53224], [2.74260, -76.53231], [2.74169, -76.53249], [2.74047, -76.53239], [2.73986, -76.53186], [2.73924, -76.53121], [2.73848, -76.53101], [2.73692, -76.53080], [2.73571, -76.53053], [2.73482, -76.53018], [2.73402, -76.53003], [2.73160, -76.53003], [2.73097, -76.52946], [2.73057, -76.52885], [2.73003, -76.52779], [2.72946, -76.52710], [2.72862, -76.52647], [2.72808, -76.52591], [2.72753, -76.52513], [2.72684, -76.52408], [2.72619, -76.52335], [2.72558, -76.52279], [2.72453, -76.52207], [2.72262, -76.52081], [2.72177, -76.52015], [2.72119, -76.51953], [2.72064, -76.51850], [2.72016, -76.51787], [2.71997, -76.51685], [2.71987, -76.51603], [2.71959, -76.51537], [2.71896, -76.51479], [2.71794, -76.5142], [2.71740, -76.51317], [2.71712, -76.51210], [2.71666, -76.51161], [2.71572, -76.51109], [2.71520, -76.51032], [2.71467, -76.50953], [2.71396, -76.50919], [2.71300, -76.50890], [2.71207, -76.50870], [2.71111, -76.50862], [2.71025, -76.50859], [2.70995, -76.50782], [2.70954, -76.50712], [2.70879, -76.50687], [2.70823, -76.50651], [2.70799, -76.50564], [2.70749, -76.50518], [2.70658, -76.50480], [2.70440, -76.49936], [2.70616, -76.49651], [2.70693, -76.49630], [2.70809, -76.49541], [2.70894, -76.49471], [2.70994, -76.49419], [2.71669, -76.49428], [2.73652, -76.48836], [2.74577, -76.48251], [2.73932, -76.46018], [2.73370, -76.44405], [2.72849, -76.42979], [2.72453, -76.41925], [2.72240, -76.40957], [2.72435, -76.40381], [2.72860, -76.39951], [2.73621, -76.39751], [2.73865, -76.39175], [2.74402, -76.38567], [2.75524, -76.37676], [2.76266, -76.36784], [2.77217, -76.36195], [2.78349, -76.36166], [2.80273, -76.36111], [2.81158, -76.36255], [2.81841, -76.36293], [2.82438, -76.36173], [2.83060, -76.36194], [2.83567, -76.36519], [2.84022, -76.36782], [2.84909, -76.36943], [2.85566, -76.37129], [2.86266, -76.37220], [2.87029, -76.37153], [2.87477, -76.37016], [2.87993, -76.36787], [2.88646, -76.36734], [2.89099, -76.36533], [2.89611, -76.36430], [2.90085, -76.36295], [2.90312, -76.36285], [2.90509, -76.36284], [2.90784, -76.36302], [2.90858, -76.36312], [2.90967, -76.36302], [2.91063, -76.36301], [2.91142, -76.36259], [2.91200, -76.36207], [2.91217, -76.36134], [2.91338, -76.36154], [2.91412, -76.36200], [2.91471, -76.36279], [2.91498, -76.36291], [2.91597, -76.36322], [2.91639, -76.36328], [2.91682, -76.36317], [2.91709, -76.36299], [2.91744, -76.36244], [2.91804, -76.36226], [2.91852, -76.36256], [2.91891, -76.36360], [2.91897, -76.36450], [2.91925, -76.36535], [2.91981, -76.36592], [2.92045, -76.36633], [2.92068, -76.36688], [2.92064, -76.36741], [2.91998, -76.36845], [2.91895, -76.36925], [2.91785, -76.36974], [2.91730, -76.37010], [2.91708, -76.37044], [2.91712, -76.37072], [2.91745, -76.37088], [2.91849, -76.37086], [2.91923, -76.37067], [2.91920, -76.37014], [2.91946, -76.36961], [2.92030, -76.36895], [2.92099, -76.36892], [2.92183, -76.36949], [2.92209, -76.36957], [2.92274, -76.36963], [2.92321, -76.37008], [2.92355, -76.37108], [2.92381, -76.37112], [2.92443, -76.37157], [2.92498, -76.37265], [2.92590, -76.37345], [2.92126, -76.37667], [2.92084, -76.37662], [2.92037, -76.37663], [2.91999, -76.37662], [2.91979, -76.37662], [2.91949, -76.37669], [2.91915, -76.37682], [2.91879, -76.37698], [2.91862, -76.37709], [2.91796, -76.37765], [2.91783, -76.37781], [2.91760, -76.37818], [2.91747, -76.37834], [2.91716, -76.37861], [2.91663, -76.37906], [2.91646, -76.37922], [2.91627, -76.37945], [2.91590, -76.38002], [2.91574, -76.38030], [2.91560, -76.38048], [2.91546, -76.38061], [2.91524, -76.38077], [2.91504, -76.38088], [2.91463, -76.38102], [2.91444, -76.38112], [2.91375, -76.38157], [2.91338, -76.38185], [2.91311, -76.38202], [2.91264, -76.38241], [2.91249, -76.38259], [2.91222, -76.38299], [2.91198, -76.38335], [2.91173, -76.38362], [2.91156, -76.38375], [2.91128, -76.38389], [2.91091, -76.38402], [2.91040, -76.38416], [2.90983, -76.38436], [2.90960, -76.38449], [2.90945, -76.38460], [2.90933, -76.38474], [2.90926, -76.38491], [2.90923, -76.38516], [2.90917, -76.38536], [2.90901, -76.38550], [2.90874, -76.38564], [2.90810, -76.38573], [2.90787, -76.38579], [2.90768, -76.38590], [2.90753, -76.38604], [2.90736, -76.38631], [2.90722, -76.38652], [2.90703, -76.38671], [2.90686, -76.38683], [2.90647, -76.38700], [2.90606, -76.38718], [2.90408, -76.38975], [2.90194, -76.39118], [2.89232, -76.39938], [2.89065, -76.41034], [2.89122, -76.41167], [2.89096, -76.41391], [2.89094, -76.41622], [2.88763, -76.42014], [2.88637, -76.42037], [2.88517, -76.42101], [2.88390, -76.42252], [2.88333, -76.42294], [2.88041, -76.42547], [2.88005, -76.42816], [2.87909, -76.43676], [2.87844, -76.43805], [2.87772, -76.44090], [2.87698, -76.44402], [2.87659, -76.44540], [2.87648, -76.44708], [2.87568, -76.44795], [2.87427, -76.44848], [2.87328, -76.44852], [2.87207, -76.44901], [2.87026, -76.45133], [2.86929, -76.45386], [2.86852, -76.45522], [2.86539, -76.45915], [2.86388, -76.46044], [2.86180, -76.46200], [2.85952, -76.46449], [2.85814, -76.46556], [2.85273, -76.46654], [2.84852, -76.46935], [2.84647, -76.47388], [2.84883, -76.48304], [2.85062, -76.48484], [2.85134, -76.48647], [2.85217, -76.48955], [2.85361, -76.49317], [2.85464, -76.49565], [2.85522, -76.49873], [2.85553, -76.50205], [2.85658, -76.50686], [2.85735, -76.50922], [2.85883, -76.51141], [2.86034, -76.51423], [2.86192, -76.51659], [2.86464, -76.51884], [2.87229, -76.52886], [2.87762, -76.53287], [2.87999, -76.53719], [2.88512, -76.55274], [2.88060, -76.56678], [2.87821, -76.56968], [2.87298, -76.57250], [2.86444, -76.57733], [2.86394, -76.58186], [2.86363, -76.58510], [2.86465, -76.58882], [2.86472, -76.59268], [2.86547, -76.59666], [2.86721, -76.60093], [2.86993, -76.60566], [2.87706, -76.61270], [2.87630, -76.61600], [2.87637, -76.61758], [2.87838, -76.62021], [2.87862, -76.62299], [2.87625, -76.62493], [2.87630, -76.62626], [2.87662, -76.62698], [2.87580, -76.62730], [2.87291, -76.63002], [2.87201, -76.63056]];
+
+            const caldonoPolygon = L.polygon(caldonoPolygonCoords, {
+                color: '#059669',
+                weight: 3,
+                opacity: 0.95,
+                fillColor: '#10b981',
+                fillOpacity: 0.12,
+                dashArray: '6, 6',
+                className: 'caldono-glow'
+            }).addTo(map);
+
+            // El usuario solicitó eliminar el tooltip del polígono ("Municipio de Caldono, Cauca...")
+
+
+            // Grupos de Capas para Filtros
+            const layerFamilias = L.layerGroup().addTo(map);
+            const layerAsociaciones = L.layerGroup().addTo(map);
+            const layerPuntos = L.layerGroup().addTo(map);
+
+            let datosFamilias = [];
+            let datosActores = [];
+
+            // ── Cargar Datos desde los Endpoints API REST ─────────────────────
+            async function cargarDatosMapa() {
+                try {
+                    const [resFamilias, resActores] = await Promise.all([
+                        fetch('/api/mapa/familias'),
+                        fetch('/api/mapa/actores')
+                    ]);
+
+                    if (resFamilias.ok) {
+                        datosFamilias = await resFamilias.json();
+                    }
+                    if (resActores.ok) {
+                        datosActores = await resActores.json();
+                    }
+
+                    renderizarMarcadores();
+                    actualizarEstadisticas();
+                } catch (err) {
+                    console.error('Error cargando datos del mapa:', err);
+                }
+            }
+
+            // ── Algoritmo de detección de colisión muy cercana (solo si están literalmente superpuestos) ──
+            function agruparPorColision(items, threshold = 0.00045) {
+                const grupos = [];
+                const visitados = new Set();
+
+                for (let i = 0; i < items.length; i++) {
+                    if (visitados.has(i)) continue;
+                    const grupo = [items[i]];
+                    visitados.add(i);
+
+                    for (let j = i + 1; j < items.length; j++) {
+                        if (visitados.has(j)) continue;
+                        const dLat = items[i].lat - items[j].lat;
+                        const dLng = items[i].lng - items[j].lng;
+                        const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+                        if (dist < threshold) {
+                            grupo.push(items[j]);
+                            visitados.add(j);
+                        }
+                    }
+                    grupos.push(grupo);
+                }
+                return grupos;
+            }
+
+            // ── Renderizar Marcadores Interactivos ───────────────────────────
+            function renderizarMarcadores() {
+                layerFamilias.clearLayers();
+                layerAsociaciones.clearLayers();
+                layerPuntos.clearLayers();
+
+                const filtroBusqueda = document.getElementById('map-search').value.toLowerCase().trim();
+                const filtroCultivoId = document.getElementById('map-filter-cultivo').value;
+
+                // 1. Filtrar y preparar Familias
+                if (document.getElementById('check-familias').checked) {
+                    const familiasFiltradas = [];
+
+                    datosFamilias.forEach(f => {
+                        const nombreFam = f.nombre || f.Nombre || '';
+                        const veredaFam = f.vereda || f.Vereda || '';
+                        const cultivosFam = f.cultivos || f.Cultivos || [];
+                        const telFam = f.telefonoContacto || f.TelefonoContacto || '';
+                        const fotoFam = f.fotoBase64 || f.FotoBase64;
+                        const idFam = f.id || f.Id;
+                        const lat = parseFloat(f.latitud || f.Latitud);
+                        const lng = parseFloat(f.longitud || f.Longitud);
+
+                        const coincideBusqueda = !filtroBusqueda || 
+                            nombreFam.toLowerCase().includes(filtroBusqueda) || 
+                            veredaFam.toLowerCase().includes(filtroBusqueda) ||
+                            cultivosFam.some(c => (c.nombreCultivo || c.NombreCultivo || '').toLowerCase().includes(filtroBusqueda));
+
+                        const coincideCultivo = !filtroCultivoId || 
+                            cultivosFam.some(c => (c.cultivoId || c.CultivoId) == filtroCultivoId);
+
+                        if (coincideBusqueda && coincideCultivo && !isNaN(lat) && !isNaN(lng)) {
+                            familiasFiltradas.push({
+                                raw: f,
+                                lat, lng,
+                                nombreFam, veredaFam, cultivosFam, telFam, fotoFam, idFam
+                            });
+                        }
+                    });
+
+                    // Agrupar solo familias con coordenadas colisionadas
+                    const gruposFamilias = agruparPorColision(familiasFiltradas);
+
+                    gruposFamilias.forEach(grupo => {
+                        const count = grupo.length;
+                        const centerLat = grupo.reduce((sum, item) => sum + item.lat, 0) / count;
+                        const centerLng = grupo.reduce((sum, item) => sum + item.lng, 0) / count;
+
+                        grupo.forEach((f, idx) => {
+                            let posLat = f.lat;
+                            let posLng = f.lng;
+                            let dir = 'top';
+                            let offset = [0, -20];
+
+                            // Solo separar ligeramente si están literalmente superpuestas (colisión)
+                            if (count > 1) {
+                                const angle = ((2 * Math.PI) / count) * idx - (Math.PI / 2);
+                                const radius = 0.0006; // ~60 metros
+                                posLat = centerLat + radius * Math.cos(angle);
+                                posLng = centerLng + (radius * Math.sin(angle) * 1.15);
+
+                                if (idx % 2 === 1) {
+                                    dir = 'bottom';
+                                    offset = [0, 20];
+                                }
+                            }
+
+                            const cultivosPreview = f.cultivosFam.length > 0
+                                ? f.cultivosFam.slice(0, 3).map(c => (c.icono || c.Icono) + ' ' + (c.nombreCultivo || c.NombreCultivo)).join(' · ')
+                                : '';
+
+                            const descFamilia = f.raw?.descripcion || f.raw?.Descripcion || '';
+
+                            // 1. Pin circular: muestra la foto de la familia o 👩‍🌾 por defecto
+                            const pinInner = f.fotoFam
+                                ? `<img src="${f.fotoFam}" alt="${f.nombreFam}" />`
+                                : '👩‍🌾';
+
+                            const icon = L.divIcon({
+                                className: '',
+                                html: `<div class="custom-pin-familia">${pinInner}</div>`,
+                                iconSize: [46, 46],
+                                iconAnchor: [23, 23]
+                            });
+
+                            const fotoClickable = f.fotoFam 
+                                ? `<button onclick="abrirVistaPreviaImagen('${f.fotoFam}')" title="Ampliar foto" class="block w-full h-full cursor-zoom-in hover:opacity-90 transition-opacity"><img src="${f.fotoFam}" class="w-full h-full object-cover"/></button>` 
+                                : '👩‍🌾';
+
+                            // Eliminamos popupHtml porque el usuario pidió estandarizar la acción:
+                            // Hacer clic en el pin y en la tarjeta flotante debe abrir siempre el Modal de Familia.
+
+                            // 2. Tarjeta flotante de vista previa (Google Maps Style)
+                            const tooltipHtml = `
+                                <div style="font-family: inherit; line-height: 1.35;" class="flex items-center gap-3" onclick="window.mapaLeaflet?.closePopup(); window.abrirModalFamilia(${f.idFam});">
+                                    <div style="width: 44px; height: 44px; border-radius: 9999px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 2px solid #d1d5db; flex-shrink: 0;">
+                                        ${f.fotoFam ? `<img src="${f.fotoFam}" style="width: 100%; height: 100%; object-fit: cover;" />` : '👩‍🌾'}
+                                    </div>
+                                    <div>
+                                        <span style="font-weight: 800; font-size: 19px; color: #111827; display: block; white-space: nowrap;">${f.nombreFam}</span>
+                                        <span style="font-weight: 600; font-size: 16.5px; color: #4b5563; display: block; white-space: nowrap; margin-top: 2px;">📍 Vereda ${f.veredaFam}</span>
+                                        ${cultivosPreview ? `<span style="font-size: 14.4px; color: #6b7280; display: block; margin-top: 3px; white-space: nowrap;">${cultivosPreview}</span>` : ''}
+                                    </div>
+                                </div>
+                            `;
+
+                            const marker = L.marker([posLat, posLng], { icon })
+                                .bindTooltip(tooltipHtml, {
+                                    permanent: true,
+                                    direction: dir,
+                                    offset: offset,
+                                    className: 'gm-preview-card'
+                                });
+                                
+                            // Estandarizar: Hacer clic en el marcador abre el modal de familia
+                            marker.on('click', function() {
+                                window.abrirModalFamilia(f.idFam);
+                            });
+
+                            marker.on('mouseover', function () {
+                                this.getTooltip()?.getElement()?.style.setProperty('display', 'flex', 'important');
+                                this.getTooltip()?.getElement()?.style.setProperty('opacity', '1', 'important');
+                                this.getTooltip()?.getElement()?.style.setProperty('z-index', '10000', 'important');
+                            });
+                            marker.on('mouseout', function () {
+                                if (document.getElementById('mapa-caldono').classList.contains('zoom-lejano')) {
+                                    this.getTooltip()?.getElement()?.style.setProperty('display', 'none', 'important');
+                                }
+                            });
+                            
+                            layerFamilias.addLayer(marker);
+                        });
+                    });
+                }
+
+                // 2. Renderizar Actores (Asociaciones y Puntos de Compra)
+                const actoresFiltrados = [];
+                datosActores.forEach(a => {
+                    const nombreActor = a.nombre || a.Nombre || '';
+                    const descActor = a.descripcion || a.Descripcion || '';
+                    const tipoActor = a.tipoActor || a.TipoActor || '';
+                    const contactoActor = a.datosContacto || a.DatosContacto || '';
+                    const lat = parseFloat(a.latitud || a.Latitud);
+                    const lng = parseFloat(a.longitud || a.Longitud);
+
+                    const coincideBusqueda = !filtroBusqueda || 
+                        nombreActor.toLowerCase().includes(filtroBusqueda) || 
+                        descActor.toLowerCase().includes(filtroBusqueda);
+
+                    if (coincideBusqueda && !isNaN(lat) && !isNaN(lng)) {
+                        actoresFiltrados.push({
+                            raw: a,
+                            lat, lng,
+                            nombreActor, descActor, tipoActor, contactoActor
+                        });
+                    }
+                });
+
+                const gruposActores = agruparPorColision(actoresFiltrados);
+
+                gruposActores.forEach(grupo => {
+                    const count = grupo.length;
+                    const centerLat = grupo.reduce((sum, item) => sum + item.lat, 0) / count;
+                    const centerLng = grupo.reduce((sum, item) => sum + item.lng, 0) / count;
+
+                    grupo.forEach((a, idx) => {
+                        let posLat = a.lat;
+                        let posLng = a.lng;
+                        let dir = 'top';
+                        let offset = [0, -20];
+
+                        if (a.tipoActor === 'Asociacion' && document.getElementById('check-asociaciones').checked) {
+                            if (count > 1) {
+                                const angle = ((2 * Math.PI) / count) * idx - (Math.PI / 2);
+                                const radius = 0.0006;
+                                posLat = centerLat + radius * Math.cos(angle);
+                                posLng = centerLng + (radius * Math.sin(angle) * 1.15);
+
+                                L.polyline([[centerLat, centerLng], [posLat, posLng]], {
+                                    color: '#d97706',
+                                    weight: 2,
+                                    dashArray: '4, 4',
+                                    opacity: 0.85
+                                }).addTo(layerAsociaciones);
+
+                                if (idx % 2 === 1) {
+                                    dir = 'bottom';
+                                    offset = [0, 20];
+                                }
+                            }
+
+                            const icon = L.divIcon({
+                                className: '',
+                                html: `<div class="custom-pin-asociacion">🏛️</div>`,
+                                iconSize: [36, 36],
+                                iconAnchor: [18, 18]
+                            });
+
+                            const popupHtml = `
+                                <div class="w-72 bg-white p-4 rounded-2xl font-sans">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 inline-block mb-1.5">Asociación Campesina</span>
+                                    <h3 class="font-extrabold text-base text-gray-900">${a.nombreActor}</h3>
+                                    <p class="text-sm text-gray-600 mt-1.5 leading-relaxed">${a.descActor}</p>
+                                    <p class="text-xs text-gray-500 mt-2.5 border-t border-gray-100 pt-2 font-bold">📞 ${a.contactoActor}</p>
+                                </div>
+                            `;
+
+                            const tooltipHtml = `
+                                <div style="line-height: 1.3; padding: 2px 4px;">
+                                    <span style="font-weight: 800; font-size: 13.2px; color: #111827; display: block;">🏛️ ${a.nombreActor}</span>
+                                    <span style="font-weight: 700; font-size: 11px; color: #b45309; display: block;">Asociación Campesina</span>
+                                </div>
+                            `;
+
+                            const marker = L.marker([posLat, posLng], { icon })
+                                .bindPopup(popupHtml)
+                                .bindTooltip(tooltipHtml, {
+                                    permanent: true,
+                                    direction: dir,
+                                    offset: offset,
+                                    className: 'gm-preview-card card-asociacion'
+                                });
+
+                            marker.on('mouseover', function () {
+                                this.getTooltip()?.getElement()?.style.setProperty('display', 'flex', 'important');
+                                this.getTooltip()?.getElement()?.style.setProperty('opacity', '1', 'important');
+                                this.getTooltip()?.getElement()?.style.setProperty('z-index', '10000', 'important');
+                            });
+                            marker.on('mouseout', function () {
+                                if (document.getElementById('mapa-caldono').classList.contains('zoom-lejano')) {
+                                    this.getTooltip()?.getElement()?.style.setProperty('display', 'none', 'important');
+                                }
+                            });
+
+                            layerAsociaciones.addLayer(marker);
+                        }
+
+                        if (a.tipoActor === 'PuntoCompra' && document.getElementById('check-puntos').checked) {
+                            if (count > 1) {
+                                const angle = ((2 * Math.PI) / count) * idx - (Math.PI / 2);
+                                const radius = 0.0006;
+                                posLat = centerLat + radius * Math.cos(angle);
+                                posLng = centerLng + (radius * Math.sin(angle) * 1.15);
+
+                                L.polyline([[centerLat, centerLng], [posLat, posLng]], {
+                                    color: '#2563eb',
+                                    weight: 2,
+                                    dashArray: '4, 4',
+                                    opacity: 0.85
+                                }).addTo(layerPuntos);
+
+                                if (idx % 2 === 1) {
+                                    dir = 'bottom';
+                                    offset = [0, 20];
+                                }
+                            }
+
+                            const icon = L.divIcon({
+                                className: '',
+                                html: `<div class="custom-pin-punto">🏬</div>`,
+                                iconSize: [36, 36],
+                                iconAnchor: [18, 18]
+                            });
+
+                            const popupHtml = `
+                                <div class="w-72 bg-white p-4 rounded-2xl font-sans">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900 inline-block mb-1.5">Punto de Acopio / Compra</span>
+                                    <h3 class="font-extrabold text-base text-gray-900">${a.nombreActor}</h3>
+                                    <p class="text-sm text-gray-600 mt-1.5 leading-relaxed">${a.descActor}</p>
+                                    <p class="text-xs text-gray-500 mt-2.5 border-t border-gray-100 pt-2 font-bold">📞 ${a.contactoActor}</p>
+                                </div>
+                            `;
+
+                            const tooltipHtml = `
+                                <div style="line-height: 1.3; padding: 2px 4px;">
+                                    <span style="font-weight: 800; font-size: 13.2px; color: #111827; display: block;">🏬 ${a.nombreActor}</span>
+                                    <span style="font-weight: 700; font-size: 11px; color: #1d4ed8; display: block;">Punto de Acopio</span>
+                                </div>
+                            `;
+
+                            const marker = L.marker([posLat, posLng], { icon })
+                                .bindPopup(popupHtml)
+                                .bindTooltip(tooltipHtml, {
+                                    permanent: true,
+                                    direction: dir,
+                                    offset: offset,
+                                    className: 'gm-preview-card card-punto'
+                                });
+
+                            marker.on('mouseover', function () {
+                                this.getTooltip()?.getElement()?.style.setProperty('display', 'flex', 'important');
+                                this.getTooltip()?.getElement()?.style.setProperty('opacity', '1', 'important');
+                                this.getTooltip()?.getElement()?.style.setProperty('z-index', '10000', 'important');
+                            });
+                            marker.on('mouseout', function () {
+                                if (document.getElementById('mapa-caldono').classList.contains('zoom-lejano')) {
+                                    this.getTooltip()?.getElement()?.style.setProperty('display', 'none', 'important');
+                                }
+                            });
+
+                            layerPuntos.addLayer(marker);
+                        }
+                    });
+                });
+            }
+
+            // ── Actualizar Estadísticas en Vivo ──────────────────────────────
+            function actualizarEstadisticas() {
+                document.getElementById('stat-familias').innerText = datosFamilias.length;
+                const veredasUnicas = new Set(datosFamilias.map(f => f.vereda || f.Vereda));
+                document.getElementById('stat-veredas').innerText = veredasUnicas.size;
+                document.getElementById('stat-actores').innerText = datosActores.length;
+            }
+
+            // Eventos de Filtros
+            document.getElementById('map-search').addEventListener('input', renderizarMarcadores);
+            document.getElementById('map-filter-cultivo').addEventListener('change', renderizarMarcadores);
+            document.getElementById('check-familias').addEventListener('change', renderizarMarcadores);
+            document.getElementById('check-asociaciones').addEventListener('change', renderizarMarcadores);
+            document.getElementById('check-puntos').addEventListener('change', renderizarMarcadores);
+
+            // Botón Recentrar en Caldono
+            document.getElementById('btn-recenter').addEventListener('click', function () {
+                map.flyTo([LAT_CALDONO, LNG_CALDONO], ZOOM_INICIAL, { duration: 1.5 });
+            });
+
+            // Botón Cambiar Capas (Satelital / Calles)
+            document.getElementById('btn-toggle-tiles').addEventListener('click', function () {
+                if (currentTile === tileOSM) {
+                    map.removeLayer(tileOSM);
+                    map.addLayer(tileSatelite);
+                    currentTile = tileSatelite;
+                    this.innerText = 'Cambiar a Mapa Calles';
+                } else {
+                    map.removeLayer(tileSatelite);
+                    map.addLayer(tileOSM);
+                    currentTile = tileOSM;
+                    this.innerText = 'Cambiar a Satelital';
+                }
+            });
+
+            // ── Lógica del Modal Ficha Completa ───────────────────────────────
+            window.abrirModalFamilia = async function(familiaId) {
+                const modal = document.getElementById('modal-familia');
+                modal.classList.remove('hidden');
+
+                document.getElementById('modal-nombre-familia').innerText = 'Cargando...';
+                document.getElementById('modal-stock-list').innerHTML = '<p class="text-xs text-gray-400 italic">Cargando información...</p>';
+
+                try {
+                    const res = await fetch(`/api/mapa/familias/${familiaId}`);
+                    if (!res.ok) throw new Error('No se pudo obtener el detalle');
+                    
+                    const f = await res.json();
+
+                    const nombre = f.nombre || f.Nombre || 'Familia';
+                    const vereda = f.vereda || f.Vereda || 'Caldono';
+                    const municipio = f.municipio || f.Municipio || 'Caldono';
+                    const contacto = f.nombreContacto || f.NombreContacto || 'Contacto';
+                    const tel = f.telefonoContacto || f.TelefonoContacto || '';
+                    const foto = f.fotoBase64 || f.FotoBase64;
+                    const desc = f.descripcion || f.Descripcion;
+                    const stock = f.stockProductos || f.StockProductos || [];
+
+                    document.getElementById('modal-nombre-familia').innerText = nombre;
+                    document.getElementById('modal-vereda').innerText = `📍 Vereda ${vereda}, ${municipio}, Cauca`;
+                    document.getElementById('modal-contacto-nombre').innerText = contacto;
+                    document.getElementById('modal-whatsapp-link').href = `https://wa.me/57${tel.replace(/\D/g, '')}`;
+
+                    if (foto) {
+                        document.getElementById('modal-foto-container').innerHTML = `<img src="${foto}" class="w-full h-full object-cover"/>`;
+                    } else {
+                        document.getElementById('modal-foto-container').innerHTML = '👩‍🌾';
+                    }
+
+                    if (desc) {
+                        document.getElementById('modal-descripcion-texto').innerText = desc;
+                        document.getElementById('modal-desc-container').classList.remove('hidden');
+                    } else {
+                        document.getElementById('modal-desc-container').classList.add('hidden');
+                    }
+
+                    // Renderizar Stock
+                    if (stock && stock.length > 0) {
+                        const stockHtml = stock.map(s => {
+                            const icono = s.icono || s.Icono || '🌱';
+                            const nombreCultivo = s.nombreCultivo || s.NombreCultivo || 'Cultivo';
+                            const notas = s.notas || s.Notas || 'Producto de finca agroecológica';
+                            const disponible = s.disponible !== undefined ? s.disponible : s.Disponible;
+                            return `
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="text-xl">${icono}</span>
+                                        <div>
+                                            <span class="font-semibold text-xs text-gray-900 block">${nombreCultivo}</span>
+                                            <span class="text-[10px] text-gray-400">${notas}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="font-bold text-[11px] ${disponible ? 'text-verde bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200' : 'text-gray-400'} inline-block">
+                                            ${disponible ? '✓ Cosecha Disponible' : '✕ Agotado'}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        document.getElementById('modal-stock-list').innerHTML = stockHtml;
+                    } else {
+                        document.getElementById('modal-stock-list').innerHTML = '<p class="text-xs text-gray-400 italic">No hay productos registrados en stock actualmente.</p>';
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    document.getElementById('modal-nombre-familia').innerText = 'Error al cargar';
+                }
+            };
+
+            // Cerrar Modal
+            const cerrarModal = () => document.getElementById('modal-familia').classList.add('hidden');
+            document.getElementById('btn-cerrar-modal').addEventListener('click', cerrarModal);
+            document.getElementById('btn-cerrar-modal-footer').addEventListener('click', cerrarModal);
+            document.getElementById('modal-familia').addEventListener('click', function(e) {
+                if (e.target === this) cerrarModal();
+            });
+
+            // Cargar datos al iniciar la vista
+            cargarDatosMapa();
+            cargarEstadoLunar();
+        });
+
+        // ─── LÓGICA DEL MÓDULO LUNAR DE CALDONO ─────────────────────────────────
+        let datosLunaresCache = null;
+
+        async function cargarEstadoLunar(cultivoId = null) {
+            try {
+                const url = cultivoId ? `/api/mapa/lunar?cultivoId=${cultivoId}` : '/api/mapa/lunar';
+                const resp = await fetch(url);
+                if (!resp.ok) return;
+                const data = await resp.json();
+                datosLunaresCache = data;
+
+                // Actualizar botón flotante
+                const btnIcono = document.getElementById('icono-lunar-btn');
+                const btnNombre = document.getElementById('nombre-lunar-btn');
+                if (btnIcono && data.icono) btnIcono.innerText = data.icono;
+                if (btnNombre && data.nombreFase) btnNombre.innerText = data.nombreFase;
+
+                // Actualizar Header del modal
+                const modalIcono = document.getElementById('lunar-modal-icono-hero');
+                const modalTitulo = document.getElementById('lunar-modal-titulo-fase');
+                const modalDesc = document.getElementById('lunar-modal-desc-visual');
+                const modalIlum = document.getElementById('lunar-modal-iluminacion');
+                const modalEdad = document.getElementById('lunar-modal-edad');
+                const modalCambio = document.getElementById('lunar-modal-cambio');
+
+                if (modalIcono) modalIcono.innerText = data.icono;
+                if (modalTitulo) modalTitulo.innerText = data.nombreFase;
+                if (modalDesc) modalDesc.innerText = data.descripcionVisual || 'Fase astronómica en Caldono';
+                if (modalIlum) modalIlum.innerText = `Iluminación: ${data.porcentajeIluminacion}`;
+                if (modalEdad) modalEdad.innerText = `Edad: ${data.edadDias} días`;
+                if (modalCambio) modalCambio.innerText = `Cambia en: ${data.diasParaProximoCambio} días`;
+
+                // Contador de prácticas
+                const countRec = document.getElementById('count-recomendadas');
+                if (countRec) countRec.innerText = data.practicasRecomendadas ? data.practicasRecomendadas.length : 0;
+
+                // Selector de Cultivos dinámico (Solo si hay cultivos específicos cargados en reglas)
+                const filaFiltro = document.getElementById('fila-filtro-cultivo-lunar');
+                const selectCultivo = document.getElementById('select-cultivo-lunar');
+                if (filaFiltro && selectCultivo) {
+                    if (data.cultivosDisponibles && data.cultivosDisponibles.length > 0) {
+                        filaFiltro.classList.remove('hidden');
+                        const selectedVal = selectCultivo.value;
+                        selectCultivo.innerHTML = '<option value="">🌱 Todos los cultivos</option>' +
+                            data.cultivosDisponibles.map(c => `<option value="${c.id}" ${selectedVal == c.id ? 'selected' : ''}>${c.icono} ${c.nombre}</option>`).join('');
+                    } else {
+                        filaFiltro.classList.add('hidden');
+                    }
+                }
+
+                // Renderizar Prácticas y Recomendaciones
+                const containerRec = document.getElementById('vista-lunar-recomendadas');
+                if (containerRec) {
+                    if (data.practicasRecomendadas && data.practicasRecomendadas.length > 0) {
+                        containerRec.innerHTML = data.practicasRecomendadas.map(p => `
+                            <div class="p-4 rounded-2xl bg-white border border-emerald-100 hover:border-emerald-300 transition-all flex items-start gap-3.5 shadow-sm">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-xl shrink-0">
+                                    ${p.iconoPractica || '🌱'}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                                        <h4 class="text-xs font-black text-gray-900">${p.practica}</h4>
+                                        <div class="flex items-center gap-1">
+                                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200">
+                                                ${p.nombreCultivo}
+                                            </span>
+                                            <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-50 text-verde border border-emerald-200">
+                                                ${p.nivelConfianza}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 leading-relaxed">${p.recomendacion}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        containerRec.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-6">No hay prácticas específicas registradas para esta fase en la base de datos.</p>';
+                    }
+                }
+
+                // Renderizar Calendario del Mes
+                const containerCal = document.getElementById('vista-lunar-calendario');
+                if (containerCal && data.calendarioMes) {
+                    const hoyDate = new Date(data.fechaCalculoLocal || Date.now());
+                    const formatter = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: '2-digit', month: 'long' });
+                    const hoyStr = formatter.format(hoyDate);
+
+                    let html = `<div class="mb-4 px-1">
+                                    <p class="text-sm text-gray-800 mb-1"><strong>Hoy es:</strong> <span class="capitalize">${hoyStr}</span></p>
+                                    <p class="text-[11px] text-gray-500 leading-snug">Línea de tiempo de las fases lunares de este mes (UTC-5):</p>
+                                </div>
+                                <div class="relative border-l-4 border-emerald-100 ml-4 space-y-8 mt-2 py-2">`;
+                    
+                    let hoyMostrado = false;
+                    const tiempoFaltante = data.diasParaProximoCambio >= 1 
+                        ? (Math.round(data.diasParaProximoCambio * 10) / 10) + " días" 
+                        : data.horasParaProximoCambio + " horas";
+                    const textoTransicion = `Pasando de ${data.nombreFase} a ${data.nombreProximaFase} en ${tiempoFaltante}.`;
+
+                    data.calendarioMes.forEach(f => {
+                        const faseDate = new Date(f.fechaHoraLocal);
+                        const esPasado = faseDate < hoyDate;
+                        const verbo = esPasado ? "Inició" : "Inicia";
+
+                        if (!hoyMostrado && !esPasado) {
+                            html += `
+                                <div class="relative pl-8 -my-4 z-10">
+                                    <div class="absolute -left-[11px] top-1/2 -translate-y-1/2 w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-100 shadow-sm animate-pulse"></div>
+                                    <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl px-4 py-3 inline-block shadow-sm w-full max-w-sm">
+                                        <span class="text-base font-black text-emerald-800 flex items-center gap-1">📍 Hoy estamos aquí</span>
+                                        <span class="block text-sm text-emerald-700 capitalize font-medium mb-1">${hoyStr}</span>
+                                        <span class="block text-sm text-emerald-900 bg-emerald-100/50 rounded-lg p-2 font-semibold">${textoTransicion}</span>
+                                    </div>
+                                </div>
+                            `;
+                            hoyMostrado = true;
+                        }
+
+                        const esActual = f.fase === data.faseEnum;
+                        html += `
+                            <div class="relative pl-8">
+                                <div class="absolute -left-[19px] top-0 bg-white border-4 ${esActual ? 'border-purple-400 ring-4 ring-purple-100' : 'border-gray-200'} rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-sm z-20">
+                                    ${f.icono}
+                                </div>
+                                <div class="${esActual ? 'bg-purple-50 border-purple-300' : 'bg-white border-gray-200'} border-2 rounded-2xl p-4 shadow-sm transition-all">
+                                    <h4 class="font-black text-base ${esActual ? 'text-purple-900' : 'text-gray-800'}">${f.nombreFase}</h4>
+                                    <p class="text-sm text-gray-600 mt-1.5 leading-relaxed">
+                                        ${verbo} el <strong class="text-gray-800 capitalize">${f.fechaFormateada}</strong><br/>
+                                        a las <span class="text-gray-700 font-bold">${f.horaFormateada}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    if (!hoyMostrado) {
+                        html += `
+                            <div class="relative pl-8 -my-4 z-10">
+                                <div class="absolute -left-[11px] top-1/2 -translate-y-1/2 w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-100 shadow-sm animate-pulse"></div>
+                                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl px-4 py-3 inline-block shadow-sm w-full max-w-sm">
+                                    <span class="text-base font-black text-emerald-800 flex items-center gap-1">📍 Hoy estamos aquí</span>
+                                    <span class="block text-sm text-emerald-700 capitalize font-medium mb-1">${hoyStr}</span>
+                                    <span class="block text-sm text-emerald-900 bg-emerald-100/50 rounded-lg p-2 font-semibold">${textoTransicion}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</div>`;
+                    
+                    containerCal.innerHTML = html;
+                }
+
+            } catch (err) {
+                console.error('Error al cargar datos lunares:', err);
+            }
+        }
+
+        function abrirPanelLunar() {
+            const modal = document.getElementById('modal-lunar');
+            if (modal) modal.classList.remove('hidden');
+            if (!datosLunaresCache) cargarEstadoLunar();
+        }
+
+        function cerrarPanelLunar() {
+            const modal = document.getElementById('modal-lunar');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function cambiarCultivoLunar(cultivoId) {
+            cargarEstadoLunar(cultivoId);
+        }
+
+        function cambiarPestanaLunar(pestana) {
+            const vRec = document.getElementById('vista-lunar-recomendadas');
+            const vCal = document.getElementById('vista-lunar-calendario');
+
+            const btnRec = document.getElementById('tab-btn-recomendadas');
+            const btnCal = document.getElementById('tab-btn-calendario');
+
+            [vRec, vCal].forEach(v => v && v.classList.add('hidden'));
+            [btnRec, btnCal].forEach(b => {
+                if (b) {
+                    b.classList.remove('border-purple-700', 'text-purple-900');
+                    b.classList.add('border-transparent', 'text-gray-500');
+                }
+            });
+
+            if (pestana === 'recomendadas') {
+                if (vRec) vRec.classList.remove('hidden');
+                if (btnRec) {
+                    btnRec.classList.add('border-purple-700', 'text-purple-900');
+                    btnRec.classList.remove('border-transparent', 'text-gray-500');
+                }
+            } else if (pestana === 'calendario') {
+                if (vCal) vCal.classList.remove('hidden');
+                if (btnCal) {
+                    btnCal.classList.add('border-purple-700', 'text-purple-900');
+                    btnCal.classList.remove('border-transparent', 'text-gray-500');
+                }
+            }
+        }
+
+        // Vista previa de fotos estilo Lightbox profesional
+        window.abrirVistaPreviaImagen = function(url) {
+            if (!url) return;
+            const div = document.createElement('div');
+            div.className = 'fixed inset-0 z-[9999] bg-gray-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in cursor-zoom-out';
+            div.onclick = () => div.remove();
+            div.innerHTML = `
+                <img src="${url}" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain" onclick="event.stopPropagation()" />
+                <button class="absolute top-6 right-6 text-white text-3xl font-bold bg-gray-800/60 hover:bg-gray-700 w-12 h-12 rounded-full flex items-center justify-center transition-colors" onclick="this.parentElement.remove()">✕</button>
+            `;
+            document.body.appendChild(div);
+        };

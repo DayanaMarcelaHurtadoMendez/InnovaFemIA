@@ -1,0 +1,112 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Chatbot.LeccionResumenDto>
+@{
+    ViewData["Title"] = "Modo Lección — Asistente Educativo";
+}
+
+<div class="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-amber-50/50 via-emerald-50/30 to-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto space-y-6">
+
+        <!-- Barra Superior y Estadísticas Gamificadas -->
+        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <a href="/chatbot" class="text-xs text-verde font-bold hover:underline block mb-1">← Volver al Asistente Asalia</a>
+                <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                    <span>🎓</span> Escuela Agroecológica de Saberes
+                </h1>
+                <p class="text-xs text-gray-500 mt-0.5">Aprende respondiendo preguntas prácticas sobre agroecología y el campo en Caldono</p>
+            </div>
+
+            <!-- Progreso de Lecciones Completadas -->
+            <div class="flex items-center gap-3 bg-emerald-50 px-4 py-2.5 rounded-2xl border border-emerald-200/80 shrink-0">
+                <span class="text-2xl">🏆</span>
+                <div>
+                    <span id="stat-completadas" class="text-xs font-black text-verde block leading-tight">0 / @(Model?.Count() ?? 0)</span>
+                    <span class="text-[10px] font-bold text-verde uppercase">Lecciones Completadas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banner de Felicitación si todo está completado -->
+        <div id="banner-todas-completadas" class="hidden bg-gradient-to-r from-amber-500 to-emerald-600 text-white p-5 rounded-3xl shadow-lg border border-amber-300">
+            <div class="flex items-start sm:items-center gap-3">
+                <span class="text-3xl shrink-0">🎉</span>
+                <div>
+                    <h3 class="font-black text-sm">¡Felicitaciones! Completaste todas las lecciones disponibles</h3>
+                    <p class="text-xs text-amber-100 mt-0.5">¡Pronto habrá más contenido para ti! Mientras tanto, puedes repetir cualquiera para repasar.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Lecciones / Camino de Aprendizaje -->
+        <div class="space-y-4">
+            @if (Model != null && Model.Any())
+            {
+                var leccionesList = Model.ToList();
+                for (int i = 0; i < leccionesList.Count; i++)
+                {
+                    var leccion = leccionesList[i];
+                    <div id="card-leccion-@leccion.Id" 
+                         data-leccion-id="@leccion.Id" 
+                         data-numero="@leccion.NumeroLeccion"
+                         class="leccion-card bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-sm transition-all hover:shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+                        
+                        <div class="flex items-start gap-4">
+                            <!-- Ícono / Portada -->
+                            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-verde border border-emerald-200/80 flex items-center justify-center text-2xl shrink-0 font-black shadow-inner overflow-hidden">
+                                @if (leccion.TieneImagen)
+                                {
+                                    <img src="~/chatbot/lecciones/@leccion.Id/imagen" alt="@leccion.Titulo" class="w-full h-full object-cover" />
+                                }
+                                else
+                                {
+                                    <span>🌱</span>
+                                }
+                            </div>
+
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-verde border border-emerald-200">
+                                        Lección #@leccion.NumeroLeccion
+                                    </span>
+                                    <span id="badge-estado-@leccion.Id" class="badge-estado px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gray-100 text-gray-600 border border-gray-200">
+                                        Pendiente
+                                    </span>
+                                </div>
+                                <h2 class="text-base font-black text-gray-900">@leccion.Titulo</h2>
+                                <p class="text-xs text-gray-500 max-w-xl">@leccion.Descripcion</p>
+                                <div class="flex items-center gap-3 text-[11px] text-gray-400 pt-1 font-medium">
+                                    <span>📝 @leccion.TotalPreguntas preguntas</span>
+                                    <span>•</span>
+                                    <span>⭐ +@((leccion.TotalPreguntas * 10)) Puntos</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón de Acción -->
+                        <div class="shrink-0 w-full sm:w-auto">
+                            <a id="btn-accion-@leccion.Id" 
+                               href="~/chatbot/lecciones/@leccion.Id" 
+                               class="btn-leccion w-full sm:w-auto px-5 py-3 bg-emerald-600 hover:bg-verde text-white font-extrabold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2">
+                                <span>🚀</span>
+                                <span>Empezar Lección</span>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="bg-white p-12 rounded-3xl text-center border border-gray-100 space-y-3">
+                    <span class="text-4xl block">🌱</span>
+                    <h3 class="font-black text-base text-gray-900">Aún no hay lecciones activas</h3>
+                    <p class="text-xs text-gray-500 max-w-md mx-auto">Pronto habrá más contenido para ti. Por favor, vuelve a consultar más adelante.</p>
+                    <a href="/chatbot" class="inline-block mt-2 px-4 py-2 bg-emerald-100 text-verde font-bold rounded-xl text-xs">
+                        ← Volver al Asistente
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script src="~/js/chatbot/lecciones-list.js" asp-append-version="true"></script>

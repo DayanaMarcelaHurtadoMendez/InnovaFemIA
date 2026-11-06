@@ -1,0 +1,291 @@
+@model InnovaFemIA.Web.Features.Mapa.ObtenerLunar.InformacionLunarViewModel
+@{
+    ViewData["Title"] = "Calendario Lunar Agrícola — Caldono, Cauca";
+    ViewData["Description"] = "Fase lunar astronómica calculada en tiempo real para el Municipio de Caldono, Cauca (Colombia). Recomendaciones agroecológicas y ancestrales de siembra, cosecha, abono y corte de guadua.";
+}
+
+<div class="min-h-screen bg-slate-50 text-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto space-y-8">
+
+        <!-- ── ENCABEZADO TERRITORIAL Y ASTRONÓMICO (DISEÑO CLARO) ── -->
+        <div class="mb-8 animate-slide-up flex flex-col md:flex-row items-start justify-between gap-6">
+            <div class="flex items-start gap-4">
+                <span class="text-4xl mt-1">@Model.Icono</span>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h1 class="section-header mb-0">Calendario Lunar Agrícola</h1>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cian-light text-cian border border-cian/20">
+                            Cálculo Astronómico Local
+                        </span>
+                    </div>
+                    <p class="section-subtitle mb-3 max-w-2xl">
+                        Guía agroecológica calculada en tiempo real para la hora legal (<strong class="text-gray-800">@Model.Ubicacion.ZonaHoraria</strong>). Esta información es válida para todo el territorio de <strong>Colombia</strong> y países de la misma zona horaria y latitud con similares características).
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
+                <a href="https://claude.ai/artifact/V8mjKt9sRmspRg4VRgf4LY" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-xs text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 shadow-sm shadow-emerald-200 hover:shadow-md transition-all active:scale-95" title="Aprende con la luna en Claude.ai">
+                    <span>🎮</span>
+                    <span>Aprende con la luna</span>
+                    <span class="bg-emerald-800/50 text-white text-[9px] px-1.5 py-0.5 rounded-md uppercase font-black">↗</span>
+                </a>
+                <a href="~/mapa/mapa" class="btn-cian text-xs px-4 py-2" title="Ver en el Mapa">
+                    <span>🗺️</span> Ver en el Mapa
+                </a>
+                <a href="~/chatbot" class="btn-naranja text-xs px-4 py-2" title="Preguntar a Asalia">
+                    <span>🤖</span> Preguntar a Asalia
+                </a>
+            </div>
+        </div>
+
+        <!-- ── ESTADO LUNAR ACTUAL (TARJETA HERO PRINCIPAL) ── -->
+        <div class="flex flex-col gap-8">
+
+            <!-- Ficha Astronómica de la Fase Actual -->
+            <div class="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col justify-start relative overflow-hidden">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                    <!-- Icono Grande con Estilo Claro -->
+                    <div class="relative group">
+                        <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-gray-50 border-2 border-gray-100 flex items-center justify-center text-7xl sm:text-8xl shadow-sm relative z-10">
+                            @Model.Icono
+                        </div>
+                    </div>
+
+                    <!-- Datos Clave -->
+                    <div class="flex-1 text-center sm:text-left space-y-2">
+                        <div class="inline-block px-3 py-1 rounded-lg bg-cian-light text-cian font-extrabold text-xs tracking-wider uppercase">
+                            Fase Vigente en Caldono
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-black text-gray-900">@Model.NombreFase</h2>
+
+                        <div class="pt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-3 text-center sm:text-left">
+                                <span class="block text-[11px] font-bold text-gray-500 uppercase">Iluminación</span>
+                                <span class="text-2xl sm:text-3xl font-black text-gray-900">@Model.PorcentajeIluminacion</span>
+                            </div>
+                            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-3 text-center sm:text-left relative group">
+                                <span class="flex items-center justify-center sm:justify-start gap-1 text-[11px] font-bold text-gray-500 uppercase">
+                                    Edad Lunar
+                                    <span class="cursor-help bg-gray-200 text-gray-600 rounded-full w-4 h-4 inline-flex items-center justify-center text-[10px]">?</span>
+                                </span>
+                                <span class="text-2xl sm:text-3xl font-black text-gray-900 block mt-0.5">@Model.EdadDias días</span>
+
+                                <!-- Tooltip CSS -->
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-gray-800 text-white text-xs text-center p-2 rounded-xl shadow-lg z-50 normal-case font-normal pointer-events-none transition-all">
+                                    Días transcurridos desde la última Luna Nueva. Un ciclo dura ~29.5 días.
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-3 text-center sm:text-left col-span-2 sm:col-span-1">
+                                <span class="block text-[11px] font-bold text-gray-500 uppercase">Próxima Fase</span>
+                                <span class="text-sm font-extrabold text-gray-700 block mt-1">@Model.NombreProximaFase</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barra de Progreso hacia el cambio de Fase -->
+                <div class="mt-6 pt-6 border-t border-gray-100 space-y-2">
+                    <div class="flex items-center justify-between text-xs sm:text-sm">
+                        <span class="text-gray-700 flex items-center gap-1.5">
+                            <span>⏳</span>
+                            <span>Cambia a <strong>@Model.NombreProximaFase</strong> en <strong>@Model.DiasParaProximoCambio días</strong> (@Model.HorasParaProximoCambio horas)</span>
+                        </span>
+                        <span class="text-cian font-bold hidden sm:inline">@Model.FechaProximaFormateada</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden border border-gray-200 p-0.5">
+                        @{
+                            var pctRestante = Math.Clamp((1.0 - ((double)Model.DiasParaProximoCambio / 7.38)) * 100.0, 5.0, 100.0);
+                        }
+                        <div class="bg-cian h-full rounded-full transition-all duration-1000" style="width: @(pctRestante)%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendario de las 4 Fases Principales del Mes (Vertical) -->
+            <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex flex-col overflow-hidden">
+                <div class="mb-4">
+                    <h3 class="text-lg font-black text-gray-900 flex items-center gap-2 mb-1">
+                        <span>📅</span>
+                        <span>Fases del Mes (Caldono)</span>
+                    </h3>
+                    <p class="text-sm text-gray-800 mb-1 mt-2"><strong>Hoy es:</strong> <span class="capitalize">@Model.FechaActualLocal.ToString("dddd, dd 'de' MMMM", new System.Globalization.CultureInfo("es-CO"))</span></p>
+                    <p class="text-xs text-gray-500 leading-snug">Línea de tiempo de las fases lunares de este mes (UTC-5):</p>
+                </div>
+
+                <div class="relative border-l-4 border-emerald-100 ml-4 space-y-8 mt-4 py-2">
+                    @{
+                        bool hoyMostrado = false;
+                        var hoy = Model.FechaActualLocal;
+                        var hoyFmt = hoy.ToString("dddd, dd 'de' MMMM", new System.Globalization.CultureInfo("es-CO"));
+                        var tiempoFaltante = Model.DiasParaProximoCambio >= 1 
+                            ? $"{Math.Round(Model.DiasParaProximoCambio, 1)} días" 
+                            : $"{Model.HorasParaProximoCambio} horas";
+                        var textoTransicion = $"Pasando de {Model.NombreFase} a {Model.NombreProximaFase} en {tiempoFaltante}.";
+                    }
+                    @foreach (var f in Model.CalendarioMes)
+                    {
+                        var esPasado = f.FechaHoraLocal < hoy;
+                        var verbo = esPasado ? "Inició" : "Inicia";
+
+                        if (!hoyMostrado && !esPasado)
+                        {
+                            <!-- Marcador de HOY -->
+                            <div class="relative pl-8 -my-4 z-10">
+                                <div class="absolute -left-[11px] top-1/2 -translate-y-1/2 w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-100 shadow-sm animate-pulse"></div>
+                                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl px-4 py-3 inline-block shadow-sm w-full max-w-sm">
+                                    <span class="text-base font-black text-emerald-800 flex items-center gap-1">📍 Hoy estamos aquí</span>
+                                    <span class="block text-sm text-emerald-700 capitalize font-medium mb-1">@hoyFmt</span>
+                                    <span class="block text-sm text-emerald-900 bg-emerald-100/50 rounded-lg p-2 font-semibold">@textoTransicion</span>
+                                </div>
+                            </div>
+                            hoyMostrado = true;
+                        }
+
+                        var esActual = f.Fase == Model.FaseEnum;
+                        <div class="relative pl-8">
+                            <!-- Ícono en la línea -->
+                            <div class="absolute -left-[19px] top-0 bg-white border-4 @(esActual ? "border-purple-400 ring-4 ring-purple-100" : "border-gray-200") rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-sm z-20">
+                                @f.Icono
+                            </div>
+                            <!-- Tarjeta de la fase -->
+                            <div class="@(esActual ? "bg-purple-50 border-purple-300" : "bg-white border-gray-200") border-2 rounded-2xl p-4 shadow-sm transition-all max-w-lg">
+                                <h4 class="font-black text-base @(esActual ? "text-purple-900" : "text-gray-800")">@f.NombreFase</h4>
+                                <p class="text-sm text-gray-600 mt-1.5 leading-relaxed">
+                                    @verbo el <strong class="text-gray-800 capitalize">@f.FechaFormateada</strong><br/>
+                                    a las <span class="text-gray-700 font-bold">@f.HoraFormateada</span>
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    @if (!hoyMostrado)
+                    {
+                        <!-- Si hoy es después de todas las fases -->
+                        <div class="relative pl-8 -my-4 z-10">
+                            <div class="absolute -left-[11px] top-1/2 -translate-y-1/2 w-5 h-5 bg-emerald-500 rounded-full ring-4 ring-emerald-100 shadow-sm animate-pulse"></div>
+                            <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl px-4 py-3 inline-block shadow-sm w-full max-w-sm">
+                                <span class="text-base font-black text-emerald-800 flex items-center gap-1">📍 Hoy estamos aquí</span>
+                                <span class="block text-sm text-emerald-700 capitalize font-medium mb-1">@hoyFmt</span>
+                                <span class="block text-sm text-emerald-900 bg-emerald-100/50 rounded-lg p-2 font-semibold">@textoTransicion</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ── FILTRO POR CULTIVO (SOLO SE MUESTRA SI HAY CULTIVOS ESPECÍFICOS REGISTRADOS EN REGLAS LUNARES) ── -->
+        @if (Model.CultivosDisponibles.Any())
+        {
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🔍</span>
+                    <span class="text-sm font-bold text-gray-800">Filtrar recomendaciones por cultivo:</span>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
+                    <a href="~/mapa/lunar" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all @(Model.CultivoIdSeleccionado == null ? "bg-purple-900 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
+                        🌱 Todos los cultivos
+                    </a>
+                    @foreach (var c in Model.CultivosDisponibles)
+                    {
+                        <a href="~/mapa/lunar?cultivoId=@c.Id" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all @(Model.CultivoIdSeleccionado == c.Id ? "bg-purple-900 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200")">
+                            <span>@c.Icono</span> @c.Nombre
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- ── PRÁCTICAS AGRÍCOLAS RECOMENDADAS Y ADVERTENCIAS ── -->
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                        <span>🌿</span>
+                        <span>Prácticas Agroecológicas para @Model.NombreFase</span>
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-500">Conocimientos tradicionales y recomendaciones de ASCAMPESINA en Caldono</p>
+                </div>
+                <span class="px-3 py-1 rounded-full bg-emerald-50 text-verde border border-emerald-200 text-xs font-black">
+                    @Model.PracticasRecomendadas.Count prácticas
+                </span>
+            </div>
+
+            @if (Model.PracticasRecomendadas.Any())
+            {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach (var p in Model.PracticasRecomendadas)
+                    {
+                        <div class="bg-white border border-emerald-100 hover:border-emerald-300 rounded-2xl p-5 shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+                            <div>
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-xl shrink-0">
+                                        @p.IconoPractica
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 border border-gray-200">
+                                            @p.NombreCultivo
+                                        </span>
+                                        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-50 text-verde border border-emerald-200">
+                                            Confianza @p.NivelConfianza
+                                        </span>
+                                    </div>
+                                </div>
+                                <h3 class="text-base font-extrabold text-gray-900 mb-2">@p.Practica</h3>
+                                <p class="text-xs text-gray-600 leading-relaxed">@p.Recomendacion</p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-verde font-bold">
+                                <span>✅ Labor Recomendada</span>
+                                <span>@Model.NombreFase</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="bg-white border border-gray-200 rounded-2xl p-8 text-center text-gray-500 text-sm">
+                    No se encontraron prácticas específicas registradas para esta fase lunar.
+                </div>
+            }
+
+        </div>
+
+        <!-- ── DESTACADO AL FINAL: JUEGO APRENDE CON LA LUNA (SABERES CAMPESINOS DE CALDONO) ── -->
+        <div class="bg-white border-2 border-emerald-100 hover:border-emerald-300 rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all animate-fade-in">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center sm:items-start gap-5 text-center sm:text-left flex-col sm:flex-row">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-4xl sm:text-5xl shadow-sm shrink-0">
+                        🎮
+                    </div>
+                    <div class="space-y-1.5 max-w-2xl">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-verde border border-emerald-200 text-xs font-black uppercase tracking-wider">
+                            <span>🎮</span> Saberes Campesinos de Caldono
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
+                            ¿Sabes en qué luna va cada labor del campo?
+                        </h3>
+                        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                            Repasa las 12 labores tradicionales de la comunidad en el juego interactivo <strong class="text-gray-900">Aprende con la Luna</strong>. ¡Pon a prueba tus saberes agroecológicos!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="shrink-0 w-full sm:w-auto">
+                    <a href="https://claude.ai/artifact/V8mjKt9sRmspRg4VRgf4LY"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-black text-sm shadow-md hover:shadow-lg transition-all active:scale-95 text-center">
+                        <span>🌙</span>
+                        <span>Aprende con la luna</span>
+                        <span>↗</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

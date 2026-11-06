@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Ingresar a Biocomercio";
+    Layout = "_Layout";
+}
+
+<div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="bg-verde px-6 py-8 text-center text-white">
+            <h1 class="text-2xl font-black mb-2">Biocomercio</h1>
+            <p class="text-sm font-medium text-emerald-100">Ingresa la información actualizada de tu producción, revisa precios, calcula el valor de tus cosechas y la red de aliados para la comercialización.</p>
+        </div>
+
+        <div class="p-8">
+            @if (ViewBag.Error != null)
+            {
+                <div class="mb-6 bg-rose-50 text-rose-700 text-sm font-bold p-4 rounded-xl border border-rose-200 flex items-start gap-2">
+                    <span class="mt-0.5">⚠️</span> <span>@ViewBag.Error</span>
+                </div>
+            }
+
+            <form action="~/biocomercio/login" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+                
+                @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl))
+                {
+                    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                }
+
+                <div>
+                    <label for="usuario" class="block text-sm font-bold text-gray-700 mb-2">Nombre de Usuaria</label>
+                    <input type="text" id="usuario" name="usuario" required 
+                           class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                           placeholder="Ej: familiagonzalez" />
+                </div>
+
+                <div>
+                    <label for="contrasena" class="block text-sm font-bold text-gray-700 mb-2">Contraseña</label>
+                    <input type="password" id="contrasena" name="contrasena" required 
+                           class="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                           placeholder="Ingresa tu contraseña" />
+                </div>
+
+                <button type="submit" class="w-full bg-verde hover:bg-emerald-700 text-white font-black text-lg py-4 rounded-2xl shadow-lg transition-all active:scale-95">
+                    Ingresar
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-xs text-gray-500 font-medium">
+                Si no tienes cuenta o olvidaste tu contraseña, contáctate con el administrador del proyecto.
+            </div>
+            
+            <div class="mt-4 text-center">
+                <a href="/" class="text-verde text-sm font-bold hover:underline">← Volver al Mapa</a>
+            </div>
+        </div>
+    </div>
+</div>

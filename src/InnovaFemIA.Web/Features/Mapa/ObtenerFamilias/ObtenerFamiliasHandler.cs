@@ -60,6 +60,7 @@ public class ObtenerFamiliasHandler : IRequestHandler<ObtenerFamiliasQuery, Resu
             TelefonoContacto = f.TelefonoContacto,
             Latitud = f.Latitud,
             Longitud = f.Longitud,
+            Descripcion = f.Descripcion,
             FotoBase64 = f.FotoBytes is not null && f.FotoMimeType is not null
                 ? $"data:{f.FotoMimeType};base64,{Convert.ToBase64String(f.FotoBytes)}"
                 : null,
@@ -68,7 +69,7 @@ public class ObtenerFamiliasHandler : IRequestHandler<ObtenerFamiliasQuery, Resu
                 CultivoId = fc.CultivoId,
                 NombreCultivo = fc.Cultivo.Nombre,
                 Icono = fc.Cultivo.Icono,
-                Disponible = f.Stocks.Any(s => s.CultivoId == fc.CultivoId && s.Disponible)
+                Disponible = !f.Stocks.Any(s => s.CultivoId == fc.CultivoId && !s.Disponible)
             })
         });
 

@@ -30,3 +30,22 @@ npm-debug.log
 
 # Mac
 .DS_Store
+
+# Local Media Cache & Heavy Uploads (Almacenados en BD, cacheados localmente)
+[Ww][Ww][Ww]root/media_cache/
+[Ww][Ww][Ww]root/uploads/
+**/media_cache/
+**/uploads/
+*.media
+# Distribution and backups
+dist/
+backups/
+.env
+scratch*
+
+# Documentos anexos, ofimática y PDFs no requeridos en repositorio
+*.docx
+*.doc
+*.xlsx
+*.xls
+*.pdf

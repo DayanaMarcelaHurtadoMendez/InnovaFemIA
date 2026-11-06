@@ -1,0 +1,178 @@
+@model InnovaFemIA.Web.Features.Admin.AdminDashboard.AdminDashboardDto
+@{
+    ViewData["Title"] = "Panel de Control — Administrador";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Header del Dashboard -->
+    <div class="mb-8 animate-slide-up flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <span class="text-4xl">🛡️</span>
+            <div>
+                <h1 class="section-header">Panel de Administración General</h1>
+                <p class="section-subtitle mb-0">Gestión integral de los 3 módulos del Sistema InnovaFemIA (Caldono, Cauca)</p>
+                <div class="inline-flex items-center gap-2 mt-2 px-2.5 py-0.5 rounded-full bg-morado-light text-morado text-[10px] font-bold">
+                    Rol Administrador
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex flex-col items-end pr-1">
+                <span class="text-sm font-bold text-gray-800 leading-tight">@(User.Identity?.Name ?? "Administrador")</span>
+                <span class="text-[10px] font-semibold text-gray-500 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Sesión Activa
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Muestra de alertas de TempData -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="bg-emerald-50 border border-emerald-200 text-verde px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>✅</span> <span>@TempData["Exito"]</span>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+            <span>⚠️</span> <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <!-- Métricas y Estadísticas Principales -->
+    <div class="flex flex-wrap justify-center gap-4">
+        <a href="~/admin/familias" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
+            <span class="text-2xl block mb-1">👩‍🌾</span>
+            <span class="text-2xl font-black text-gray-900 group-hover:text-verde">@Model.TotalFamilias</span>
+            <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Familias</span>
+        </a>
+        <a href="~/admin/actores?tipo=Asociacion" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
+            <span class="text-2xl block mb-1">🏛️</span>
+            <span class="text-2xl font-black text-gray-900 group-hover:text-amber-700">@Model.TotalAsociaciones</span>
+            <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Asociaciones</span>
+        </a>
+        <a href="~/admin/actores?tipo=PuntoCompra" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
+            <span class="text-2xl block mb-1">🏬</span>
+            <span class="text-2xl font-black text-gray-900 group-hover:text-blue-700">@Model.TotalPuntosCompra</span>
+            <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Puntos Acopio</span>
+        </a>
+        <a href="~/admin/reglas-lunares" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
+            <span class="text-2xl block mb-1">🌘</span>
+            <span class="text-2xl font-black text-gray-900 group-hover:text-purple-700">@Model.TotalReglasLunares</span>
+            <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Reglas Lunares</span>
+        </a>
+        <a href="~/admin/cuentas-familias" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
+            <span class="text-2xl block mb-1">🔑</span>
+            <span class="text-2xl font-black text-gray-900 group-hover:text-verde">@Model.TotalCuentasFamilias</span>
+            <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Cuentas Biocom</span>
+        </a>
+        <a href="~/admin/registros" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex-1 min-w-[140px] max-w-[200px] flex flex-col items-center text-center">
+            <span class="text-2xl block mb-1">📋</span>
+            <span class="text-2xl font-black text-gray-900 group-hover:text-rose-700">@Model.TotalErroresLog</span>
+            <span class="text-[11px] font-bold text-gray-400 block uppercase tracking-wider mt-1">Logs Errores</span>
+        </a>
+    </div>
+
+    <!-- Menú de Acciones por Módulo (Estricto a las Especificaciones del Sistema) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Módulo 1: Mapa Interactivo de Oportunidades -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-10 h-10 rounded-2xl bg-emerald-100 text-verde flex items-center justify-center text-xl font-bold">🗺️</span>
+                <div>
+                    <h2 class="font-extrabold text-sm text-gray-900">Módulo 1: Mapa & Directorio</h2>
+                    <span class="text-[10px] text-gray-400">Territorio y actores campesinos</span>
+                </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-gray-100">
+                <a href="~/admin/cultivos" class="block p-3 rounded-xl bg-gray-50 hover:bg-emerald-50 hover:text-verde text-xs font-bold text-gray-700 transition-colors flex items-center justify-between">
+                    <span>🌱 Catálogo de Cultivos del Sistema</span> →
+                </a>
+                <a href="~/admin/familias" class="block p-3 rounded-xl bg-gray-50 hover:bg-emerald-50 hover:text-verde text-xs font-bold text-gray-700 transition-colors flex items-center justify-between">
+                    <span>👩‍🌾 Familias ASCAMPESINA</span> →
+                </a>
+                <a href="~/admin/actores" class="block p-3 rounded-xl bg-gray-50 hover:bg-emerald-50 hover:text-verde text-xs font-bold text-gray-700 transition-colors flex items-center justify-between">
+                    <span>🏛️ Asociaciones & Puntos de Acopio</span> →
+                </a>
+                <a href="~/admin/reglas-lunares" class="block p-3 rounded-xl bg-gray-50 hover:bg-emerald-50 hover:text-verde text-xs font-bold text-gray-700 transition-colors flex items-center justify-between">
+                    <span>🌘 Prácticas Calendario Lunar</span> →
+                </a>
+            </div>
+        </div>
+
+        <!-- Módulo 2: Asistente Educativo (Chatbot) -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl font-bold">🤖</span>
+                <div>
+                    <h2 class="font-extrabold text-sm text-gray-900">Módulo 2: Chatbot Educativo</h2>
+                    <span class="text-[10px] text-gray-400">Recursos y lecciones interactivas</span>
+                </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-gray-100">
+                <a href="~/admin/chatbot/contenidos" class="block p-3 rounded-xl bg-gray-50 hover:bg-amber-50 hover:text-amber-800 text-xs font-bold text-gray-700 transition-colors flex items-center justify-between">
+                    <span>📚 Catálogo de Contenidos Chatbot</span> →
+                </a>
+                <a href="~/admin/chatbot/lecciones" class="block p-3 rounded-xl bg-gray-50 hover:bg-amber-50 hover:text-amber-800 text-xs font-bold text-gray-700 transition-colors flex items-center justify-between">
+                    <span>🎓 Modo Lección</span> →
+                </a>
+            </div>
+        </div>
+
+        <!-- Módulo 3: Biocomercio -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-10 h-10 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center text-xl font-bold">🛒</span>
+                <div>
+                    <h2 class="font-extrabold text-sm text-gray-900">Módulo 3: Biocomercio</h2>
+                    <span class="text-[10px] text-gray-400">Precios, stock y calculadora</span>
+                </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-gray-100">
+                <a href="~/admin/cuentas-familias" class="block p-3 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-800 text-xs font-bold text-gray-700 transition-colors flex items-center justify-between">
+                    <span>🔑 Cuentas de Acceso de Familias</span> →
+                </a>
+                <a href="~/admin/biocomercio/stock" class="block p-3 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-800 text-xs font-bold text-gray-700 transition-colors flex items-center justify-between">
+                    <span>📦 Stock Consolidado de Oferta</span> →
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Últimos Registros de Errores y Auditoría -->
+    <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="font-extrabold text-sm text-gray-900 flex items-center gap-2">
+                <span>⚠️</span> Últimos Registros de Auditoría y Errores
+            </h2>
+            <a href="~/admin/registros" class="text-xs text-verde font-bold hover:underline">Ver Todos →</a>
+        </div>
+
+        @if (Model.UltimosErrores.Any())
+        {
+            <div class="space-y-2">
+                @foreach (var err in Model.UltimosErrores)
+                {
+                    <div class="p-3 bg-rose-50/60 rounded-2xl border border-rose-100 flex items-center justify-between gap-4 text-xs">
+                        <div class="min-w-0">
+                            <span class="font-bold text-rose-900 block truncate">[@err.Modulo] @err.Descripcion</span>
+                            <span class="text-[10px] text-gray-500">@err.FechaHoraUtc.ToString("dd/MM/yyyy HH:mm:ss UTC")</span>
+                        </div>
+                        <span class="px-2 py-1 bg-rose-200 text-rose-800 rounded-full font-bold text-[10px]">@err.TipoEvento</span>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-xs text-gray-400 italic">No hay errores registrados en el sistema.</p>
+        }
+    </div>
+
+</div>

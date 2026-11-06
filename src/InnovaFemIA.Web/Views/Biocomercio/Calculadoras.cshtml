@@ -1,0 +1,651 @@
+@model IEnumerable<InnovaFemIA.Web.Features.Biocomercio.Calculadoras.CultivoTiempoDto>
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Calculadoras de Biocomercio — InnovaFemIA";
+    Layout = "_Layout";
+
+    var tiemposList = Model?.ToList() ?? new List<InnovaFemIA.Web.Features.Biocomercio.Calculadoras.CultivoTiempoDto>();
+    var cultivosUnicos = tiemposList.Select(x => x.NombreCultivo).Distinct().ToList();
+    var jsonTiempos = JsonSerializer.Serialize(tiemposList);
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header Principal -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm gap-4">
+        <div class="space-y-1">
+            <a href="~/biocomercio/index" class="text-xs text-verde font-bold hover:underline flex items-center gap-1 mb-1">
+                <span>←</span> Volver al Dashboard de Biocomercio
+            </a>
+            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-2xl bg-emerald-100 text-verde flex items-center justify-center text-xl shrink-0">🧮</span>
+                Calculadoras y Guías Agroecológicas
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 max-w-2xl">
+                Herramientas basadas en recomendaciones de Cenicafé, Agrosavia e Infoagro para planificar tus labores, estimar cosechas, evaluar la rentabilidad de tu lote y calcular rendimientos de café.
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="~/biocomercio/mi-stock" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors flex items-center gap-1.5">
+                <span>📦</span> Mi stock
+            </a>
+            <a href="~/biocomercio/deteccion-enfermedades" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-morado border border-purple-200 transition-colors flex items-center gap-1.5">
+                <span>🔬</span> Detección de Enfermedades
+            </a>
+            <span class="px-3.5 py-1.5 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1.5">
+                <span>☕</span> Cenicafé
+            </span>
+        </div>
+    </div>
+
+    <!-- Pestañas de Navegación -->
+    <div class="flex flex-wrap gap-2 border-b border-gray-200 pb-2">
+        <button onclick="mostrarCalculadora('cosecha', this)" class="tab-btn px-5 py-3 bg-emerald-600 text-white rounded-2xl text-xs sm:text-sm font-black shadow-md transition-all flex items-center gap-2">
+            <span>🌱</span>
+            <span>1. Cosecha y Labores</span>
+        </button>
+        <button onclick="mostrarCalculadora('rentabilidad', this)" class="tab-btn px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2">
+            <span>💰</span>
+            <span>2. Rentabilidad del Cultivo</span>
+        </button>
+        <button onclick="mostrarCalculadora('conversion', this)" class="tab-btn px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2">
+            <span>☕</span>
+            <span>3. Rendimiento de Café</span>
+        </button>
+        <button onclick="mostrarCalculadora('recomendaciones', this)" class="tab-btn px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2">
+            <span>📖</span>
+            <span>Calendario y Épocas Óptimas</span>
+        </button>
+    </div>
+
+    <!-- ───────────────────────────────────────────────────────────────────────────── -->
+    <!-- CALCULADORA 1: COSECHA Y LABORES                                              -->
+    <!-- ───────────────────────────────────────────────────────────────────────────── -->
+    <div id="calc-cosecha" class="calc-section bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+        <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                <span>🌱</span>
+                <span>Calculadora de Cosecha y Próximas Labores</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-1">
+                Registra la labor agrícola que realizaste en tu cultivo para conocer la fecha aproximada en que estará lista tu cosecha y cuándo programar la siguiente labor agronómica recomendada.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Formulario de Entrada -->
+            <form id="formCosecha" class="lg:col-span-5 space-y-5" onsubmit="calcularCosecha(event)">
+                <div class="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100 mb-2">
+                    <span class="text-[11px] font-black text-emerald-900 uppercase tracking-wider block mb-0.5">🌱 Registro de labor en tu lote</span>
+                    <span class="text-[10px] text-gray-600">Selecciona el cultivo, la labor realizada y la fecha en que la llevaste a cabo.</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                        Cultivo <span class="text-rose-500">*</span>
+                    </label>
+                    <select id="cultivoCosecha" required class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" onchange="actualizarActividades()">
+                        <option value="">Selecciona tu cultivo...</option>
+                        @foreach (var c in cultivosUnicos)
+                        {
+                            <option value="@c">@c</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                        Labor realizada <span class="text-rose-500">*</span>
+                    </label>
+                    <select id="actividadCosecha" required class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                        <option value="">Primero selecciona un cultivo...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                        Fecha de la labor <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="date" id="fechaCosecha" required max="@DateTime.Now.ToString("yyyy-MM-dd")"
+                           class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-xs font-bold text-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" />
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-verde text-white font-black text-xs sm:text-sm py-4 rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                    <span>🌱</span>
+                    <span>Calcular Cosecha y Próxima Labor</span>
+                </button>
+            </form>
+
+            <!-- Resultados Calculados -->
+            <div class="lg:col-span-7">
+                <div id="resultadoCosechaPlaceholder" class="h-full min-h-[320px] p-8 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center text-center text-gray-400 space-y-2">
+                    <span class="text-4xl">🌾</span>
+                    <h4 class="font-bold text-xs text-gray-600">Completa los datos de tu labor</h4>
+                    <p class="text-[11px] max-w-sm">Ingresa el cultivo, la labor realizada y la fecha para proyectar el tiempo hasta la cosecha y las recomendaciones para tu finca.</p>
+                </div>
+
+                <div id="resultadoCosecha" class="hidden space-y-4 animate-scale-in">
+                    <div class="p-6 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 border border-emerald-200 rounded-3xl shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+                            <span class="text-xs font-black text-emerald-900 uppercase tracking-wider">
+                                🌾 Proyección de Cosecha y Labores
+                            </span>
+                            <span class="text-[10px] font-bold text-gray-400" id="lblFuenteBadge">Fuente: Cenicafé / FNC</span>
+                        </div>
+
+                        <!-- 1. Meses hasta la cosecha & Fecha estimada de cosecha -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="p-4 bg-white rounded-2xl border border-emerald-100 shadow-xs">
+                                <span class="text-[10px] font-black text-gray-500 uppercase block mb-0.5">Tiempo estimado hasta cosecha</span>
+                                <span class="text-xl sm:text-2xl font-black text-emerald-700" id="lblMesesHastaCosecha">--</span>
+                                <span class="text-[10px] text-gray-500 block mt-0.5" id="lblRangoCosechaTexto"></span>
+                            </div>
+
+                            <div class="p-4 bg-white rounded-2xl border border-emerald-100 shadow-xs">
+                                <span class="text-[10px] font-black text-gray-500 uppercase block mb-0.5">Fecha aproximada de cosecha</span>
+                                <span class="text-xl sm:text-2xl font-black text-gray-900" id="lblFechaEstimadaCosecha">--</span>
+                                <span class="text-[10px] text-gray-500 block mt-0.5">Mes y año estimado</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. Próxima actividad recomendada -->
+                        <div class="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl flex items-start gap-3">
+                            <span class="text-xl shrink-0">⏰</span>
+                            <div class="space-y-0.5">
+                                <span class="text-[10px] font-black text-amber-900 uppercase tracking-wider block">Próxima labor recomendada</span>
+                                <p id="lblProximaActividad" class="text-xs text-amber-950 font-bold leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                        <!-- 3. Resumen y orientación para tu cultivo -->
+                        <div class="p-4 bg-white rounded-2xl border border-emerald-200">
+                            <span class="text-[10px] font-black text-emerald-800 uppercase tracking-wider block mb-1">📋 Resumen para tu cultivo</span>
+                            <p id="textoCosechaMensaje" class="text-xs sm:text-sm font-extrabold text-gray-800 leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <!-- 4. RECOMENDACIÓN TÉCNICA (Épocas Recomendadas Cenicafé) -->
+                    <div id="cajaRecomendacionClimatica" class="p-5 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-3xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-teal-200/60 pb-2">
+                            <span class="text-xs font-black text-teal-900 uppercase tracking-wide flex items-center gap-1.5">
+                                <span>🌦️</span>
+                                <span>Recomendación climática según Cenicafé</span>
+                            </span>
+                        </div>
+
+                        <!-- Consejo para la productora / familia -->
+                        <div class="p-4 bg-white rounded-2xl border border-teal-200 shadow-xs">
+                            <span class="text-[10px] font-black text-teal-900 uppercase tracking-wider block mb-1">💡 Recomendación técnica para tu cultivo:</span>
+                            <p id="textoRecomendacionClimatica" class="text-xs sm:text-sm font-black text-emerald-950 italic leading-relaxed"></p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div class="bg-white/80 p-3 rounded-xl border border-teal-100">
+                                <span class="text-[10px] font-black text-teal-800 uppercase block mb-0.5">Momento recomendado</span>
+                                <span class="font-bold text-gray-900 text-xs" id="lblMomentoRecomendado">--</span>
+                                <span class="text-[10px] text-gray-500 block mt-0.5" id="lblCuandoCae"></span>
+                            </div>
+                            <div class="bg-white/80 p-3 rounded-xl border border-teal-100">
+                                <span class="text-[10px] font-black text-teal-800 uppercase block mb-0.5">Por qué</span>
+                                <span class="text-xs text-gray-700 leading-snug" id="lblPorQue">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE TIEMPOS DE REFERENCIA TÉCNICA -->
+        <div class="mt-8 pt-6 border-t border-gray-100 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <h3 class="font-black text-xs sm:text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                    <span>📊</span> Tiempos de Referencia Agronómica de la Comunidad
+                </h3>
+                <span class="text-[10px] text-gray-400">Fuentes: Cenicafé / Agrosavia / Infoagro</span>
+            </div>
+            <div class="overflow-x-auto rounded-2xl border border-gray-200">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase text-[10px]">
+                        <tr>
+                            <th class="p-3">Cultivo</th>
+                            <th class="p-3">Tiempo siembra → cosecha</th>
+                            <th class="p-3">Cada cuánto abonar</th>
+                            <th class="p-3">Poda / Manejo</th>
+                            <th class="p-3">Fuente técnica</th>
+                            <th class="p-3">Nivel de confianza</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-800">
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <td class="p-3 font-black text-gray-900 flex items-center gap-1.5">
+                                <span>☕</span> Café
+                            </td>
+                            <td class="p-3">18 meses (primera cosecha desde almácigo); luego 2 cosechas/año (principal oct-dic, mitaca abr-jun)</td>
+                            <td class="p-3">Fraccionado durante el año; sostenimiento cada 4 meses</td>
+                            <td class="p-3">Poda de formación y renovación por zoca (según ciclo del árbol, ~5 años)</td>
+                            <td class="p-3 font-bold text-emerald-800">Cenicafé / FNC</td>
+                            <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-verde text-[10px] font-bold">Alta</span></td>
+                        </tr>
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <td class="p-3 font-black text-gray-900 flex items-center gap-1.5">
+                                <span>🍌</span> Plátano
+                            </td>
+                            <td class="p-3">11 a 14 meses según altitud</td>
+                            <td class="p-3">25% de la dosis cada 4 meses; materia orgánica cada 3 meses</td>
+                            <td class="p-3">Deshoje y deshije periódico</td>
+                            <td class="p-3 font-bold text-emerald-800">Agrosavia</td>
+                            <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-verde text-[10px] font-bold">Alta</span></td>
+                        </tr>
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <td class="p-3 font-black text-gray-900 flex items-center gap-1.5">
+                                <span>🥔</span> Yuca
+                            </td>
+                            <td class="p-3">7 a 10 meses (consumo); hasta 12-24 para industria</td>
+                            <td class="p-3">Al inicio del ciclo; refuerzo según análisis de suelo</td>
+                            <td class="p-3">No requiere poda tradicional</td>
+                            <td class="p-3 font-bold text-emerald-800">Infoagro / Agrosavia</td>
+                            <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold">Media</span></td>
+                        </tr>
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <td class="p-3 font-black text-gray-900 flex items-center gap-1.5">
+                                <span>🥑</span> Aguacate Hass
+                            </td>
+                            <td class="p-3">12 a 18 meses según altitud y manejo</td>
+                            <td class="p-3">Fraccionado durante el año; cada 4 meses</td>
+                            <td class="p-3">Poda de formación y mantenimiento sanitario tras cosecha</td>
+                            <td class="p-3 font-bold text-emerald-800">DANE-SIPSA / Ficha técnica</td>
+                            <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-verde text-[10px] font-bold">Alta</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-[10px] text-gray-400">
+                Fuentes técnicas: Cenicafé y Federación Nacional de Cafeteros (café); Agrosavia (plátano); DANE-SIPSA y fichas técnicas (aguacate Hass); Infoagro (yuca).
+            </p>
+        </div>
+    </div>
+
+    <!-- ───────────────────────────────────────────────────────────────────────────── -->
+    <!-- CALCULADORA 2: RENTABILIDAD DEL CULTIVO                                       -->
+    <!-- ───────────────────────────────────────────────────────────────────────────── -->
+    <div id="calc-rentabilidad" class="calc-section hidden bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+        <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                <span>💰</span>
+                <span>Calculadora de Rentabilidad del Cultivo</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-1">
+                Registra los costos invertidos en tu lote y el valor obtenido por la venta de tu cosecha para conocer de manera clara tu balance económico y ganancia real.
+            </p>
+        </div>
+        
+        <form id="formRentabilidad" onsubmit="calcularRentabilidad(event)">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Gastos del cultivo -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100 mb-2">
+                        <span class="text-[11px] font-black text-emerald-900 uppercase tracking-wider block mb-0.5">💰 Registro de Costos e Inversión</span>
+                        <span class="text-[10px] text-gray-600">Ingresa los gastos realizados en cada etapa de producción de tu lote.</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1">
+                            Cultivo <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="cultivoRentabilidad" required class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">Selecciona el cultivo evaluado...</option>
+                            @foreach (var c in cultivosUnicos)
+                            {
+                                <option value="@c">@c</option>
+                            }
+                            <option value="Otro">Otro cultivo</option>
+                        </select>
+                    </div>
+
+                    <div class="p-5 bg-rose-50/40 border border-rose-100 rounded-3xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-rose-100 pb-2">
+                            <h3 class="font-black text-xs text-rose-800 uppercase tracking-wider">
+                                Gastos de Producción (Pesos COP)
+                            </h3>
+                            <span class="text-[10px] text-gray-400">Si un gasto no aplica, puedes dejarlo vacío</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Gasto en siembra</label>
+                                <input type="text" inputmode="numeric" id="gastoSiembra" placeholder="150.000" class="dinero-input w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold" />
+                                <span class="text-[9px] text-gray-400">Semilla, colinos, preparación de terreno</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Gasto en abonado / nutrición</label>
+                                <input type="text" inputmode="numeric" id="gastoAbonado" placeholder="200.000" class="dinero-input w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold" />
+                                <span class="text-[9px] text-gray-400">Fertilizante mineral, compost o abono orgánico</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Gasto en poda / manejo</label>
+                                <input type="text" inputmode="numeric" id="gastoPoda" placeholder="80.000" class="dinero-input w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold" />
+                                <span class="text-[9px] text-gray-400">Jornales, mano de obra y mantenimiento</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Control de plagas y enfermedades</label>
+                                <input type="text" inputmode="numeric" id="gastoPlagas" placeholder="120.000" class="dinero-input w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold" />
+                                <span class="text-[9px] text-gray-400">Bioinsumos, biopreparados o manejo fitosanitario</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-0.5">Otros gastos</label>
+                            <input type="text" inputmode="numeric" id="gastoOtros" placeholder="50.000" class="dinero-input w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold" />
+                            <span class="text-[9px] text-gray-400">Transporte, costales, empaques o fletes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ingreso y Cálculo -->
+                <div class="lg:col-span-5 space-y-4 flex flex-col justify-between">
+                    <div class="p-5 bg-emerald-50/60 border border-emerald-100 rounded-3xl space-y-3">
+                        <div class="flex items-center justify-between border-b border-emerald-100 pb-2">
+                            <h3 class="font-black text-xs text-verde uppercase tracking-wider">
+                                Ingreso total por la venta <span class="text-rose-600">*</span>
+                            </h3>
+                            <span class="text-[10px] text-emerald-800 font-bold">Obligatorio</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Pesos (COP)</label>
+                            <input type="text" inputmode="numeric" id="ingresoVenta" required placeholder="900.000" class="dinero-input w-full px-4 py-3 rounded-2xl border-2 border-emerald-300 focus:border-emerald-600 outline-none text-xl font-black text-gray-900 bg-white" />
+                            <span class="text-[10px] text-gray-400 mt-1 block">Total recibido por la venta de la cosecha producida.</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gray-900 hover:bg-black text-white font-black text-sm py-4 rounded-2xl shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                        <span>⚖️</span>
+                        <span>Calcular Rentabilidad</span>
+                    </button>
+
+                    <!-- Tarjeta de Salidas -->
+                    <div id="resultadoRentabilidad" class="hidden rounded-3xl p-6 text-center text-white font-black shadow-lg space-y-3 animate-scale-in">
+                        <div class="text-[11px] uppercase tracking-widest block opacity-90">Balance de tu cosecha</div>
+                        <div class="text-3xl sm:text-4xl" id="rentabilidadTitulo">Ganaste</div>
+                        
+                        <!-- Mensaje al productor -->
+                        <div class="p-3.5 bg-black/25 rounded-2xl text-xs font-bold text-white text-left leading-relaxed" id="lblRentabilidadMensajeSencillo">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-[11px] pt-1 text-left">
+                            <div class="bg-black/20 p-2.5 rounded-xl">
+                                <span class="opacity-75 block text-[9px] uppercase">Gasto total</span>
+                                <span class="font-bold text-xs" id="lblGastosTotal">$0</span>
+                            </div>
+                            <div class="bg-black/20 p-2.5 rounded-xl">
+                                <span class="opacity-75 block text-[9px] uppercase">Ganancia o pérdida</span>
+                                <span class="font-bold text-xs" id="lblBalanceMonto">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- ───────────────────────────────────────────────────────────────────────────── -->
+    <!-- CALCULADORA 3: CONVERSIÓN DE CAFÉ                                             -->
+    <!-- ───────────────────────────────────────────────────────────────────────────── -->
+    <div id="calc-conversion" class="calc-section hidden bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+        <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-base">☕</span>
+                <span>Calculadora de Rendimiento y Conversión de Café</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-1">
+                Ingresa los kilos de café cereza cosechados para calcular el rendimiento estimado en café pergamino seco y café verde (almendra/oro) según las referencias técnicas de Cenicafé y la Federación Nacional de Cafeteros.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Entradas -->
+            <form id="formConversion" class="lg:col-span-5 space-y-5" onsubmit="calcularConversion(event)">
+                <div class="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/60 mb-2">
+                    <span class="text-[11px] font-black text-amber-900 uppercase tracking-wider block mb-0.5">☕ Registro de Café Cosechado</span>
+                    <span class="text-[10px] text-gray-600">Ingresa los kilos de café en cereza recolectados en tu lote.</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1.5">
+                        Kilos de café en cereza (Kilogramos) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" id="kilosCereza" required min="0.1" step="0.1"
+                                class="w-full px-4 py-4 rounded-2xl border-2 border-amber-200 focus:border-amber-600 outline-none text-2xl font-black text-gray-900 transition-all"
+                                placeholder="500" />
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-gray-400 font-black text-sm">
+                            Kg
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-gray-400 mt-1 block">Café recién recolectado (uva o cereza fresca).</span>
+                </div>
+
+                <!-- Factores de conversión técnicos -->
+                <div class="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/60 text-xs text-amber-950 space-y-2">
+                    <span class="font-black text-[10px] uppercase tracking-wider text-amber-900 block">Factores de Conversión de Referencia (Cenicafé / FNC)</span>
+                    <div class="space-y-1.5 text-[11px] text-gray-700">
+                        <div class="p-2 bg-white/80 rounded-lg border border-amber-100">
+                            <strong>Cereza a Pergamino seco:</strong> Dividir entre 5 <span class="text-gray-500">(Rango promedio: 4,7 a 5,3 kg de cereza por cada kilo de pergamino seco).</span>
+                            <span class="text-[10px] text-emerald-800 font-bold block mt-0.5">Kilos de cereza ÷ 5</span>
+                        </div>
+                        <div class="p-2 bg-white/80 rounded-lg border border-amber-100">
+                            <strong>Pergamino seco a Café verde (almendra/oro):</strong> Multiplicar por 0,8 <span class="text-gray-500">(Rendimiento estándar en trilla, base FNC).</span>
+                            <span class="text-[10px] text-emerald-800 font-bold block mt-0.5">Kilos de pergamino seco × 0,8</span>
+                        </div>
+                        <div class="p-2 bg-white/80 rounded-lg border border-amber-100">
+                            <strong>Cereza a Café verde directo:</strong> Multiplicar por 0,18 <span class="text-gray-500">(Factor integrado de beneficio y trilla).</span>
+                            <span class="text-[10px] text-emerald-800 font-bold block mt-0.5">Kilos de cereza × 0,18</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-black text-sm py-4 rounded-2xl shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                    <span>⚖️</span>
+                    <span>Estimar Rendimiento de Café</span>
+                </button>
+            </form>
+
+            <!-- Salidas de conversión -->
+            <div class="lg:col-span-7 space-y-4">
+                <div id="resultadoConversion" class="hidden space-y-4 animate-scale-in">
+                    <div class="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100">
+                        <span class="text-[11px] font-black text-emerald-900 uppercase tracking-wider block">⚖️ Rendimiento Estimado en Beneficio y Trilla</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-gradient-to-br from-amber-50 to-white border-2 border-amber-200 rounded-3xl p-6 text-center shadow-sm">
+                            <span class="text-xs font-bold text-amber-800 uppercase tracking-wider block mb-1">Café pergamino seco</span>
+                            <div class="text-4xl font-black text-amber-950 mb-1" id="lblPergaminoWrap">≈ <span id="lblPergamino">100</span> kg</div>
+                            <span class="text-[11px] text-gray-500 block" id="lblComoSeObtuvoPergamino">500 ÷ 5</span>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-emerald-900 to-gray-900 border-2 border-gray-900 rounded-3xl p-6 text-center shadow-md text-white">
+                            <span class="text-xs font-bold text-emerald-300 uppercase tracking-wider block mb-1">Café verde (almendra/oro)</span>
+                            <div class="text-4xl font-black text-emerald-400 mb-1" id="lblVerdeWrap">≈ <span id="lblVerde">80</span> kg</div>
+                            <span class="text-[11px] text-gray-300 block" id="lblComoSeObtuvoVerde">100 × 0,8</span>
+                        </div>
+                    </div>
+
+                    <!-- Aviso de margen de error -->
+                    <div class="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs space-y-2">
+                        <div class="font-black text-xs flex items-center gap-1.5 text-amber-950 uppercase tracking-wider">
+                            <span>⚠️</span> Nota sobre el rendimiento
+                        </div>
+                        <p class="text-xs text-amber-900 font-bold leading-relaxed bg-white/90 p-3 rounded-xl border border-amber-200">
+                            "Es una estimación. El resultado real varía según la calidad de la cereza, el secado y la variedad."
+                        </p>
+                        <p class="text-[10px] text-gray-500 pt-1 border-t border-amber-200/60 leading-normal">
+                            Fuentes: Cenicafé (Propiedades físicas y factores de conversión del café en el proceso de beneficio) y Federación Nacional de Cafeteros (método CERPER-2, factor de rendimiento en trilla).
+                        </p>
+                    </div>
+                </div>
+
+                <div id="resultadoConversionPlaceholder" class="h-full min-h-[260px] p-8 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center text-center text-gray-400 space-y-2">
+                    <span class="text-4xl">☕</span>
+                    <h4 class="font-bold text-xs text-gray-600">Ingresa los kilos de café recolectados</h4>
+                    <p class="text-[11px] max-w-sm">Calcula el rendimiento estimado en café pergamino seco y café verde listo para trilla.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ───────────────────────────────────────────────────────────────────────────── -->
+    <!-- GUÍA: ÉPOCAS RECOMENDADAS PARA LAS PRÁCTICAS DEL CAFÉ                        -->
+    <!-- ───────────────────────────────────────────────────────────────────────────── -->
+    <div id="calc-recomendaciones" class="calc-section hidden bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+        <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                <span>📖</span>
+                <span>Calendario y Épocas Recomendadas para Café (Cenicafé)</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-1 max-w-3xl">
+                Guía técnica sobre el mejor momento para realizar cada labor agronómica en el cafetal y su justificación, sincronizada con el régimen de lluvias y los ciclos de cosecha de nuestra región.
+            </p>
+        </div>
+
+        <!-- PRINCIPIO GENERAL -->
+        <div class="p-6 bg-amber-50/70 border border-amber-200 rounded-3xl space-y-2 shadow-xs">
+            <h3 class="font-black text-xs sm:text-sm text-amber-950 uppercase tracking-wider flex items-center gap-2">
+                <span>🌱</span> Principio General de Nutrición y Clima
+            </h3>
+            <p class="text-xs text-gray-800 leading-relaxed font-medium">
+                El café en Colombia tiene dos cosechas al año: la principal (recolección entre octubre y diciembre) y la mitaca o traviesa (entre abril y junio). Las prácticas de nutrición se programan alrededor de estas cosechas y, sobre todo, en épocas de lluvia, porque la humedad es la que disuelve el fertilizante y permite que la planta lo absorba. Abonar en seca desperdicia el fertilizante.
+            </p>
+        </div>
+
+        <!-- TABLA 1: ABONADO / FERTILIZACIÓN -->
+        <div class="space-y-3">
+            <h3 class="font-black text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-emerald-100 text-verde flex items-center justify-center text-xs">1</span>
+                Abonado y Fertilización — Cuándo es mejor realizarlo
+            </h3>
+            
+            <div class="overflow-x-auto rounded-2xl border border-gray-200">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase text-[10px]">
+                        <tr>
+                            <th class="p-3">Momento recomendado</th>
+                            <th class="p-3">Cuándo cae (aprox.)</th>
+                            <th class="p-3">Por qué</th>
+                            <th class="p-3">Recomendación para tu cultivo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-800">
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <td class="p-3 font-bold text-gray-900">Inicio de lluvias del primer semestre</td>
+                            <td class="p-3">Marzo – abril</td>
+                            <td class="p-3">Hay humedad para disolver el fertilizante y la planta se prepara para la mitaca</td>
+                            <td class="p-3 font-black text-emerald-900 italic">"Es buena época para abonar: empiezan las lluvias y la planta aprovecha mejor los nutrientes."</td>
+                        </tr>
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <td class="p-3 font-bold text-gray-900">Antes de la cosecha principal</td>
+                            <td class="p-3">Julio – agosto (2 meses antes de la maduración)</td>
+                            <td class="p-3">El fruto en sus últimos meses demanda muchos nutrientes</td>
+                            <td class="p-3 font-black text-emerald-900 italic">"Abonar ahora ayuda al llenado del grano de la cosecha principal."</td>
+                        </tr>
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <td class="p-3 font-bold text-gray-900">Inicio de lluvias del segundo semestre</td>
+                            <td class="p-3">Septiembre – octubre</td>
+                            <td class="p-3">Segundo período húmedo del año, asegura absorción</td>
+                            <td class="p-3 font-black text-emerald-900 italic">"Buen momento para abonar: inician las lluvias del segundo semestre."</td>
+                        </tr>
+                        <tr class="hover:bg-emerald-50/30 transition-colors">
+                            <td class="p-3 font-bold text-gray-900">Después de cada cosecha</td>
+                            <td class="p-3">Tras recolección principal y tras la mitaca</td>
+                            <td class="p-3">Reponer los nutrientes que el árbol gastó produciendo</td>
+                            <td class="p-3 font-black text-emerald-900 italic">"Después de cosechar conviene abonar para que la planta se recupere."</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLA 2: SIEMBRA -->
+        <div class="space-y-3">
+            <h3 class="font-black text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center text-xs">2</span>
+                Siembra — Cuándo es mejor realizarla
+            </h3>
+            
+            <div class="overflow-x-auto rounded-2xl border border-gray-200">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase text-[10px]">
+                        <tr>
+                            <th class="p-3">Momento recomendado</th>
+                            <th class="p-3">Cuándo cae (aprox.)</th>
+                            <th class="p-3">Por qué</th>
+                            <th class="p-3">Recomendación para tu cultivo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-800">
+                        <tr class="hover:bg-teal-50/30 transition-colors">
+                            <td class="p-3 font-bold text-gray-900">Al inicio de un período de lluvias</td>
+                            <td class="p-3">Marzo–abril o septiembre–octubre</td>
+                            <td class="p-3">La planta joven necesita humedad constante para pegar bien y no marchitarse</td>
+                            <td class="p-3 font-black text-teal-950 italic">"Se recomienda sembrar al empezar las lluvias, para que la matica tenga agua mientras se establece."</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLA 3: PODA / ZOCA -->
+        <div class="space-y-3">
+            <h3 class="font-black text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-900 flex items-center justify-center text-xs">3</span>
+                Poda y Zoca — Cuándo es mejor realizarla
+            </h3>
+            
+            <div class="overflow-x-auto rounded-2xl border border-gray-200">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase text-[10px]">
+                        <tr>
+                            <th class="p-3">Momento recomendado</th>
+                            <th class="p-3">Cuándo cae (aprox.)</th>
+                            <th class="p-3">Por qué</th>
+                            <th class="p-3">Recomendación para tu cultivo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-800">
+                        <tr class="hover:bg-amber-50/30 transition-colors">
+                            <td class="p-3 font-bold text-gray-900">Después de la cosecha principal</td>
+                            <td class="p-3">Diciembre – enero (al terminar de recoger)</td>
+                            <td class="p-3">El árbol está descargado de fruto; se recupera mejor antes de las próximas lluvias</td>
+                            <td class="p-3 font-black text-amber-950 italic">"La poda o zoca se hace mejor al terminar la cosecha, cuando el árbol está descansado."</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- NOTA DEL CAUCA Y FUENTES -->
+        <div class="p-5 bg-gray-50 rounded-2xl border border-gray-200 text-xs text-gray-700 space-y-2">
+            <h4 class="font-black text-xs text-gray-900 flex items-center gap-1.5">
+                <span>🌧️</span> Consideraciones Climáticas para el Departamento del Cauca
+            </h4>
+            <p class="leading-relaxed">
+                El principio fundamental de Cenicafé es <strong>abonar siempre en temporada de lluvias y alrededor de las dos cosechas</strong>. En las zonas cafeteras del Cauca, las semanas exactas de lluvia pueden variar ligeramente según la altitud de la vereda, por lo que es importante asegurarse de que el suelo cuente con buena humedad antes de aplicar cualquier abono para evitar que se pierda el fertilizante.
+            </p>
+            <div class="text-[11px] text-gray-500 pt-2 border-t border-gray-200 space-y-0.5">
+                <p><strong>Fuentes técnicas:</strong> Cenicafé — "Épocas recomendables para la fertilización de cafetales" (Avance Técnico 442), "Fertilización en plantaciones de café en producción" (Avance 14), "Alternativas de fertilización para cafetales" (Avance 424); histórico climático Cenicafé.</p>
+                <p>Otras fuentes: Agrosavia (plátano, fraccionamiento de fertilización); DANE-SIPSA y ficha técnica (aguacate Hass); Infoagro (yuca).</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ───────────────────────────────────────────────────────────────────────────── -->
+<!-- JAVASCRIPT: FORMATEO EXACTO Y RECOMENDACIONES AGRONÓMICAS                     -->
+<!-- ───────────────────────────────────────────────────────────────────────────── -->
+<script id="tiempos-data" type="application/json">
+    @Html.Raw(jsonTiempos)
+</script>
+<script src="~/js/biocomercio/calculadoras.js" asp-append-version="true"></script>

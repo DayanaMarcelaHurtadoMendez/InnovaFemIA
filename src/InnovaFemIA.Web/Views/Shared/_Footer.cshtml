@@ -1,21 +1,21 @@
 @* Footer de InnovaFemIA *@
-<footer class="bg-gray-900 text-gray-300 mt-auto" role="contentinfo">
+<footer class="bg-morado text-morado-light mt-auto border-t border-morado/20" role="contentinfo">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
 
             <!-- Columna 1: Brand -->
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
-                    <span class="text-3xl">🌺</span>
+                    <div class="bg-white p-2.5 rounded-2xl shadow-md inline-flex items-center justify-center shrink-0">
+                        <img src="~/images/general/Logo.png" alt="InnovaFemIA" class="h-14 w-auto object-contain" />
+                    </div>
                     <div>
-                        <p class="font-bold text-white text-lg">InnovaFem<span class="text-brand-400">IA</span></p>
-                        <p class="text-xs text-gray-500">Proyecto Orquídeas</p>
+                        <p class="font-bold text-white text-lg">InnovaFem<span class="text-naranja">IA</span></p>
+                        <p class="text-xs text-morado-light/80 font-medium">Proyecto Orquídeas</p>
                     </div>
                 </div>
-                <p class="text-sm text-gray-400 leading-relaxed">
-                    Plataforma digital para el empoderamiento de mujeres rurales
-                    y jóvenes de <strong class="text-gray-300">ASCAMPESINA</strong>,
-                    Caldono, Cauca.
+                <p class="text-sm text-morado-light/90 leading-relaxed">
+                    Plataforma digital para el empoderamiento socioproductivo y el trabajo en red de la Coordinadora <strong class="text-white">ASCAMPESINA</strong>.
                 </p>
             </div>
 
@@ -23,40 +23,101 @@
             <div>
                 <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Módulos</h3>
                 <ul class="space-y-2 text-sm">
-                    <li>
-                        <a href="/mapa" class="text-gray-400 hover:text-primary-400 transition-colors duration-200 flex items-center gap-2">
-                            <span>🗺️</span> Mapa Interactivo de Oportunidades
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/chatbot" class="text-gray-400 hover:text-brand-400 transition-colors duration-200 flex items-center gap-2">
-                            <span>🤖</span> Asistente Educativo
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/biocomercio" class="text-gray-400 hover:text-secondary-400 transition-colors duration-200 flex items-center gap-2">
-                            <span>🌿</span> Biocomercio ASCAMPESINA
-                        </a>
-                    </li>
+                    @inject Microsoft.Extensions.Configuration.IConfiguration FooterConfig
+                    @if (FooterConfig.GetValue<bool>("ModoMapaSolo", false))
+                    {
+                        <li>
+                            <a href="~/mapa/mapa" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>🗺️</span> Mapa interactivo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="~/mapa/directorio" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>📋</span> Directorio de Familias
+                            </a>
+                        </li>
+                        <li>
+                            <a href="~/mapa/precios" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>📊</span> Indicadores DANE
+                            </a>
+                        </li>
+                        <li>
+                            <a href="~/mapa/lunar" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>🌒</span> Calendario Lunar
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a href="~/mapa" class="text-morado-light hover:text-cian transition-colors duration-200 flex items-center gap-2">
+                                <span>🗺️</span> Cartografía productiva del territorio
+                            </a>
+                        </li>
+                        <li>
+                            <a href="~/chatbot" class="text-morado-light hover:text-naranja transition-colors duration-200 flex items-center gap-2">
+                                <span>🤖</span> Asistente Asalia
+                            </a>
+                        </li>
+                        <li>
+                            <a href="~/biocomercio" class="text-morado-light hover:text-verde transition-colors duration-200 flex items-center gap-2">
+                                <span>🌿</span> Biocomercio
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
 
-            <!-- Columna 3: Institucional -->
-            <div>
-                <h3 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Institucional</h3>
-                <ul class="space-y-2 text-sm text-gray-400">
-                    <li>🎓 Universidad ICESI</li>
-                    <li>🔬 Financiado por Minciencias</li>
-                    <li>🌱 ASCAMPESINA — Caldono, Cauca</li>
-                </ul>
+            <!-- Columna 3: Institucional & Tarjeta Destacada del Blog -->
+            <div class="md:col-span-2 space-y-4">
+                <h3 class="font-semibold text-white text-sm uppercase tracking-wider">Institucional & Aliados</h3>
+                
+                <div class="relative w-full bg-white p-2.5 sm:p-3 rounded-2xl shadow-md overflow-hidden flex items-center justify-center">
+                    <img src="~/images/general/logos.jpeg" alt="Logos Institucionales: InnovaFemIA, ICESI, ASCAMPESINA, Minciencias" class="w-full h-auto object-contain" />
+                    
+                    <!-- Áreas clickeables (calculadas en porcentaje del ancho original 2438px) -->
+                    <a href="~/" class="absolute top-0 bottom-0 left-0 w-[21%] z-10" title="Ir a Inicio - InnovaFemIA"></a>
+                    <a href="https://www.icesi.edu.co/" target="_blank" rel="noopener" class="absolute top-0 bottom-0 left-[21%] w-[30%] z-10" title="Universidad ICESI"></a>
+                    <a href="https://www.facebook.com/groups/23523347059/" target="_blank" rel="noopener" class="absolute top-0 bottom-0 left-[51%] w-[29%] z-10" title="ASCAMPESINA"></a>
+                    <a href="https://minciencias.gov.co/" target="_blank" rel="noopener" class="absolute top-0 bottom-0 left-[80%] w-[20%] z-10" title="Minciencias"></a>
+                </div>
+
+                <!-- Tarjeta Destacada: Blog Oficial InnovaFem en Universidad ICESI (Única ubicación del blog) -->
+                <a href="https://www.icesi.edu.co/blogs/innovafem/" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="group relative block p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-white/10 via-white/5 to-cian/15 hover:from-white/15 hover:via-white/10 hover:to-cian/25 border border-white/15 hover:border-cian/60 transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5"
+                   title="Abrir Blog Oficial InnovaFem (Universidad ICESI)">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cian to-teal-500 text-white flex items-center justify-center text-lg shadow-md group-hover:scale-105 transition-transform shrink-0">
+                                📰
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-xs sm:text-sm font-extrabold text-white group-hover:text-cyan-300 transition-colors">Blog Oficial InnovaFem</span>
+                                    <span class="text-[9px] font-black uppercase tracking-wider bg-naranja text-white px-1.5 py-0.5 rounded-md shadow-sm">ICESI</span>
+                                </div>
+                                <p class="text-[11px] text-morado-light/80 truncate mt-0.5">Explora artículos, avances de investigación y testimonios de la comunidad</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 text-xs font-bold text-cyan-300 group-hover:text-white transition-colors shrink-0 pl-2">
+                            <span class="hidden sm:inline">Visitar blog</span>
+                            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </div>
+                    </div>
+                </a>
             </div>
+
         </div>
 
         <!-- Línea inferior -->
-        <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+        <div class="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-morado-light/80">
             <p>&copy; @DateTime.Now.Year InnovaFemIA — Proyecto Orquídeas. Todos los derechos reservados.</p>
             <div class="flex items-center gap-4">
-                <a href="/admin/login" class="hover:text-gray-400 transition-colors" id="footer-admin-link">Administración</a>
+                <a href="~/admin/login" class="hover:text-white transition-colors font-bold" id="footer-admin-link">🛡️ Administración</a>
             </div>
         </div>
     </div>

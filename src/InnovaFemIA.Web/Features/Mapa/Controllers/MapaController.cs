@@ -1,4 +1,6 @@
+using InnovaFemIA.Web.Features.Mapa.ObtenerCultivos;
 using InnovaFemIA.Web.Features.Mapa.ObtenerFamilias;
+using InnovaFemIA.Web.Features.Mapa.ObtenerPrecios;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,21 +26,66 @@ public class MapaController : Controller
     [HttpGet("directorio")]
     public async Task<IActionResult> Index(string? busqueda, int? cultivoId)
     {
-        var result = await _mediator.Send(new ObtenerFamiliasQuery(busqueda, cultivoId));
-        return View("~/Views/Mapa/Index.cshtml", result.Value);
+        var familiasResult = await _mediator.Send(new ObtenerFamiliasQuery(busqueda, cultivoId));
+        var cultivosResult = await _mediator.Send(new ObtenerCultivosQuery());
+
+        ViewBag.Cultivos = cultivosResult.IsSuccess ? cultivosResult.Value : [];
+        ViewBag.Busqueda = busqueda;
+        ViewBag.CultivoIdSeleccionado = cultivoId;
+
+        return View("~/Views/Mapa/Index.cshtml", familiasResult.Value);
     }
 
-    /// <summary>Pantalla 2 — Mapa geográfico interactivo con Leaflet.js.</summary>
+    /// <summary>Pantalla 2 — Mapa geográfico interactivo con Leaflet.js centrado en Caldono, Cauca.</summary>
     [HttpGet("mapa")]
-    public IActionResult Mapa()
+    public async Task<IActionResult> Mapa()
     {
+        var cultivosResult = await _mediator.Send(new ObtenerCultivosQuery());
+        ViewBag.Cultivos = cultivosResult.IsSuccess ? cultivosResult.Value : [];
         return View("~/Views/Mapa/Mapa.cshtml");
     }
 
-    /// <summary>Pantalla 3 — Precios de mercado del DANE (acceso público).</summary>
+    /// <summary>Pantalla 3 — Precios de mercado del DANE SIPSA (acceso público).</summary>
     [HttpGet("precios")]
-    public IActionResult Precios()
+    public async Task<IActionResult> Precios(
+        [FromQuery] string? grupo = null,
+        [FromQuery] string? busqueda = null,
+        [FromQuery] string? mercado = null)
     {
-        return View("~/Views/Mapa/Precios.cshtml");
+        var result = await _mediator.Send(new ObtenerPreciosQuery(grupo, busqueda, mercado));
+        ViewBag.GrupoSeleccionado = grupo;
+        ViewBag.Busqueda = busqueda;
+        ViewBag.MercadoSeleccionado = mercado;
+
+        return View("~/Views/Mapa/Precios.cshtml", result.Value);
+    }
+
+    /// <summary>Endpoint para forzar la sincronización manual de precios DANE.</summary>
+    [HttpPost("precios/sincronizar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SincronizarPrecios(
+        [FromServices] BackgroundServices.ScrapingPreciosService scrapingService)
+    {
+        var exito = await scrapingService.EjecutarScrapingAsync(HttpContext.RequestAborted);
+        TempData[exito ? "MensajeExito" : "MensajeError"] = exito
+            ? "Sincronización con DANE SIPSA completada con éxito."
+            : "No se pudo sincronizar en vivo con el DANE. Se mantuvieron los datos oficiales de contingencia.";
+
+        return RedirectToAction(nameof(Precios));
+    }
+
+    /// <summary>Pantalla — Calendario Lunar Agrícola de Caldono, Cauca.</summary>
+    [HttpGet("lunar")]
+    public async Task<IActionResult> Lunar([FromQuery] int? cultivoId = null)
+    {
+        var result = await _mediator.Send(new InnovaFemIA.Web.Features.Mapa.ObtenerLunar.ObtenerInformacionLunarQuery(cultivoId));
+        return View("~/Views/Mapa/Lunar.cshtml", result.Value);
+    }
+
+    /// <summary>Redirección al juego interactivo "Aprende con la Luna" (Artefacto en Claude.ai).</summary>
+    [HttpGet("lunar/juego")]
+    public IActionResult JuegoLunar()
+    {
+        return Redirect("https://claude.ai/artifact/V8mjKt9sRmspRg4VRgf4LY");
     }
 }

@@ -19,6 +19,8 @@ public class AppDbContext : DbContext
     public DbSet<ActorMapa> ActoresMapa => Set<ActorMapa>();
     public DbSet<Stock> Stocks => Set<Stock>();
     public DbSet<PrecioMercado> PreciosMercado => Set<PrecioMercado>();
+    public DbSet<PrecioMayoristaSipsa> PreciosMayoristasSipsa => Set<PrecioMayoristaSipsa>();
+    public DbSet<BoletinSipsaInfo> BoletinesSipsaInfo => Set<BoletinSipsaInfo>();
     public DbSet<ReglasLunares> ReglasLunares => Set<ReglasLunares>();
 
     // ─── Módulo 3 — Biocomercio ────────────────────────────────────────────
@@ -50,10 +52,11 @@ public class AppDbContext : DbContext
             e.Property(f => f.Municipio).IsRequired().HasMaxLength(100).HasDefaultValue("Caldono");
             e.Property(f => f.NombreContacto).IsRequired().HasMaxLength(200);
             e.Property(f => f.TelefonoContacto).IsRequired().HasMaxLength(20);
+            e.Property(f => f.Descripcion).HasMaxLength(1000);
             e.Property(f => f.FotoBytes).HasColumnType("LONGBLOB");
             e.Property(f => f.FotoMimeType).HasMaxLength(50);
             e.Property(f => f.Activo).HasDefaultValue(true);
-            e.Property(f => f.FechaCreacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(f => f.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
         });
 
         // ── Cultivo ───────────────────────────────────────────────────────
@@ -107,7 +110,7 @@ public class AppDbContext : DbContext
             e.Property(a => a.LogoBytes).HasColumnType("LONGBLOB");
             e.Property(a => a.LogoMimeType).HasMaxLength(50);
             e.Property(a => a.Activo).HasDefaultValue(true);
-            e.Property(a => a.FechaCreacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(a => a.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
         });
 
         // ── Stock ─────────────────────────────────────────────────────────
@@ -129,7 +132,7 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             e.Property(s => s.Notas).HasMaxLength(500);
-            e.Property(s => s.UltimaActualizacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(s => s.UltimaActualizacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
         });
 
         // ── PrecioMercado ─────────────────────────────────────────────────
@@ -140,13 +143,55 @@ public class AppDbContext : DbContext
             e.Property(p => p.Precio).HasColumnType("decimal(18,2)");
             e.Property(p => p.PrecioAnterior).HasColumnType("decimal(18,2)");
             e.Property(p => p.Fuente).HasMaxLength(100).HasDefaultValue("DANE");
-            e.Property(p => p.FechaActualizacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(p => p.FechaActualizacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             e.HasIndex(p => new { p.CultivoId, p.FechaActualizacion });
 
             e.HasOne(p => p.Cultivo)
                 .WithMany(c => c.PreciosMercado)
                 .HasForeignKey(p => p.CultivoId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── PrecioMayoristaSipsa (DANE SIPSA) ─────────────────────────────
+        modelBuilder.Entity<PrecioMayoristaSipsa>(e =>
+        {
+            e.ToTable("PreciosMayoristasSipsa");
+            e.HasKey(p => p.Id);
+            e.Property(p => p.GrupoAlimento).IsRequired().HasMaxLength(100);
+            e.Property(p => p.Producto).IsRequired().HasMaxLength(150);
+            e.Property(p => p.MercadoMayorista).IsRequired().HasMaxLength(150);
+            e.Property(p => p.PrecioMinimo).HasColumnType("decimal(18,2)");
+            e.Property(p => p.PrecioMaximo).HasColumnType("decimal(18,2)");
+            e.Property(p => p.PrecioMedio).HasColumnType("decimal(18,2)");
+            e.Property(p => p.Tendencia).HasMaxLength(10).HasDefaultValue("=");
+            e.Property(p => p.PeriodoBoletin).HasMaxLength(150);
+            e.Property(p => p.FechaBoletin).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            e.Property(p => p.FechaActualizacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+
+            e.HasIndex(p => new { p.Producto, p.MercadoMayorista });
+            e.HasIndex(p => p.GrupoAlimento);
+            e.HasIndex(p => p.FechaBoletin);
+
+            e.HasOne(p => p.Cultivo)
+                .WithMany()
+                .HasForeignKey(p => p.CultivoId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ── BoletinSipsaInfo (Metadatos del Boletín DANE) ───────────────────
+        modelBuilder.Entity<BoletinSipsaInfo>(e =>
+        {
+            e.ToTable("BoletinesSipsaInfo");
+            e.HasKey(b => b.Id);
+            e.Property(b => b.Periodo).IsRequired().HasMaxLength(150);
+            e.Property(b => b.BoletinTecnicoUrl).HasMaxLength(500);
+            e.Property(b => b.BoletinTecnicoTitulo).HasMaxLength(300);
+            e.Property(b => b.AnexoExcelUrl).HasMaxLength(500);
+            e.Property(b => b.AnexoExcelTitulo).HasMaxLength(300);
+            e.Property(b => b.FechaPublicacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            e.Property(b => b.FechaSincronizacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            e.Property(b => b.EsExitoso).HasDefaultValue(true);
         });
 
         // ── ReglasLunares ─────────────────────────────────────────────────
@@ -201,7 +246,7 @@ public class AppDbContext : DbContext
             e.Property(u => u.NombreUsuario).IsRequired().HasMaxLength(100);
             e.Property(u => u.HashContrasena).IsRequired().HasMaxLength(256);
             e.Property(u => u.Activo).HasDefaultValue(true);
-            e.Property(u => u.FechaCreacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(u => u.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
             e.HasOne(u => u.Familia)
                 .WithOne(f => f.UsuarioFamilia)
@@ -220,7 +265,7 @@ public class AppDbContext : DbContext
             e.Property(a => a.NombreCompleto).HasMaxLength(200);
             e.Property(a => a.Email).HasMaxLength(200);
             e.Property(a => a.Activo).HasDefaultValue(true);
-            e.Property(a => a.FechaCreacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(a => a.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
         });
 
         // ── ApiKey ────────────────────────────────────────────────────────
@@ -233,7 +278,7 @@ public class AppDbContext : DbContext
             e.Property(k => k.NombreApp).IsRequired().HasMaxLength(100);
             e.Property(k => k.Descripcion).HasMaxLength(500);
             e.Property(k => k.Activo).HasDefaultValue(true);
-            e.Property(k => k.FechaCreacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(k => k.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             e.Property(k => k.UltimaIpUso).HasMaxLength(50);
         });
 
@@ -247,7 +292,7 @@ public class AppDbContext : DbContext
             e.Property(r => r.Modulo).IsRequired().HasMaxLength(50);
             e.Property(r => r.StackTrace).HasColumnType("TEXT");
             e.Property(r => r.IpOrigen).HasMaxLength(50);
-            e.Property(r => r.FechaHoraUtc).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(r => r.FechaHoraUtc).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             e.HasIndex(r => new { r.Modulo, r.FechaHoraUtc });
         });
 
@@ -263,7 +308,7 @@ public class AppDbContext : DbContext
             e.Property(c => c.ArchivoBytes).HasColumnType("LONGBLOB");
             e.Property(c => c.ArchivoMimeType).HasMaxLength(50);
             e.Property(c => c.ArchivoNombre).HasMaxLength(200);
-            e.Property(c => c.FechaCreacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(c => c.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             e.HasIndex(c => new { c.CultivoId, c.Tema, c.Orden });
 
             e.HasOne(c => c.Cultivo)
@@ -282,7 +327,7 @@ public class AppDbContext : DbContext
             e.Property(l => l.Descripcion).HasMaxLength(500);
             e.Property(l => l.ImagenBytes).HasColumnType("LONGBLOB");
             e.Property(l => l.ImagenMimeType).HasMaxLength(50);
-            e.Property(l => l.FechaCreacion).HasDefaultValueSql("UTC_TIMESTAMP(6)");
+            e.Property(l => l.FechaCreacion).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
         });
 
         // ── PreguntaLeccion ───────────────────────────────────────────────
